@@ -1,7 +1,7 @@
-const LEVELS = [
-  { id: "early", label: "Early Elementary (Grades 1-3)" },
-  { id: "upper", label: "Upper Elementary (Grades 4-6)" },
-  { id: "middle", label: "Middle School (Grades 7-9)" },
+const TIERS = [
+  { id: "rookie", label: "Rookie", blurb: "Addition & subtraction, numbers up to 20" },
+  { id: "varsity", label: "Varsity", blurb: "+ − × ÷ and fractions, larger numbers" },
+  { id: "champion", label: "Champion", blurb: "Negatives, order of operations, exponents" },
 ];
 
 function randInt(min, max) {
@@ -20,15 +20,13 @@ function reduceFraction(num, den) {
   return [num / g, den / g];
 }
 
-function fractionString(num, den) {
-  const [n, d] = reduceFraction(num, den);
-  return d === 1 ? String(n) : `${n}/${d}`;
+function fmt(n) {
+  return String(n).replace("-", "−");
 }
 
-function makeNumberProblem(text, answer) {
+function makeNumberProblem(display, answer) {
   return {
-    text,
-    type: "number",
+    display,
     checkAnswer(input) {
       const v = Number(String(input).trim());
       return Number.isFinite(v) && v === answer;
@@ -36,12 +34,11 @@ function makeNumberProblem(text, answer) {
   };
 }
 
-function makeFractionProblem(text, num, den) {
+function makeFractionProblem(display, num, den) {
   const [n, d] = reduceFraction(num, den);
   const decimal = n / d;
   return {
-    text,
-    type: "fraction",
+    display,
     checkAnswer(input) {
       const raw = String(input).trim();
       if (!raw) return false;
@@ -57,64 +54,67 @@ function makeFractionProblem(text, num, den) {
   };
 }
 
-function generateEarly() {
-  const op = Math.random() < 0.5 ? "+" : "-";
-  let a = randInt(0, 20);
+function genRookie() {
+  const op = Math.random() < 0.55 ? "+" : "-";
+  let a = randInt(1, 20);
   let b = randInt(0, 20);
   if (op === "-" && b > a) [a, b] = [b, a];
   const answer = op === "+" ? a + b : a - b;
-  return makeNumberProblem(`${a} ${op} ${b}`, answer);
+  return makeNumberProblem(`${fmt(a)} ${op} ${fmt(b)}`, answer);
 }
 
-function generateUpper() {
-  const kind = ["+", "-", "*", "/", "frac"][randInt(0, 4)];
-  if (kind === "frac") {
+function genVarsity() {
+  const r = Math.random();
+  if (r < 0.2) {
     const den = [2, 3, 4, 5, 6, 8, 10, 12][randInt(0, 7)];
     const n1 = randInt(1, den - 1);
     const n2 = randInt(1, den - 1);
     return makeFractionProblem(`${n1}/${den} + ${n2}/${den}`, n1 + n2, den);
   }
-  if (kind === "/") {
+  if (r < 0.45) {
     const divisor = randInt(2, 12);
     const quotient = randInt(2, 12);
-    return makeNumberProblem(`${divisor * quotient} / ${divisor}`, quotient);
+    return makeNumberProblem(`${divisor * quotient} ÷ ${divisor}`, quotient);
   }
-  if (kind === "*") {
+  if (r < 0.7) {
     const a = randInt(2, 12);
     const b = randInt(2, 12);
-    return makeNumberProblem(`${a} * ${b}`, a * b);
+    return makeNumberProblem(`${a} × ${b}`, a * b);
   }
+  const op = Math.random() < 0.5 ? "+" : "-";
   let a = randInt(10, 100);
   let b = randInt(10, 100);
-  if (kind === "-" && b > a) [a, b] = [b, a];
-  return makeNumberProblem(`${a} ${kind} ${b}`, kind === "+" ? a + b : a - b);
+  if (op === "-" && b > a) [a, b] = [b, a];
+  return makeNumberProblem(`${fmt(a)} ${op} ${fmt(b)}`, op === "+" ? a + b : a - b);
 }
 
-function generateMiddle() {
-  const kind = ["negative", "order", "exponent"][randInt(0, 2)];
-  if (kind === "negative") {
-    const op = Math.random() < 0.5 ? "+" : "-";
+function genChampion() {
+  const kind = randInt(0, 3);
+  if (kind === 0) {
+    const a = randInt(-12, 12);
+    const b = randInt(2, 9);
+    const c = randInt(2, 9);
+    return makeNumberProblem(`${fmt(a)} + ${b} × ${c}`, a + b * c);
+  }
+  if (kind === 1) {
     const a = randInt(-20, 20);
     const b = randInt(-20, 20);
-    const answer = op === "+" ? a + b : a - b;
-    return makeNumberProblem(`(${a}) ${op} (${b})`, answer);
+    const op = Math.random() < 0.5 ? "+" : "-";
+    return makeNumberProblem(`(${fmt(a)}) ${op} (${fmt(b)})`, op === "+" ? a + b : a - b);
   }
-  if (kind === "exponent") {
+  if (kind === 2) {
     const base = randInt(2, 9);
     const exp = randInt(2, 3);
     return makeNumberProblem(`${base}^${exp}`, Math.pow(base, exp));
   }
-  const a = randInt(2, 12);
-  const b = randInt(2, 12);
-  const c = randInt(2, 12);
-  const useMinus = Math.random() < 0.5;
-  const op = useMinus ? "-" : "+";
-  const answer = useMinus ? a - b * c : a + b * c;
-  return makeNumberProblem(`${a} ${op} ${b} * ${c}`, answer);
+  const a = randInt(-9, 9);
+  const b = randInt(-9, 9);
+  const c = randInt(2, 8);
+  return makeNumberProblem(`(${fmt(a)} + ${fmt(b)}) × ${c}`, (a + b) * c);
 }
 
-function generateProblem(difficulty) {
-  if (difficulty === "upper") return generateUpper();
-  if (difficulty === "middle") return generateMiddle();
-  return generateEarly();
+function generateProblem(tier) {
+  if (tier === "varsity") return genVarsity();
+  if (tier === "champion") return genChampion();
+  return genRookie();
 }

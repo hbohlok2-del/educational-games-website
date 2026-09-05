@@ -3,66 +3,180 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Tug of War: Arithmetic Edition</title>
+<title>Number Haul</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Nunito:wght@400;600;700;800&family=JetBrains+Mono:wght@600;700&display=swap">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<section id="screen-home" class="card">
-  <h1>Tug of War</h1>
-  <p>Arithmetic Edition</p>
-  <button class="btn" id="btn-create">Create Game</button>
-  <button class="btn secondary" id="btn-join">Join Game</button>
-  <p><a href="spectator.html">Open spectator / projector view</a></p>
-</section>
+<div id="app">
+  <div id="notice"></div>
 
-<section id="screen-create" class="card hidden">
-  <h1>Choose Difficulty</h1>
-  <div class="level-options" id="level-options"></div>
-  <button class="btn" id="btn-create-confirm">Create Room</button>
-  <button class="btn outline" id="btn-create-back">Back</button>
-</section>
-
-<section id="screen-join" class="card hidden">
-  <h1>Join Game</h1>
-  <input class="field" id="join-code" placeholder="Room code" maxlength="5" autocapitalize="characters">
-  <button class="btn" id="btn-join-a">Join Team A</button>
-  <button class="btn secondary" id="btn-join-b">Join Team B</button>
-  <button class="btn outline" id="btn-join-back">Back</button>
-  <p class="feedback gentle" id="join-error"></p>
-</section>
-
-<section id="screen-waiting" class="card hidden">
-  <h1>Waiting for the other team...</h1>
-  <div class="room-code" id="waiting-code"></div>
-  <p>Share this code with the other device.</p>
-  <p class="status-line" id="waiting-status">You are Team A</p>
-</section>
-
-<section id="screen-play" class="hidden play-wrap">
-  <div class="card">
-    <div class="rope-labels">
-      <span class="team-a">Team A</span>
-      <span class="team-b">Team B</span>
+  <!-- LANDING -->
+  <section data-view="landing">
+    <div class="hero">
+      <div class="eyebrow">a math tug-of-war</div>
+      <h1>NUMBER<br><span>HAUL</span></h1>
+      <p class="lede">Two teams, two devices, one rope. Solve arithmetic fast and accurately to haul the flag across the line before the other side does.</p>
     </div>
-    <div class="rope-track">
-      <div class="rope-center-line"></div>
-      <div class="rope-marker" id="rope-marker"></div>
+    <div class="role-grid">
+      <div class="role-card">
+        <div class="icon">🚩</div>
+        <h3>Start a Match</h3>
+        <p>Pick a difficulty, get a room code, and invite the other team.</p>
+        <button class="go" data-action="go-create">Start a Match</button>
+      </div>
+      <div class="role-card">
+        <div class="icon">🪢</div>
+        <h3>Join a Match</h3>
+        <p>Got a room code from your teacher or the other team? Jump in here.</p>
+        <button class="go" data-action="go-join">Join a Match</button>
+      </div>
+      <div class="role-card">
+        <div class="icon">📺</div>
+        <h3>Watch on a Big Screen</h3>
+        <p>Put the rope and live scores up on a projector for everyone to see.</p>
+        <button class="go" data-action="go-display">Big Screen</button>
+      </div>
     </div>
-    <p class="status-line" id="play-you"></p>
-    <div class="problem" id="problem-text">--</div>
-    <input class="field" id="answer-input" placeholder="Your answer" autocomplete="off">
-    <button class="btn" id="btn-submit">Submit</button>
-    <p class="feedback" id="play-feedback"></p>
-    <p class="status-line" id="play-status"></p>
-  </div>
-</section>
+    <div class="howto">
+      <b>How scoring works:</b> a correct answer hauls the rope toward your side — 10 points in under 5 seconds, 7 points between 5-10 seconds, 5 points past that. A wrong answer earns nothing and costs you a moment before your next question, so speed only pays off when you're also right. First team to pull the flag past their line wins the haul.
+    </div>
+  </section>
 
-<section id="screen-gameover" class="card hidden">
-  <h1 id="gameover-title">Game Over</h1>
-  <p id="gameover-message"></p>
-  <button class="btn" id="btn-play-again">Play Again</button>
-</section>
+  <!-- CREATE: difficulty + team -->
+  <section data-view="createSetup" class="hidden">
+    <button class="back-link" data-action="go-landing">&larr; Back</button>
+    <div class="panel">
+      <div>
+        <div class="field-label">1. Choose difficulty</div>
+        <div class="tier-grid" id="tierGrid" style="margin-top:10px;"></div>
+      </div>
+      <div>
+        <div class="field-label">2. Pick your team</div>
+        <div class="team-pick" id="createTeamPick" style="margin-top:10px;">
+          <button class="team-btn a" data-team="A">🔴 Red Team</button>
+          <button class="team-btn b" data-team="B">🔵 Blue Team</button>
+        </div>
+      </div>
+      <button class="btn block" id="createGo" disabled>Create Room</button>
+      <div class="err" id="createErr"></div>
+    </div>
+  </section>
+
+  <!-- JOIN: enter code -->
+  <section data-view="joinEntry" class="hidden">
+    <button class="back-link" data-action="go-landing">&larr; Back</button>
+    <div class="panel">
+      <div class="field-label">Enter the 4-letter room code</div>
+      <input class="code-input" id="joinCodeInput" maxlength="4" placeholder="----" autocomplete="off">
+      <button class="btn block" id="joinCodeGo">Find Room</button>
+      <div class="err" id="joinErr"></div>
+    </div>
+  </section>
+
+  <!-- JOIN: choose role in room -->
+  <section data-view="joinRoleSelect" class="hidden">
+    <button class="back-link" data-action="go-landing">&larr; Back</button>
+    <div class="panel">
+      <div class="field-label">Room <span class="mono" id="joinRoleCode"></span> &middot; <span id="joinRoleTier"></span></div>
+      <div class="team-pick">
+        <button class="team-btn a" id="joinAsA">🔴 Join Red</button>
+        <button class="team-btn b" id="joinAsB">🔵 Join Blue</button>
+      </div>
+      <button class="btn secondary block" id="joinAsDisplay">📺 Just watch on this device</button>
+      <div class="err" id="joinRoleErr"></div>
+    </div>
+  </section>
+
+  <!-- LOBBY -->
+  <section data-view="lobby" class="hidden">
+    <div class="panel">
+      <div class="field-label" id="lobbyTier"></div>
+      <div class="code-display" id="lobbyCode"></div>
+      <div class="roster" id="lobbyRoster"></div>
+      <button class="btn block" id="lobbyStart" disabled>Waiting for both teams&hellip;</button>
+      <button class="btn secondary block" data-action="go-landing">Leave Room</button>
+    </div>
+  </section>
+
+  <!-- MATCH -->
+  <section data-view="match" class="hidden">
+    <div class="match-meta">
+      <span id="matchTierLabel"></span>
+      <span class="mono" id="matchClock">3:00</span>
+    </div>
+    <div class="rope-wrap">
+      <div class="rope-labels"><span class="a">🔴 RED</span><span class="b">BLUE 🔵</span></div>
+      <div class="rope-track" id="ropeTrack">
+        <div class="rope-strand"></div>
+        <div class="rope-center"></div>
+        <div class="rope-marker" id="ropeMarker" style="left:50%;">🚩</div>
+      </div>
+    </div>
+
+    <div id="teamPlay" class="hidden">
+      <div class="team-card" id="teamCard">
+        <div class="team-tag" id="teamTag"></div>
+        <div class="equation" id="equationText">&ndash;</div>
+        <div class="pop-layer" id="popLayer"></div>
+        <div class="answer-display mono" id="answerDisplay">&nbsp;</div>
+        <div class="keypad" id="keypad"></div>
+        <div class="stat-chips">
+          <span class="chip" id="chipStreak">Streak 0</span>
+          <span class="chip" id="chipAcc">Accuracy &ndash;</span>
+        </div>
+      </div>
+    </div>
+
+    <div id="displayPlay" class="hidden">
+      <div class="display-stats">
+        <div class="display-team a">
+          <div class="lab">Red Team</div>
+          <div class="big" id="dispACorrect">0</div>
+          <div class="row"><span>Wrong</span><span id="dispAWrong">0</span></div>
+          <div class="row"><span>Accuracy</span><span id="dispAAcc">&ndash;</span></div>
+        </div>
+        <div class="display-team b">
+          <div class="lab">Blue Team</div>
+          <div class="big" id="dispBCorrect">0</div>
+          <div class="row"><span>Wrong</span><span id="dispBWrong">0</span></div>
+          <div class="row"><span>Accuracy</span><span id="dispBAcc">&ndash;</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- END -->
+  <section data-view="end" class="hidden">
+    <div class="end-banner">
+      <div class="trophy" id="endTrophy">🏆</div>
+      <h2 id="endHeadline">Red Team wins the haul!</h2>
+    </div>
+    <div class="recap">
+      <div class="card a">
+        <div class="field-label" style="color:#fff; opacity:0.85;">Red Team</div>
+        <div class="k"><span>Correct</span><span id="endACorrect">0</span></div>
+        <div class="k"><span>Wrong</span><span id="endAWrong">0</span></div>
+        <div class="k"><span>Accuracy</span><span id="endAAcc">&ndash;</span></div>
+      </div>
+      <div class="card b">
+        <div class="field-label" style="color:#fff; opacity:0.85;">Blue Team</div>
+        <div class="k"><span>Correct</span><span id="endBCorrect">0</span></div>
+        <div class="k"><span>Wrong</span><span id="endBWrong">0</span></div>
+        <div class="k"><span>Accuracy</span><span id="endBAcc">&ndash;</span></div>
+      </div>
+    </div>
+    <div class="end-actions">
+      <button class="btn" id="endRematch">Rematch</button>
+      <button class="btn secondary" data-action="go-landing">New Match</button>
+    </div>
+  </section>
+</div>
+
+<canvas id="confetti" class="hidden"></canvas>
 
 <script src="/socket.io/socket.io.js"></script>
 <script src="problems.js"></script>

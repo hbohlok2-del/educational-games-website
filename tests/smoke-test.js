@@ -7,28 +7,23 @@ const URL = `http://localhost:${process.env.PORT}/tug-of-war`;
 const a = io(URL);
 const b = io(URL);
 
-let code;
-
 function log(...args) { console.log(...args); }
 
+let latestRoom = null;
+a.on("room-update", (room) => { latestRoom = room; });
+b.on("room-update", (room) => { latestRoom = room; });
+
 a.on("connect", () => {
-  a.emit("create-room", { difficulty: "early" }, (ack) => {
-    log("A create-room ack:", ack);
-    code = ack.code;
+  a.emit("create-room", { difficulty: "rookie", team: "A" }, (ack) => {
+    log("A create-room ack:", ack.ok, ack.room && ack.room.code);
+    const code = ack.room.code;
     b.emit("join-room", { code, team: "B" }, (ackB) => {
-      log("B join-room ack:", ackB);
-      runRound();
+      log("B join-room ack:", ackB.ok);
+      a.emit("start-match");
+      setTimeout(runRound, 200);
     });
   });
 });
-
-let position = 0;
-a.on("state", (s) => { position = s.position; });
-b.on("state", (s) => { position = s.position; });
-
-let gameOverResult = null;
-a.on("game-over", (g) => { gameOverResult = { who: "A", ...g }; });
-b.on("game-over", (g) => { gameOverResult = { who: "B", ...g }; });
 
 function runRound() {
   log("Starting round: A answers correctly fast repeatedly, B answers wrong.");
@@ -38,15 +33,15 @@ function runRound() {
     a.emit("submit-answer", { correct: true, timeMs: 200 });
     b.emit("submit-answer", { correct: false, timeMs: 3000 });
 
-    if (gameOverResult || ticks > 40) {
+    const finished = latestRoom && latestRoom.status === "finished";
+    if (finished || ticks > 40) {
       clearInterval(interval);
       setTimeout(() => {
-        log("Final position:", position);
-        log("Game over result:", gameOverResult);
         a.close();
         b.close();
         server.close(() => {
-          if (gameOverResult && gameOverResult.winner === "A") {
+          log("Final room:", latestRoom);
+          if (finished && latestRoom.winner === "A") {
             log("SMOKE TEST PASSED: Team A won as expected.");
             process.exit(0);
           } else {
