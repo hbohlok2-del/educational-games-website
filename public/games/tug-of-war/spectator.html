@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tug of War - Spectator</title>
+<link rel="stylesheet" href="style.css">
+<style>
+  .spectator-wrap { max-width: 900px; width: 100%; }
+  .rope-track { height: 100px; }
+  .rope-marker { width: 54px; height: 54px; }
+  .rope-labels { font-size: 1.6rem; }
+</style>
+</head>
+<body>
+<section id="screen-join" class="card">
+  <h1>Spectator View</h1>
+  <input class="field" id="join-code" placeholder="Room code" maxlength="5" autocapitalize="characters">
+  <button class="btn" id="btn-watch">Watch</button>
+  <p class="feedback gentle" id="join-error"></p>
+</section>
+
+<section id="screen-watch" class="hidden spectator-wrap">
+  <div class="card">
+    <div class="rope-labels">
+      <span class="team-a">Team A</span>
+      <span class="team-b">Team B</span>
+    </div>
+    <div class="rope-track">
+      <div class="rope-center-line"></div>
+      <div class="rope-marker" id="rope-marker"></div>
+    </div>
+    <p class="status-line" id="watch-status">Watching room <span id="watch-code"></span></p>
+  </div>
+</section>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="spectator.js"></script>
+</body>
+</html>
