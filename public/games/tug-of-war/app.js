@@ -134,8 +134,8 @@
       if (!ack.ok) { $("createErr").textContent = ack.error || "Couldn't create room."; $("createGo").disabled = false; return; }
       S.role = ack.team;
       S.code = ack.room.code;
-      applyRoomUpdate(ack.room);
       showView("lobby");
+      applyRoomUpdate(ack.room);
     });
   });
 
@@ -165,8 +165,8 @@
       if (!ack.ok) { errEl.textContent = ack.error; return; }
       S.role = team;
       S.code = code;
-      applyRoomUpdate(ack.room);
       showView("lobby");
+      applyRoomUpdate(ack.room);
     });
   }
   $("joinAsA").addEventListener("click", function () { joinAs(S.pendingCode, "A"); });
