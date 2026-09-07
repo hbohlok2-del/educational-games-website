@@ -18,8 +18,8 @@
     room: null,
     lastSeenRound: null,
     finished: false,
-    question: null,
-    qStartTs: 0,
+    qIndex: 0,
+    questionReady: false,
     inputBuf: "",
     lockUntil: 0,
     myPulls: [],
@@ -83,7 +83,8 @@
   function onRoundReset() {
     S.finished = false;
     S.myPulls = [];
-    S.question = null;
+    S.qIndex = 0;
+    S.questionReady = false;
   }
 
   function onRoomUpdate(room) {
@@ -284,38 +285,40 @@
   });
 
   function nextQuestion() {
-    S.question = generateProblem(S.room.difficulty);
-    S.qStartTs = Date.now();
+    var requestedIndex = S.qIndex;
+    S.questionReady = false;
     S.inputBuf = "";
-    $("equationText").textContent = S.question.display;
     $("answerDisplay").textContent = " ";
-  }
-
-  function pullMagnitude(timeMs) {
-    if (timeMs < 5000) return 10;
-    if (timeMs <= 10000) return 7;
-    return 5;
+    socket.emit("get-question", { index: requestedIndex }, function (ack) {
+      if (!ack || !ack.ok || S.qIndex !== requestedIndex) return;
+      $("equationText").textContent = ack.display;
+      S.questionReady = true;
+    });
   }
 
   function submitAnswer() {
-    if (!S.question || Date.now() < S.lockUntil) return;
+    if (!S.questionReady || Date.now() < S.lockUntil) return;
     if (S.inputBuf === "" || S.inputBuf === "-" || S.inputBuf === ".") return;
-    var correct = S.question.checkAnswer(S.inputBuf);
-    var elapsedMs = Date.now() - S.qStartTs;
-    var mag = correct ? pullMagnitude(elapsedMs) : 0;
+    var submittedIndex = S.qIndex;
+    var input = S.inputBuf;
+    S.questionReady = false;
 
-    socket.emit("submit-answer", { correct: correct, timeMs: elapsedMs });
-    S.myPulls.push({ c: correct });
+    socket.emit("submit-answer", { index: submittedIndex, input: input }, function (ack) {
+      if (!ack || !ack.ok) { S.questionReady = true; return; }
+      var correct = ack.correct, mag = ack.mag;
+      S.myPulls.push({ c: correct });
 
-    spawnPop(correct ? ("+" + mag) : "✗", correct);
-    if (!correct) {
-      $("teamCard").classList.remove("flash-wrong"); void $("teamCard").offsetWidth; $("teamCard").classList.add("flash-wrong");
-      S.lockUntil = Date.now() + 700;
-      setTimeout(nextQuestion, 700);
-    } else {
-      nextQuestion();
-    }
-    renderTeamStatChips();
+      spawnPop(correct ? ("+" + mag) : "✗", correct);
+      if (!correct) {
+        $("teamCard").classList.remove("flash-wrong"); void $("teamCard").offsetWidth; $("teamCard").classList.add("flash-wrong");
+        S.lockUntil = Date.now() + 700;
+        setTimeout(function () { S.qIndex++; nextQuestion(); }, 700);
+      } else {
+        S.qIndex++;
+        nextQuestion();
+      }
+      renderTeamStatChips();
+    });
   }
 
   function spawnPop(text, good) {

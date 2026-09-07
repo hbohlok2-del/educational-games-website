@@ -1,3 +1,5 @@
+const { generateProblem } = require("./problems");
+
 const ROPE_MIN = 0;
 const ROPE_MAX = 100;
 const ROPE_CENTER = 50;
@@ -47,6 +49,13 @@ function attach(io) {
     nsp.to(room.code).emit("room-update", publicRoom(room));
   }
 
+  function getQuestion(room, index) {
+    while (room.questions.length <= index) {
+      room.questions.push(generateProblem(room.difficulty));
+    }
+    return room.questions[index];
+  }
+
   function checkTimeCap(room) {
     if (room.status !== "active" || !room.matchStartAt) return;
     const elapsed = Date.now() - room.matchStartAt;
@@ -76,6 +85,7 @@ function attach(io) {
         matchStartAt: null,
         winner: null,
         teams: { A: null, B: null },
+        questions: [],
       };
       room.teams[team] = socket.id;
       rooms.set(code, room);
@@ -122,6 +132,7 @@ function attach(io) {
       room.stats = freshStats();
       room.winner = null;
       room.timedOut = false;
+      room.questions = [];
       room.matchStartAt = Date.now() + START_COUNTDOWN_MS;
       broadcastRoom(room);
     });
@@ -135,16 +146,39 @@ function attach(io) {
       room.stats = freshStats();
       room.winner = null;
       room.timedOut = false;
+      room.questions = [];
       room.matchStartAt = Date.now() + START_COUNTDOWN_MS;
       broadcastRoom(room);
     });
 
-    socket.on("submit-answer", ({ correct, timeMs } = {}) => {
+    socket.on("get-question", ({ index } = {}, ack) => {
+      const room = rooms.get(socket.data.code);
+      if (typeof ack !== "function") return;
+      if (!room || room.status !== "active" || !Number.isInteger(index) || index < 0) {
+        return ack({ ok: false });
+      }
+      const q = getQuestion(room, index);
+      socket.data.lastQuestion = { index, at: Date.now() };
+      ack({ ok: true, display: q.display });
+    });
+
+    socket.on("submit-answer", ({ index, input } = {}, ack) => {
       const room = rooms.get(socket.data.code);
       const team = socket.data.team;
-      if (!room || room.status !== "active" || !team) return;
+      if (!room || room.status !== "active" || !team) {
+        if (typeof ack === "function") ack({ ok: false });
+        return;
+      }
+      if (!Number.isInteger(index) || index < 0 || index >= room.questions.length) {
+        if (typeof ack === "function") ack({ ok: false });
+        return;
+      }
 
-      const mag = correct ? pullMagnitude(Number(timeMs) || 0) : 0;
+      const q = room.questions[index];
+      const correct = q.checkAnswer(input);
+      const issued = socket.data.lastQuestion;
+      const timeMs = issued && issued.index === index ? Date.now() - issued.at : 99999;
+      const mag = correct ? pullMagnitude(timeMs) : 0;
       const sign = team === "A" ? -1 : 1;
       room.position = Math.max(ROPE_MIN, Math.min(ROPE_MAX, room.position + sign * mag));
       if (correct) room.stats[team].correct += 1;
@@ -158,6 +192,7 @@ function attach(io) {
         room.winner = winner;
       }
 
+      if (typeof ack === "function") ack({ ok: true, correct, mag });
       broadcastRoom(room);
     });
 
