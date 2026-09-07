@@ -5,10 +5,11 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "test": "node tests/problems-check.js && node tests/smoke-test.js"
+    "test": "node tests/problems-check.js && node tests/smoke-test.js && node tests/team-race-smoke-test.js"
   },
   "dependencies": {
     "express": "^4.19.2",
+    "katex": "^0.18.7",
     "socket.io": "^4.7.5"
   },
   "devDependencies": {

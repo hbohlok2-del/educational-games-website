@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Team Race</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Nunito:wght@400;600;700;800&family=JetBrains+Mono:wght@600;700&display=swap">
+<link rel="stylesheet" href="/vendor/katex/katex.min.css">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="app">
+  <div id="notice"></div>
+
+  <!-- LANDING -->
+  <section data-view="landing">
+    <div class="hero">
+      <div class="eyebrow">a class team race</div>
+      <h1>TEAM<br><span>RACE</span></h1>
+      <p class="lede">Two teams, two devices, one race. Answer your teacher's questions fast and accurately to pull ahead before the other side does.</p>
+    </div>
+    <div class="role-grid">
+      <div class="role-card">
+        <div class="icon">🪢</div>
+        <h3>Join a Race</h3>
+        <p>Got a room code from your teacher? Enter it here and pick your team.</p>
+        <button class="go" data-action="go-join">Join a Race</button>
+      </div>
+      <div class="role-card">
+        <div class="icon">📺</div>
+        <h3>Watch on a Big Screen</h3>
+        <p>Put the race and live scores up on a projector for everyone to see.</p>
+        <button class="go" data-action="go-display">Big Screen</button>
+      </div>
+    </div>
+    <div class="howto">
+      <b>How scoring works:</b> a correct answer pulls the marker toward your side &mdash; more for a fast answer, less for a slow one. A wrong answer earns nothing and costs you a moment before your next question. First team to pull the marker to their side wins the race.
+    </div>
+  </section>
+
+  <!-- JOIN: enter code -->
+  <section data-view="joinEntry" class="hidden">
+    <button class="back-link" data-action="go-landing">&larr; Back</button>
+    <div class="panel">
+      <div class="field-label">Enter the 4-letter room code</div>
+      <input class="code-input" id="joinCodeInput" maxlength="4" placeholder="----" autocomplete="off">
+      <button class="btn block" id="joinCodeGo">Find Room</button>
+      <div class="err" id="joinErr"></div>
+    </div>
+  </section>
+
+  <!-- JOIN: choose role in room -->
+  <section data-view="joinRoleSelect" class="hidden">
+    <button class="back-link" data-action="go-landing">&larr; Back</button>
+    <div class="panel">
+      <div class="field-label">Room <span class="mono" id="joinRoleCode"></span> &middot; <span id="joinRoleTitle"></span></div>
+      <div class="team-pick">
+        <button class="team-btn a" id="joinAsA">🔴 Join Red</button>
+        <button class="team-btn b" id="joinAsB">🔵 Join Blue</button>
+      </div>
+      <button class="btn secondary block" id="joinAsDisplay">📺 Just watch on this device</button>
+      <div class="err" id="joinRoleErr"></div>
+    </div>
+  </section>
+
+  <!-- LOBBY -->
+  <section data-view="lobby" class="hidden">
+    <div class="panel">
+      <div class="field-label" id="lobbyTitle"></div>
+      <div class="code-display" id="lobbyCode"></div>
+      <div class="roster" id="lobbyRoster"></div>
+      <button class="btn block" id="lobbyStart" disabled>Waiting for both teams&hellip;</button>
+      <button class="btn secondary block" data-action="go-landing">Leave Room</button>
+    </div>
+  </section>
+
+  <!-- MATCH -->
+  <section data-view="match" class="hidden">
+    <div class="match-meta">
+      <span id="matchTitleLabel"></span>
+      <span class="mono" id="matchClock">3:00</span>
+    </div>
+    <div class="rope-wrap">
+      <div class="rope-labels"><span class="a">🔴 RED</span><span class="b">BLUE 🔵</span></div>
+      <div class="rope-track" id="ropeTrack">
+        <div class="rope-strand"></div>
+        <div class="rope-center"></div>
+        <div class="rope-marker" id="ropeMarker" style="left:50%;">🚩</div>
+      </div>
+    </div>
+
+    <div id="teamPlay" class="hidden">
+      <div class="team-card" id="teamCard">
+        <div class="team-tag" id="teamTag"></div>
+        <div class="equation" id="equationText">&ndash;</div>
+        <div class="pop-layer" id="popLayer"></div>
+
+        <div id="shortAnswerArea">
+          <input class="text-answer-input" id="textAnswerInput" autocomplete="off" placeholder="Type your answer">
+          <button class="btn submit-btn" id="textAnswerGo">Submit</button>
+        </div>
+
+        <div id="mcArea" class="hidden">
+          <div class="mc-choices" id="mcChoices"></div>
+        </div>
+
+        <div class="stat-chips">
+          <span class="chip" id="chipStreak">Streak 0</span>
+          <span class="chip" id="chipAcc">Accuracy &ndash;</span>
+        </div>
+      </div>
+    </div>
+
+    <div id="displayPlay" class="hidden">
+      <div class="display-stats">
+        <div class="display-team a">
+          <div class="lab">Red Team</div>
+          <div class="big" id="dispACorrect">0</div>
+          <div class="row"><span>Wrong</span><span id="dispAWrong">0</span></div>
+          <div class="row"><span>Accuracy</span><span id="dispAAcc">&ndash;</span></div>
+        </div>
+        <div class="display-team b">
+          <div class="lab">Blue Team</div>
+          <div class="big" id="dispBCorrect">0</div>
+          <div class="row"><span>Wrong</span><span id="dispBWrong">0</span></div>
+          <div class="row"><span>Accuracy</span><span id="dispBAcc">&ndash;</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- END -->
+  <section data-view="end" class="hidden">
+    <div class="end-banner">
+      <div class="trophy" id="endTrophy">🏆</div>
+      <h2 id="endHeadline">Red Team wins the race!</h2>
+    </div>
+    <div class="recap">
+      <div class="card a">
+        <div class="field-label" style="color:#fff; opacity:0.85;">Red Team</div>
+        <div class="k"><span>Correct</span><span id="endACorrect">0</span></div>
+        <div class="k"><span>Wrong</span><span id="endAWrong">0</span></div>
+        <div class="k"><span>Accuracy</span><span id="endAAcc">&ndash;</span></div>
+      </div>
+      <div class="card b">
+        <div class="field-label" style="color:#fff; opacity:0.85;">Blue Team</div>
+        <div class="k"><span>Correct</span><span id="endBCorrect">0</span></div>
+        <div class="k"><span>Wrong</span><span id="endBWrong">0</span></div>
+        <div class="k"><span>Accuracy</span><span id="endBAcc">&ndash;</span></div>
+      </div>
+    </div>
+    <div class="end-actions">
+      <button class="btn" id="endRematch">Rematch</button>
+      <button class="btn secondary" data-action="go-landing">New Race</button>
+    </div>
+  </section>
+</div>
+
+<canvas id="confetti" class="hidden"></canvas>
+
+<script src="/vendor/katex/katex.min.js"></script>
+<script src="/vendor/katex/contrib/auto-render.min.js"></script>
+<script src="/vendor/katex/contrib/mhchem.min.js"></script>
+<script src="/shared/mathRender.js"></script>
+<script src="/socket.io/socket.io.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

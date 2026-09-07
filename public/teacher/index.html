@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Create a Class Race</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=JetBrains+Mono:wght@600;700&display=swap">
+<link rel="stylesheet" href="/vendor/katex/katex.min.css">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="app">
+  <header class="page-header">
+    <a class="back-link" href="/">&larr; Educational Games</a>
+    <h1>Create a Class Race</h1>
+    <p class="lede">Write your own questions for any subject — math and science notation supported — and get a room code your students join from any device.</p>
+  </header>
+
+  <section id="formView">
+    <div class="panel">
+      <label class="field-label" for="titleInput">Race title</label>
+      <input id="titleInput" class="text-input" placeholder="e.g. Chapter 6 Vocabulary" maxlength="80">
+    </div>
+
+    <div id="questionList"></div>
+
+    <button type="button" class="btn secondary block" id="addQuestion">+ Add question</button>
+
+    <div class="panel">
+      <button type="button" class="btn block" id="createGo">Create Room</button>
+      <div class="err" id="createErr"></div>
+    </div>
+  </section>
+
+  <section id="doneView" class="hidden">
+    <div class="panel done-panel">
+      <div class="field-label">Share this code with your students</div>
+      <div class="code-display" id="doneCode"></div>
+      <p class="lede">Students go to <span class="mono" id="doneLink"></span>, enter the code above, then pick a team.</p>
+      <a class="btn block" id="openStudentView" target="_blank" rel="noopener">Open student join page</a>
+      <button type="button" class="btn secondary block" id="createAnother">Create another race</button>
+    </div>
+  </section>
+</div>
+
+<template id="questionRowTpl">
+  <div class="q-row panel">
+    <div class="q-row-head">
+      <span class="q-num">Question</span>
+      <button type="button" class="remove-q" title="Remove question">&times;</button>
+    </div>
+    <div class="toolbar"></div>
+    <textarea class="prompt-input text-input" rows="2" placeholder="Question text -- use a toolbar button to insert math, or type $...$ yourself"></textarea>
+    <div class="preview">Preview will appear here</div>
+    <div class="type-row">
+      <label><input type="radio" name="type" value="short-answer" checked> Short answer</label>
+      <label><input type="radio" name="type" value="multiple-choice"> Multiple choice</label>
+    </div>
+    <div class="short-answer-fields">
+      <label class="field-label">Correct answer</label>
+      <input class="answer-input text-input" placeholder="e.g. Paris, or 42">
+    </div>
+    <div class="mc-fields hidden">
+      <label class="field-label">Choices (mark the correct one)</label>
+      <div class="choices"></div>
+      <button type="button" class="add-choice">+ Add choice</button>
+    </div>
+  </div>
+</template>
+
+<script src="/vendor/katex/katex.min.js"></script>
+<script src="/vendor/katex/contrib/auto-render.min.js"></script>
+<script src="/vendor/katex/contrib/mhchem.min.js"></script>
+<script src="/shared/mathRender.js"></script>
+<script src="/socket.io/socket.io.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
