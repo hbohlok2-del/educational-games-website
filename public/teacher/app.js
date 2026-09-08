@@ -1,19 +1,51 @@
 (function () {
   "use strict";
 
-  var socket = io("/team-race");
+  var socketRace = io("/team-race");
+  var socketBuzzer = io("/team-buzzer");
   var qId = 0;
+  var selectedMechanic = "race";
   var selectedTheme = "rope";
+
+  var THEMES_BY_MECHANIC = {
+    race: [
+      { id: "rope", icon: "🪢", label: "Tug of War" },
+      { id: "rocket", icon: "🚀", label: "Rocket Race" },
+    ],
+    buzzer: [
+      { id: "spotlight", icon: "🔔", label: "Spotlight Showdown" },
+    ],
+  };
 
   function $(id) { return document.getElementById(id); }
   var questionList = $("questionList");
   var rowTpl = $("questionRowTpl");
 
-  Array.prototype.forEach.call($("themePick").querySelectorAll(".theme-btn"), function (b) {
+  function renderThemePick() {
+    var wrap = $("themePick");
+    wrap.innerHTML = "";
+    THEMES_BY_MECHANIC[selectedMechanic].forEach(function (t, i) {
+      var b = document.createElement("button");
+      b.type = "button";
+      b.className = "theme-btn" + (i === 0 ? " active" : "");
+      b.innerHTML = t.icon + "<span>" + t.label + "</span>";
+      b.addEventListener("click", function () {
+        Array.prototype.forEach.call(wrap.querySelectorAll(".theme-btn"), function (x) { x.classList.remove("active"); });
+        b.classList.add("active");
+        selectedTheme = t.id;
+      });
+      wrap.appendChild(b);
+    });
+    selectedTheme = THEMES_BY_MECHANIC[selectedMechanic][0].id;
+  }
+  renderThemePick();
+
+  Array.prototype.forEach.call($("mechanicPick").querySelectorAll(".theme-btn"), function (b) {
     b.addEventListener("click", function () {
-      Array.prototype.forEach.call($("themePick").querySelectorAll(".theme-btn"), function (x) { x.classList.remove("active"); });
+      Array.prototype.forEach.call($("mechanicPick").querySelectorAll(".theme-btn"), function (x) { x.classList.remove("active"); });
       b.classList.add("active");
-      selectedTheme = b.getAttribute("data-theme");
+      selectedMechanic = b.getAttribute("data-mechanic");
+      renderThemePick();
     });
   });
 
@@ -146,11 +178,12 @@
     if (res.errors.length) { errEl.textContent = res.errors[0]; return; }
 
     $("createGo").disabled = true;
+    var socket = selectedMechanic === "buzzer" ? socketBuzzer : socketRace;
     socket.emit("create-room", { title: title, theme: selectedTheme, questions: res.out }, function (ack) {
       $("createGo").disabled = false;
       if (!ack || !ack.ok) { errEl.textContent = (ack && ack.error) || "Couldn't create the room."; return; }
       $("doneCode").textContent = ack.room.code;
-      var joinBase = location.origin + "/games/team-race/";
+      var joinBase = location.origin + "/games/" + (selectedMechanic === "buzzer" ? "team-buzzer" : "team-race") + "/";
       $("doneLink").textContent = joinBase;
       $("openStudentView").href = joinBase + "?code=" + ack.room.code;
       $("formView").classList.add("hidden");

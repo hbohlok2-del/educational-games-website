@@ -1,9 +1,11 @@
-const { pullMagnitude, ROPE_MIN, ROPE_MAX, ROPE_CENTER } = require("./tugOfWar");
 const { buildQuestions } = require("../content/questions");
 
-const MATCH_DURATION_MS = 180000;
-const START_COUNTDOWN_MS = 3000;
 const CODE_CHARS = "ABCDEFGHJKMNPQRSTUVWXYZ";
+const START_COUNTDOWN_MS = 3000;
+const BUZZ_WINDOW_MS = 12000;
+const NEXT_QUESTION_DELAY_MS = 1800;
+const MATCH_DURATION_MS = 180000;
+const WIN_SCORE = 5;
 
 function generateRoomCode(rooms) {
   let code;
@@ -17,6 +19,12 @@ function freshStats() {
   return { A: { correct: 0, wrong: 0 }, B: { correct: 0, wrong: 0 } };
 }
 
+function currentQuestionPublic(room) {
+  if (room.currentIndex < 0 || room.currentIndex >= room.questions.length) return null;
+  const q = room.questions[room.currentIndex];
+  return { prompt: q.prompt, type: q.type, choices: q.choices };
+}
+
 function publicRoom(room) {
   return {
     code: room.code,
@@ -26,41 +34,74 @@ function publicRoom(room) {
     round: room.round,
     teamA: { joined: !!room.teams.A },
     teamB: { joined: !!room.teams.B },
-    position: room.position,
+    scores: room.scores,
     stats: room.stats,
     matchStartAt: room.matchStartAt,
     winner: room.winner,
     questionCount: room.questions.length,
+    currentIndex: room.currentIndex,
+    question: currentQuestionPublic(room),
+    locked: room.locked,
+    lastResult: room.lastResult,
+    revealAt: room.questionRevealedAt,
+    nextAt: room.nextAt,
+    windowMs: BUZZ_WINDOW_MS,
+    winScore: WIN_SCORE,
   };
 }
 
 function attach(io) {
-  const nsp = io.of("/team-race");
+  const nsp = io.of("/team-buzzer");
   const rooms = new Map();
 
   function broadcastRoom(room) {
     nsp.to(room.code).emit("room-update", publicRoom(room));
   }
 
-  function checkTimeCap(room) {
-    if (room.status !== "active" || !room.matchStartAt) return;
-    const elapsed = Date.now() - room.matchStartAt;
-    if (elapsed < MATCH_DURATION_MS) return;
-    room.status = "finished";
-    room.winner = room.position < ROPE_CENTER ? "A" : room.position > ROPE_CENTER ? "B" : null;
-    room.timedOut = true;
-    broadcastRoom(room);
+  function revealQuestion(room, index) {
+    room.currentIndex = index;
+    room.locked = false;
+    room.lastResult = null;
+    room.questionRevealedAt = Date.now();
+    room.nextAt = null;
+  }
+
+  function resolveQuestion(room, winnerTeam) {
+    room.locked = true;
+    room.lastResult = { winner: winnerTeam || null };
+    room.nextAt = Date.now() + NEXT_QUESTION_DELAY_MS;
   }
 
   setInterval(() => {
-    for (const room of rooms.values()) checkTimeCap(room);
-  }, 1000);
+    const now = Date.now();
+    for (const room of rooms.values()) {
+      if (room.status !== "active") continue;
+
+      if (room.matchStartAt && now - room.matchStartAt >= MATCH_DURATION_MS) {
+        room.status = "finished";
+        room.winner = room.scores.A === room.scores.B ? null : (room.scores.A > room.scores.B ? "A" : "B");
+        broadcastRoom(room);
+        continue;
+      }
+
+      if (!room.locked && room.questionRevealedAt && now - room.questionRevealedAt >= BUZZ_WINDOW_MS) {
+        resolveQuestion(room, null);
+        broadcastRoom(room);
+        continue;
+      }
+
+      if (room.locked && room.nextAt && now >= room.nextAt) {
+        revealQuestion(room, (room.currentIndex + 1) % room.questions.length);
+        broadcastRoom(room);
+      }
+    }
+  }, 300);
 
   nsp.on("connection", (socket) => {
     socket.on("create-room", (opts, ack) => {
       if (typeof ack !== "function") return;
-      const title = String((opts && opts.title) || "").trim().slice(0, 80) || "Class Race";
-      const theme = opts && opts.theme === "rocket" ? "rocket" : "rope";
+      const title = String((opts && opts.title) || "").trim().slice(0, 80) || "Class Buzzer";
+      const theme = opts && opts.theme === "spotlight" ? "spotlight" : "spotlight";
       const questions = buildQuestions(opts && opts.questions);
       if (questions.length < 1) return ack({ ok: false, error: "Add at least one valid question first." });
 
@@ -71,13 +112,17 @@ function attach(io) {
         theme,
         status: "waiting",
         round: 1,
-        position: ROPE_CENTER,
+        scores: { A: 0, B: 0 },
         stats: freshStats(),
         matchStartAt: null,
         winner: null,
-        timedOut: false,
         teams: { A: null, B: null },
         questions,
+        currentIndex: -1,
+        locked: true,
+        lastResult: null,
+        questionRevealedAt: null,
+        nextAt: null,
       };
       rooms.set(code, room);
       socket.join(code);
@@ -119,11 +164,14 @@ function attach(io) {
       if (!room || !room.teams.A || !room.teams.B) return;
       room.status = "active";
       room.round = room.round || 1;
-      room.position = ROPE_CENTER;
+      room.scores = { A: 0, B: 0 };
       room.stats = freshStats();
       room.winner = null;
-      room.timedOut = false;
       room.matchStartAt = Date.now() + START_COUNTDOWN_MS;
+      room.currentIndex = -1;
+      room.locked = true;
+      room.lastResult = null;
+      room.nextAt = room.matchStartAt;
       broadcastRoom(room);
     });
 
@@ -132,57 +180,45 @@ function attach(io) {
       if (!room) return;
       room.round += 1;
       room.status = "active";
-      room.position = ROPE_CENTER;
+      room.scores = { A: 0, B: 0 };
       room.stats = freshStats();
       room.winner = null;
-      room.timedOut = false;
       room.matchStartAt = Date.now() + START_COUNTDOWN_MS;
+      room.currentIndex = -1;
+      room.locked = true;
+      room.lastResult = null;
+      room.nextAt = room.matchStartAt;
       broadcastRoom(room);
     });
 
-    socket.on("get-question", ({ index } = {}, ack) => {
-      const room = rooms.get(socket.data.code);
-      if (typeof ack !== "function") return;
-      if (!room || room.status !== "active" || !room.questions.length || !Number.isInteger(index) || index < 0) {
-        return ack({ ok: false });
-      }
-      const q = room.questions[index % room.questions.length];
-      socket.data.lastQuestion = { index, at: Date.now() };
-      ack({ ok: true, prompt: q.prompt, type: q.type, choices: q.choices });
-    });
-
-    socket.on("submit-answer", ({ index, input } = {}, ack) => {
+    socket.on("buzz-answer", ({ index, input } = {}, ack) => {
       const room = rooms.get(socket.data.code);
       const team = socket.data.team;
-      if (!room || room.status !== "active" || !team || !room.questions.length) {
+      if (!room || room.status !== "active" || !team) {
         if (typeof ack === "function") ack({ ok: false });
         return;
       }
-      if (!Number.isInteger(index) || index < 0) {
-        if (typeof ack === "function") ack({ ok: false });
+      if (room.locked || room.currentIndex < 0 || index !== room.currentIndex) {
+        if (typeof ack === "function") ack({ ok: true, correct: false, tooLate: true });
         return;
       }
 
-      const q = room.questions[index % room.questions.length];
+      const q = room.questions[room.currentIndex];
       const correct = q.checkAnswer(input);
-      const issued = socket.data.lastQuestion;
-      const timeMs = issued && issued.index === index ? Date.now() - issued.at : 99999;
-      const mag = correct ? pullMagnitude(timeMs) : 0;
-      const sign = team === "A" ? -1 : 1;
-      room.position = Math.max(ROPE_MIN, Math.min(ROPE_MAX, room.position + sign * mag));
-      if (correct) room.stats[team].correct += 1;
-      else room.stats[team].wrong += 1;
-
-      let winner = null;
-      if (room.position <= ROPE_MIN) winner = "A";
-      else if (room.position >= ROPE_MAX) winner = "B";
-      if (winner) {
-        room.status = "finished";
-        room.winner = winner;
+      if (correct) {
+        room.scores[team] += 1;
+        room.stats[team].correct += 1;
+        resolveQuestion(room, team);
+        if (room.scores[team] >= WIN_SCORE) {
+          room.status = "finished";
+          room.winner = team;
+        }
+        if (typeof ack === "function") ack({ ok: true, correct: true });
+        broadcastRoom(room);
+      } else {
+        room.stats[team].wrong += 1;
+        if (typeof ack === "function") ack({ ok: true, correct: false });
       }
-
-      if (typeof ack === "function") ack({ ok: true, correct, mag });
-      broadcastRoom(room);
     });
 
     socket.on("disconnect", () => {
@@ -199,4 +235,4 @@ function attach(io) {
   return { rooms };
 }
 
-module.exports = { attach };
+module.exports = { attach, BUZZ_WINDOW_MS, WIN_SCORE };

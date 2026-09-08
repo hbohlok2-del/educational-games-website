@@ -4,6 +4,7 @@ const { Server } = require("socket.io");
 const http = require("http");
 const tugOfWar = require("./server/games/tugOfWar");
 const teamRace = require("./server/games/teamRace");
+const teamBuzzer = require("./server/games/teamBuzzer");
 
 const app = express();
 const server = http.createServer(app);
@@ -14,6 +15,7 @@ app.use("/vendor/katex", express.static(path.join(__dirname, "node_modules", "ka
 
 tugOfWar.attach(io);
 teamRace.attach(io);
+teamBuzzer.attach(io);
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {

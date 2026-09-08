@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Spotlight Showdown</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Nunito:wght@400;600;700;800&family=JetBrains+Mono:wght@600;700&display=swap">
+<link rel="stylesheet" href="/vendor/katex/katex.min.css">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="app">
+  <div id="notice"></div>
+
+  <!-- LANDING -->
+  <section data-view="landing">
+    <div class="hero">
+      <div class="eyebrow">a classroom buzzer quiz</div>
+      <h1>SPOTLIGHT<br><span>SHOWDOWN</span></h1>
+      <p class="lede">Two teams, one question at a time. Buzz in first with the right answer to score the point.</p>
+    </div>
+    <div class="role-grid">
+      <div class="role-card">
+        <div class="icon">🎤</div>
+        <h3>Join a Showdown</h3>
+        <p>Got a room code from your teacher? Enter it here and pick your team.</p>
+        <button class="go" data-action="go-join">Join a Showdown</button>
+      </div>
+      <div class="role-card">
+        <div class="icon">📺</div>
+        <h3>Watch on a Big Screen</h3>
+        <p>Put the stage and scoreboard up on a projector for everyone to see.</p>
+        <button class="go" data-action="go-display">Big Screen</button>
+      </div>
+    </div>
+    <div class="howto">
+      <b>How scoring works:</b> both teams see the same question at the same time. The first correct answer wins the point &mdash; wrong guesses don't cost you, so keep trying until someone gets it or time runs out. First team to <span class="mono" id="howtoWinScore">5</span> points wins the showdown.
+    </div>
+  </section>
+
+  <!-- JOIN: enter code -->
+  <section data-view="joinEntry" class="hidden">
+    <button class="back-link" data-action="go-landing">&larr; Back</button>
+    <div class="panel">
+      <div class="field-label">Enter the 4-letter room code</div>
+      <input class="code-input" id="joinCodeInput" maxlength="4" placeholder="----" autocomplete="off">
+      <button class="btn block" id="joinCodeGo">Find Room</button>
+      <div class="err" id="joinErr"></div>
+    </div>
+  </section>
+
+  <!-- JOIN: choose role in room -->
+  <section data-view="joinRoleSelect" class="hidden">
+    <button class="back-link" data-action="go-landing">&larr; Back</button>
+    <div class="panel">
+      <div class="field-label">Room <span class="mono" id="joinRoleCode"></span> &middot; <span id="joinRoleTitle"></span></div>
+      <div class="team-pick">
+        <button class="team-btn a" id="joinAsA">🔴 Join Red</button>
+        <button class="team-btn b" id="joinAsB">🔵 Join Blue</button>
+      </div>
+      <button class="btn secondary block" id="joinAsDisplay">📺 Just watch on this device</button>
+      <div class="err" id="joinRoleErr"></div>
+    </div>
+  </section>
+
+  <!-- LOBBY -->
+  <section data-view="lobby" class="hidden">
+    <div class="panel">
+      <div class="field-label" id="lobbyTitle"></div>
+      <div class="code-display" id="lobbyCode"></div>
+      <div class="roster" id="lobbyRoster"></div>
+      <button class="btn block" id="lobbyStart" disabled>Waiting for both teams&hellip;</button>
+      <button class="btn secondary block" data-action="go-landing">Leave Room</button>
+    </div>
+  </section>
+
+  <!-- MATCH -->
+  <section data-view="match" class="hidden">
+    <div class="match-meta">
+      <span id="matchTitleLabel"></span>
+      <span class="mono" id="matchClock">3:00</span>
+    </div>
+
+    <div class="scoreboard">
+      <div class="score-chip a"><span class="lab">🔴 RED</span><span class="val" id="scoreA">0</span></div>
+      <div class="score-chip b"><span class="lab">BLUE 🔵</span><span class="val" id="scoreB">0</span></div>
+    </div>
+
+    <div class="stage">
+      <div class="podium a"><div class="mic">🎤</div></div>
+      <div class="question-screen">
+        <div class="equation" id="equationText">Get ready&hellip;</div>
+        <div class="buzz-timer-track"><div class="buzz-timer-bar" id="buzzTimerBar"></div></div>
+      </div>
+      <div class="podium b"><div class="mic">🎤</div></div>
+    </div>
+    <div class="result-banner hidden" id="resultBanner"></div>
+
+    <div id="teamPlay" class="hidden">
+      <div class="team-card" id="teamCard">
+        <div class="team-tag" id="teamTag"></div>
+
+        <div id="shortAnswerArea">
+          <input class="text-answer-input" id="textAnswerInput" autocomplete="off" placeholder="Type your answer">
+          <button class="btn submit-btn" id="textAnswerGo">🔔 Buzz!</button>
+        </div>
+
+        <div id="mcArea" class="hidden">
+          <div class="mc-choices" id="mcChoices"></div>
+        </div>
+
+        <div class="pop-layer" id="popLayer"></div>
+      </div>
+    </div>
+
+    <div id="displayPlay" class="hidden">
+      <p class="lede" style="text-align:center;">Watching on the big screen &mdash; teams are buzzing in from their own devices.</p>
+    </div>
+  </section>
+
+  <!-- END -->
+  <section data-view="end" class="hidden">
+    <div class="end-banner">
+      <div class="trophy" id="endTrophy">🏆</div>
+      <h2 id="endHeadline">Red Team wins the showdown!</h2>
+    </div>
+    <div class="recap">
+      <div class="card a">
+        <div class="field-label" style="color:#fff; opacity:0.85;">Red Team</div>
+        <div class="k"><span>Points</span><span id="endAScore">0</span></div>
+        <div class="k"><span>Correct</span><span id="endACorrect">0</span></div>
+        <div class="k"><span>Wrong</span><span id="endAWrong">0</span></div>
+      </div>
+      <div class="card b">
+        <div class="field-label" style="color:#fff; opacity:0.85;">Blue Team</div>
+        <div class="k"><span>Points</span><span id="endBScore">0</span></div>
+        <div class="k"><span>Correct</span><span id="endBCorrect">0</span></div>
+        <div class="k"><span>Wrong</span><span id="endBWrong">0</span></div>
+      </div>
+    </div>
+    <div class="end-actions">
+      <button class="btn" id="endRematch">Rematch</button>
+      <button class="btn secondary" data-action="go-landing">New Showdown</button>
+    </div>
+  </section>
+</div>
+
+<canvas id="confetti" class="hidden"></canvas>
+
+<script src="/vendor/katex/katex.min.js"></script>
+<script src="/vendor/katex/contrib/auto-render.min.js"></script>
+<script src="/vendor/katex/contrib/mhchem.min.js"></script>
+<script src="/shared/mathRender.js"></script>
+<script src="/socket.io/socket.io.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
