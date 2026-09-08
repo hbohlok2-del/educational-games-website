@@ -63,6 +63,7 @@ function publicRoom(room) {
   return {
     code: room.code,
     title: room.title,
+    theme: room.theme,
     status: room.status,
     round: room.round,
     teamA: { joined: !!room.teams.A },
@@ -101,6 +102,7 @@ function attach(io) {
     socket.on("create-room", (opts, ack) => {
       if (typeof ack !== "function") return;
       const title = String((opts && opts.title) || "").trim().slice(0, 80) || "Class Race";
+      const theme = opts && opts.theme === "rocket" ? "rocket" : "rope";
       const questions = buildQuestions(opts && opts.questions);
       if (questions.length < 1) return ack({ ok: false, error: "Add at least one valid question first." });
 
@@ -108,6 +110,7 @@ function attach(io) {
       const room = {
         code,
         title,
+        theme,
         status: "waiting",
         round: 1,
         position: ROPE_CENTER,

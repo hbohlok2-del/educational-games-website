@@ -165,6 +165,9 @@
       $("teamTag").textContent = (S.role === "A" ? "🔴 RED TEAM" : "🔵 BLUE TEAM");
       startCountdownThenPlay();
     }
+    var isRocket = S.room && S.room.theme === "rocket";
+    $("ropeWrap").classList.toggle("hidden", isRocket);
+    $("rocketWrap").classList.toggle("hidden", !isRocket);
     renderRope();
     if (!S.clockTimer) S.clockTimer = setInterval(renderMatchMeta, 1000);
     renderMatchMeta();
@@ -183,6 +186,19 @@
     if (marker) marker.style.left = pos + "%";
     var track = $("ropeTrack");
     if (track) track.classList.toggle("tense", (pos < 18 || pos > 82) && !reduceMotion);
+    renderRocketTrack(pos);
+  }
+
+  var ROCKET_PAD_PCT = 6;
+  var ROCKET_FINISH_PCT = 80;
+  function renderRocketTrack(pos) {
+    var progressA = Math.max(0, 50 - pos) / 50;
+    var progressB = Math.max(0, pos - 50) / 50;
+    var bottomA = ROCKET_PAD_PCT + progressA * (ROCKET_FINISH_PCT - ROCKET_PAD_PCT);
+    var bottomB = ROCKET_PAD_PCT + progressB * (ROCKET_FINISH_PCT - ROCKET_PAD_PCT);
+    var rocketA = $("rocketA"), rocketB = $("rocketB");
+    if (rocketA) rocketA.style.bottom = bottomA + "%";
+    if (rocketB) rocketB.style.bottom = bottomB + "%";
   }
 
   function startCountdownThenPlay() {

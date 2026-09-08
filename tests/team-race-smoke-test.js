@@ -102,8 +102,12 @@ function finishTest() {
 }
 
 teacher.on("connect", () => {
-  teacher.emit("create-room", { title: "Geography & Science", questions: QUESTIONS }, (ack) => {
-    log("Teacher create-room ack:", ack.ok, ack.room && ack.room.code, "questionCount:", ack.room && ack.room.questionCount);
+  teacher.emit("create-room", { title: "Geography & Science", theme: "rocket", questions: QUESTIONS }, (ack) => {
+    log("Teacher create-room ack:", ack.ok, ack.room && ack.room.code, "questionCount:", ack.room && ack.room.questionCount, "theme:", ack.room && ack.room.theme);
+    if (!ack.room || ack.room.theme !== "rocket") {
+      log("THEME MISMATCH: expected 'rocket', got", ack.room && ack.room.theme);
+      process.exit(1);
+    }
     const code = ack.room.code;
     a.emit("join-room", { code, team: "A" }, (ackA) => {
       log("A join-room ack:", ackA.ok);

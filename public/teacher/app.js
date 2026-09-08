@@ -3,10 +3,19 @@
 
   var socket = io("/team-race");
   var qId = 0;
+  var selectedTheme = "rope";
 
   function $(id) { return document.getElementById(id); }
   var questionList = $("questionList");
   var rowTpl = $("questionRowTpl");
+
+  Array.prototype.forEach.call($("themePick").querySelectorAll(".theme-btn"), function (b) {
+    b.addEventListener("click", function () {
+      Array.prototype.forEach.call($("themePick").querySelectorAll(".theme-btn"), function (x) { x.classList.remove("active"); });
+      b.classList.add("active");
+      selectedTheme = b.getAttribute("data-theme");
+    });
+  });
 
   var TEMPLATES = [
     { label: "Fraction", text: "$\\frac{a}{b}$", selStart: 7, selEnd: 8 },
@@ -137,7 +146,7 @@
     if (res.errors.length) { errEl.textContent = res.errors[0]; return; }
 
     $("createGo").disabled = true;
-    socket.emit("create-room", { title: title, questions: res.out }, function (ack) {
+    socket.emit("create-room", { title: title, theme: selectedTheme, questions: res.out }, function (ack) {
       $("createGo").disabled = false;
       if (!ack || !ack.ok) { errEl.textContent = (ack && ack.error) || "Couldn't create the room."; return; }
       $("doneCode").textContent = ack.room.code;

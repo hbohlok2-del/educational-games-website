@@ -65,6 +65,14 @@ textarea.text-input { resize: vertical; }
 
 .err { color: var(--danger); font-size: 0.85rem; font-weight: 700; min-height: 1.1em; }
 
+.theme-pick { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+.theme-btn {
+  border: 1.5px solid var(--line); background: #f7f5ee; border-radius: 10px; padding: 0.7rem 0.5rem;
+  font-size: 1.4rem; font-weight: 700; color: var(--ink); display: flex; flex-direction: column; align-items: center; gap: 0.3rem;
+}
+.theme-btn span { font-size: 0.78rem; }
+.theme-btn.active { border-color: var(--accent); background: #eef6f1; color: var(--accent); }
+
 #questionList { display: flex; flex-direction: column; gap: 0.9rem; }
 
 .q-row-head { display: flex; align-items: center; justify-content: space-between; }
