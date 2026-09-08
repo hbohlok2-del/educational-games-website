@@ -340,6 +340,7 @@
   var params = new URLSearchParams(location.search);
   var prefillCode = (params.get("code") || "").toUpperCase();
   if (prefillCode.length === 4) {
+    if (params.get("role") === "display") S.pendingRole = "display";
     $("joinCodeInput").value = prefillCode;
     showView("joinEntry");
     $("joinCodeGo").click();
