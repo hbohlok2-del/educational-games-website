@@ -62,7 +62,7 @@ function attach(io) {
       const title = String((opts && opts.title) || "").trim().slice(0, 80) || "Class Race";
       const theme = opts && opts.theme === "rocket" ? "rocket" : "rope";
       const questions = buildQuestions(opts && opts.questions);
-      if (questions.length < 1) return ack({ ok: false, error: "Add at least one valid question first." });
+      if (questions.length < 1) return ack({ ok: false, error: "no-questions" });
 
       const code = generateRoomCode(rooms);
       const room = {
@@ -88,7 +88,7 @@ function attach(io) {
 
     socket.on("join-room", ({ code, team } = {}, ack) => {
       const room = rooms.get((code || "").toUpperCase());
-      if (!room) return ack({ ok: false, error: "No match found with that code." });
+      if (!room) return ack({ ok: false, error: "room-not-found" });
 
       if (!team) {
         socket.join(room.code);
@@ -97,8 +97,8 @@ function attach(io) {
         return ack({ ok: true, room: publicRoom(room), team: null });
       }
 
-      if (!["A", "B"].includes(team)) return ack({ ok: false, error: "Invalid team" });
-      if (room.teams[team]) return ack({ ok: false, error: "That team is already taken." });
+      if (!["A", "B"].includes(team)) return ack({ ok: false, error: "invalid-team" });
+      if (room.teams[team]) return ack({ ok: false, error: "team-taken" });
 
       room.teams[team] = socket.id;
       socket.join(room.code);
@@ -110,7 +110,7 @@ function attach(io) {
 
     socket.on("peek-room", ({ code } = {}, ack) => {
       const room = rooms.get((code || "").toUpperCase());
-      if (!room) return ack({ ok: false, error: "No match found with that code." });
+      if (!room) return ack({ ok: false, error: "room-not-found" });
       ack({ ok: true, room: publicRoom(room) });
     });
 

@@ -1,9 +1,11 @@
 (function () {
   "use strict";
 
+  var NS = "games.tugOfWar.";
   var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  var TIER_LABEL = {};
-  TIERS.forEach(function (t) { TIER_LABEL[t.id] = t.label; });
+
+  function tierLabel(id) { return t(NS + "tiers." + id + ".label") || id; }
+  function tierBlurb(id) { return t(NS + "tiers." + id + ".blurb") || ""; }
 
   var socket = io("/tug-of-war");
 
@@ -44,24 +46,31 @@
   }
 
   socket.on("connect_error", function () {
-    notice("Can't reach the game server right now. Check your connection and reload.");
+    notice(t(NS + "notice.connectError"));
   });
+
+  wireCopyButton($("copyLobbyCode"), function () { return $("lobbyCode").textContent; });
 
   // ---------------- Tier picker ----------------
   var tierGrid = $("tierGrid");
-  TIERS.forEach(function (t) {
-    var btn = document.createElement("button");
-    btn.className = "tier-btn";
-    btn.setAttribute("data-tier", t.id);
-    btn.innerHTML = "<strong>" + t.label + "</strong><span>" + t.blurb + "</span>";
-    btn.addEventListener("click", function () {
-      qsa(".tier-btn").forEach(function (x) { x.classList.remove("active"); });
-      btn.classList.add("active");
-      S.tierChoice = t.id;
-      $("createGo").disabled = !(S.tierChoice && S.createTeam);
+  function renderTierPicker() {
+    tierGrid.innerHTML = "";
+    TIERS.forEach(function (tier) {
+      var btn = document.createElement("button");
+      btn.className = "tier-btn" + (S.tierChoice === tier.id ? " active" : "");
+      btn.setAttribute("data-tier", tier.id);
+      btn.innerHTML = "<strong>" + tierLabel(tier.id) + "</strong><span>" + tierBlurb(tier.id) + "</span>";
+      btn.addEventListener("click", function () {
+        qsa(".tier-btn").forEach(function (x) { x.classList.remove("active"); });
+        btn.classList.add("active");
+        S.tierChoice = tier.id;
+        $("createGo").disabled = !(S.tierChoice && S.createTeam);
+      });
+      tierGrid.appendChild(btn);
     });
-    tierGrid.appendChild(btn);
-  });
+  }
+  renderTierPicker();
+
   qsa("#createTeamPick .team-btn").forEach(function (b) {
     b.addEventListener("click", function () {
       qsa("#createTeamPick .team-btn").forEach(function (x) { x.classList.remove("active"); });
@@ -132,7 +141,7 @@
   $("createGo").addEventListener("click", function () {
     $("createGo").disabled = true;
     socket.emit("create-room", { difficulty: S.tierChoice, team: S.createTeam }, function (ack) {
-      if (!ack.ok) { $("createErr").textContent = ack.error || "Couldn't create room."; $("createGo").disabled = false; return; }
+      if (!ack.ok) { $("createErr").textContent = ack.error ? tError(ack.error) : t(NS + "err.createFailed"); $("createGo").disabled = false; return; }
       S.role = ack.team;
       S.code = ack.room.code;
       showView("lobby");
@@ -143,16 +152,16 @@
   $("joinCodeGo").addEventListener("click", function () {
     var code = $("joinCodeInput").value.trim().toUpperCase();
     var errorEl = $("joinErr");
-    if (code.length !== 4) { errorEl.textContent = "Enter the 4-letter code."; return; }
+    if (code.length !== 4) { errorEl.textContent = t(NS + "err.enterCode"); return; }
     socket.emit("peek-room", { code: code }, function (ack) {
-      if (!ack.ok) { errorEl.textContent = ack.error; return; }
+      if (!ack.ok) { errorEl.textContent = tError(ack.error); return; }
       S.pendingCode = code;
       if (S.pendingRole === "display") {
         joinAs(code, null);
         return;
       }
       $("joinRoleCode").textContent = code;
-      $("joinRoleTier").textContent = TIER_LABEL[ack.room.difficulty] || ack.room.difficulty;
+      $("joinRoleTier").textContent = tierLabel(ack.room.difficulty);
       $("joinAsA").disabled = ack.room.teamA.joined;
       $("joinAsB").disabled = ack.room.teamB.joined;
       $("joinRoleErr").textContent = "";
@@ -163,7 +172,7 @@
   function joinAs(code, team) {
     socket.emit("join-room", { code: code, team: team }, function (ack) {
       var errEl = S.view === "joinRoleSelect" ? $("joinRoleErr") : $("joinErr");
-      if (!ack.ok) { errEl.textContent = ack.error; return; }
+      if (!ack.ok) { errEl.textContent = tError(ack.error); return; }
       S.role = team;
       S.code = code;
       showView("lobby");
@@ -185,32 +194,32 @@
   // ---------------- Lobby ----------------
   function renderLobby() {
     var d = S.room; if (!d) return;
-    $("lobbyTier").textContent = "Difficulty: " + (TIER_LABEL[d.difficulty] || d.difficulty);
+    $("lobbyTier").textContent = t(NS + "lobby.difficulty", { tier: tierLabel(d.difficulty) });
     $("lobbyCode").textContent = d.code;
     var roster = $("lobbyRoster"); roster.innerHTML = "";
-    [["A", "Red Team", d.teamA], ["B", "Blue Team", d.teamB]].forEach(function (t) {
+    [["A", t(NS + "lobby.redTeam"), d.teamA], ["B", t(NS + "lobby.blueTeam"), d.teamB]].forEach(function (row3) {
       var row = document.createElement("div");
-      row.className = "roster-row" + (t[2] && t[2].joined ? " ready" : "");
-      row.innerHTML = '<span class="dot ' + t[0].toLowerCase() + '"></span><span class="name">' + t[1] + '</span><span class="status">' +
-        (t[2] && t[2].joined ? "Ready" : "Waiting…") + '</span>';
+      row.className = "roster-row" + (row3[2] && row3[2].joined ? " ready" : "");
+      row.innerHTML = '<span class="dot ' + row3[0].toLowerCase() + '"></span><span class="name">' + row3[1] + '</span><span class="status">' +
+        (row3[2] && row3[2].joined ? t(NS + "lobby.ready") : t(NS + "lobby.waiting")) + '</span>';
       roster.appendChild(row);
     });
     var bothReady = d.teamA && d.teamA.joined && d.teamB && d.teamB.joined;
     var startBtn = $("lobbyStart");
     startBtn.disabled = !bothReady || d.status === "active";
-    startBtn.textContent = d.status === "active" ? "Match starting…" : (bothReady ? "Start Match" : "Waiting for both teams…");
+    startBtn.textContent = d.status === "active" ? t(NS + "lobby.matchStarting") : (bothReady ? t(NS + "lobby.startMatch") : t(NS + "lobby.waitingBothTeams"));
   }
 
   // ---------------- Match ----------------
   function setupMatchUI() {
-    $("matchTierLabel").textContent = TIER_LABEL[S.room.difficulty] || "";
+    $("matchTierLabel").textContent = tierLabel(S.room.difficulty);
     var isTeam = S.role === "A" || S.role === "B";
     $("teamPlay").classList.toggle("hidden", !isTeam);
     $("displayPlay").classList.toggle("hidden", isTeam);
     if (isTeam) {
       var card = $("teamCard");
       card.className = "team-card " + S.role.toLowerCase();
-      $("teamTag").textContent = (S.role === "A" ? "🔴 RED TEAM" : "🔵 BLUE TEAM");
+      $("teamTag").textContent = t(NS + (S.role === "A" ? "match.teamTagRed" : "match.teamTagBlue"));
       buildKeypad();
       startCountdownThenPlay();
     }
@@ -261,7 +270,7 @@
     });
     var submit = document.createElement("button");
     submit.className = "key submit"; submit.style.gridColumn = "span 3";
-    submit.textContent = "Haul ✓";
+    submit.textContent = t(NS + "match.haul");
     submit.addEventListener("click", submitAnswer);
     kp.appendChild(submit);
   }
@@ -334,10 +343,10 @@
     if (!(S.role === "A" || S.role === "B") || !S.room) return;
     var streak = 0;
     for (var i = S.myPulls.length - 1; i >= 0; i--) { if (S.myPulls[i].c) streak++; else break; }
-    $("chipStreak").textContent = "Streak " + streak;
+    $("chipStreak").textContent = t(NS + "match.streak", { n: streak });
     var stats = S.room.stats[S.role];
     var total = stats.correct + stats.wrong;
-    $("chipAcc").textContent = "Accuracy " + (total ? Math.round(100 * stats.correct / total) + "%" : "–");
+    $("chipAcc").textContent = t(NS + "match.accuracy", { value: total ? Math.round(100 * stats.correct / total) + "%" : "–" });
   }
 
   function renderDisplayStats() {
@@ -357,8 +366,8 @@
     if (S.clockTimer) { clearInterval(S.clockTimer); S.clockTimer = null; }
     var winner = room.winner;
     $("endTrophy").textContent = winner ? "🏆" : "🤝";
-    $("endHeadline").textContent = winner === "A" ? "Red Team hauls the win!" :
-      winner === "B" ? "Blue Team hauls the win!" : "It's a draw!";
+    $("endHeadline").textContent = winner === "A" ? t(NS + "end.redWins") :
+      winner === "B" ? t(NS + "end.blueWins") : t(NS + "end.draw");
     fillEndCard("A", room.stats.A); fillEndCard("B", room.stats.B);
     renderRope();
     if (!reduceMotion && winner) launchConfetti(winner);
@@ -400,5 +409,21 @@
     frame();
   }
 
-  showView("landing");
+  document.addEventListener("i18nchange", function () {
+    renderTierPicker();
+    if (S.view === "lobby") renderLobby();
+    if (S.view === "match" && !(S.role === "A" || S.role === "B")) { /* display view has no static labels left to refresh beyond markup, which applyStaticI18n already covers */ }
+  });
+
+  // ---------------- Init ----------------
+  var params = new URLSearchParams(location.search);
+  var prefillCode = (params.get("code") || "").toUpperCase();
+  if (prefillCode.length === 4) {
+    if (params.get("role") === "display") S.pendingRole = "display";
+    $("joinCodeInput").value = prefillCode;
+    showView("joinEntry");
+    $("joinCodeGo").click();
+  } else {
+    showView("landing");
+  }
 })();

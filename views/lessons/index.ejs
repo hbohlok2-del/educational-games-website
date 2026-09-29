@@ -1,0 +1,15 @@
+<section class="lesson-index">
+  <p class="eyebrow" data-i18n="lessons.nav">Course Notes</p>
+  <h1 data-i18n="lessons.pickSubject">Pick a subject</h1>
+  <% if (subjects.length === 0) { %>
+    <p class="empty" data-i18n="lessons.empty">No lessons have been published yet.</p>
+  <% } else { %>
+  <div class="subject-grid">
+    <% subjects.forEach(function (subject) { %>
+      <a class="subject-card" href="/lessons/<%= subject %>/">
+        <h2 data-i18n="lessons.subjects.<%= subject %>"><%= subject.charAt(0).toUpperCase() + subject.slice(1) %></h2>
+      </a>
+    <% }); %>
+  </div>
+  <% } %>
+</section>

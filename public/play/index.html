@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Team Games</title>
+<title data-i18n="play.title">Team Games</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Nunito:wght@400;600;700;800&family=JetBrains+Mono:wght@600;700&display=swap">
@@ -11,50 +11,69 @@
 </head>
 <body>
 
+<div class="lang-switch">
+  <label class="sr-only" for="langSwitch" data-i18n="common.langLabel">Language</label>
+  <select id="langSwitch">
+    <option value="en">English</option>
+    <option value="fr">Français</option>
+    <option value="ar">العربية</option>
+    <option value="pl">Polski</option>
+  </select>
+</div>
+
 <div id="app">
   <div id="notice"></div>
 
   <!-- LANDING -->
   <section data-view="landing">
     <div class="hero">
-      <div class="eyebrow">team games</div>
-      <h1>TEAM<br><span>GAMES</span></h1>
-      <p class="lede">Race or buzzer, any subject. Create a game as a teacher, join as a student, or put the action on the big screen.</p>
+      <div class="eyebrow" data-i18n="play.eyebrow">team games</div>
+      <h1 data-i18n="play.heroTitle">Team Games</h1>
+      <p class="lede" data-i18n="play.lede">Race or buzzer, any subject. Create a game as a teacher, join as a student, or put the action on the Big Screen.</p>
     </div>
     <div class="role-grid">
       <div class="role-card">
         <div class="icon">✏️</div>
-        <h3>Create a Game</h3>
-        <p>Write your own questions, pick a race or buzzer format, and get a room code for your class.</p>
-        <button class="go" data-action="go-create">Create a Game</button>
+        <h3 data-i18n="play.role.create.title">Create a Game</h3>
+        <p data-i18n="play.role.create.desc">Write your own questions, pick a race or buzzer format, and get a room code for your class.</p>
+        <button class="go" data-action="go-create" data-i18n="play.role.create.button">Create a Game</button>
       </div>
       <div class="role-card">
         <div class="icon">🎮</div>
-        <h3>Join a Game</h3>
-        <p>Got a room code from your teacher? Enter it here and pick your team.</p>
-        <button class="go" data-action="go-join">Join a Game</button>
+        <h3 data-i18n="play.role.join.title">Join a Game</h3>
+        <p data-i18n="play.role.join.desc">Got a room code from your teacher? Enter it here and pick your team.</p>
+        <button class="go" data-action="go-join" data-i18n="play.role.join.button">Join a Game</button>
       </div>
       <div class="role-card">
         <div class="icon">📺</div>
-        <h3>Spotlight</h3>
-        <p>Put the game up on a projector for the whole class to watch.</p>
-        <button class="go" data-action="go-spotlight">Spotlight</button>
+        <h3 data-i18n="play.role.bigScreen.title">Big Screen</h3>
+        <p data-i18n="play.role.bigScreen.desc">Put the game up on a projector for the whole class to watch.</p>
+        <button class="go" data-action="go-spotlight" data-i18n="play.role.bigScreen.button">Big Screen</button>
+      </div>
+    </div>
+
+    <div class="lobby">
+      <h2 data-i18n="play.lobby.heading">Open games right now</h2>
+      <div id="lobbyList" class="lobby-list">
+        <p class="lobby-empty" data-i18n="play.lobby.empty">No games are open right now.</p>
       </div>
     </div>
   </section>
 
-  <!-- CODE LOOKUP: used for both Join and Spotlight -->
+  <!-- CODE LOOKUP: used for both Join and Big Screen -->
   <section data-view="lookup" class="hidden">
-    <button class="back-link" data-action="go-landing">&larr; Back</button>
+    <button class="back-link" data-action="go-landing" data-i18n="play.lookup.back">&larr; Back</button>
     <div class="panel">
-      <div class="field-label" id="lookupLabel">Enter the 4-letter room code</div>
-      <input class="code-input" id="codeInput" maxlength="4" placeholder="----" autocomplete="off">
-      <button class="btn block" id="codeGo">Find Room</button>
+      <div class="field-label" id="lookupLabel" data-i18n="play.lookup.label">Enter the 4-letter room code</div>
+      <input class="code-input" id="codeInput" maxlength="4" placeholder="----" autocomplete="off" data-i18n-placeholder="play.lookup.placeholder">
+      <button class="btn block" id="codeGo" data-i18n="play.lookup.button">Find Room</button>
       <div class="err" id="lookupErr"></div>
     </div>
   </section>
 </div>
 
+<script src="/shared/i18n/dictionaries.js"></script>
+<script src="/shared/i18n.js"></script>
 <script src="/socket.io/socket.io.js"></script>
 <script src="app.js"></script>
 </body>

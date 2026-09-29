@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Number Haul</title>
+<title data-i18n="games.tugOfWar.title">Number Haul</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Nunito:wght@400;600;700;800&family=JetBrains+Mono:wght@600;700&display=swap">
@@ -11,82 +11,92 @@
 </head>
 <body>
 
+<div class="lang-switch">
+  <label class="sr-only" for="langSwitch" data-i18n="common.langLabel">Language</label>
+  <select id="langSwitch">
+    <option value="en">English</option>
+    <option value="fr">Français</option>
+    <option value="ar">العربية</option>
+    <option value="pl">Polski</option>
+  </select>
+</div>
+
 <div id="app">
   <div id="notice"></div>
 
   <!-- LANDING -->
   <section data-view="landing">
     <div class="hero">
-      <div class="eyebrow">a math tug-of-war</div>
-      <h1>NUMBER<br><span>HAUL</span></h1>
-      <p class="lede">Two teams, two devices, one rope. Solve arithmetic fast and accurately to haul the flag across the line before the other side does.</p>
+      <div class="eyebrow" data-i18n="games.tugOfWar.eyebrow">a math tug-of-war</div>
+      <h1 data-i18n="games.tugOfWar.heroTitle">Number Haul</h1>
+      <p class="lede" data-i18n="games.tugOfWar.lede">Two teams, two devices, one rope. Solve arithmetic fast and accurately to haul the flag across the line before the other side does.</p>
     </div>
     <div class="role-grid">
       <div class="role-card">
         <div class="icon">🚩</div>
-        <h3>Start a Match</h3>
-        <p>Pick a difficulty, get a room code, and invite the other team.</p>
-        <button class="go" data-action="go-create">Start a Match</button>
+        <h3 data-i18n="games.tugOfWar.role.create.title">Start a Match</h3>
+        <p data-i18n="games.tugOfWar.role.create.desc">Pick a difficulty, get a room code, and invite the other team.</p>
+        <button class="go" data-action="go-create" data-i18n="games.tugOfWar.role.create.button">Start a Match</button>
       </div>
       <div class="role-card">
         <div class="icon">🪢</div>
-        <h3>Join a Match</h3>
-        <p>Got a room code from your teacher or the other team? Jump in here.</p>
-        <button class="go" data-action="go-join">Join a Match</button>
+        <h3 data-i18n="games.tugOfWar.role.join.title">Join a Match</h3>
+        <p data-i18n="games.tugOfWar.role.join.desc">Got a room code from your teacher or the other team? Jump in here.</p>
+        <button class="go" data-action="go-join" data-i18n="games.tugOfWar.role.join.button">Join a Match</button>
       </div>
       <div class="role-card">
         <div class="icon">📺</div>
-        <h3>Watch on a Big Screen</h3>
-        <p>Put the rope and live scores up on a projector for everyone to see.</p>
-        <button class="go" data-action="go-display">Big Screen</button>
+        <h3 data-i18n="games.tugOfWar.role.bigScreen.title">Big Screen</h3>
+        <p data-i18n="games.tugOfWar.role.bigScreen.desc">Put the rope and live scores up on a projector for everyone to see.</p>
+        <button class="go" data-action="go-display" data-i18n="games.tugOfWar.role.bigScreen.button">Big Screen</button>
       </div>
     </div>
-    <div class="howto">
+    <div class="howto" data-i18n-html="games.tugOfWar.howto">
       <b>How scoring works:</b> a correct answer hauls the rope toward your side — 10 points in under 5 seconds, 7 points between 5-10 seconds, 5 points past that. A wrong answer earns nothing and costs you a moment before your next question, so speed only pays off when you're also right. First team to pull the flag past their line wins the haul.
     </div>
   </section>
 
   <!-- CREATE: difficulty + team -->
   <section data-view="createSetup" class="hidden">
-    <button class="back-link" data-action="go-landing">&larr; Back</button>
+    <button class="back-link" data-action="go-landing" data-i18n="common.back">&larr; Back</button>
     <div class="panel">
       <div>
-        <div class="field-label">1. Choose difficulty</div>
+        <div class="field-label" data-i18n="games.tugOfWar.create.chooseDifficulty">1. Choose difficulty</div>
         <div class="tier-grid" id="tierGrid" style="margin-top:10px;"></div>
       </div>
       <div>
-        <div class="field-label">2. Pick your team</div>
+        <div class="field-label" data-i18n="games.tugOfWar.create.pickTeam">2. Pick your team</div>
         <div class="team-pick" id="createTeamPick" style="margin-top:10px;">
-          <button class="team-btn a" data-team="A">🔴 Red Team</button>
-          <button class="team-btn b" data-team="B">🔵 Blue Team</button>
+          <button class="team-btn a" data-team="A" data-i18n="games.tugOfWar.create.redTeam">🔴 Red Team</button>
+          <button class="team-btn b" data-team="B" data-i18n="games.tugOfWar.create.blueTeam">🔵 Blue Team</button>
         </div>
       </div>
-      <button class="btn block" id="createGo" disabled>Create Room</button>
+      <button class="btn block" id="createGo" disabled data-i18n="games.tugOfWar.create.createRoom">Create Room</button>
       <div class="err" id="createErr"></div>
     </div>
   </section>
 
   <!-- JOIN: enter code -->
   <section data-view="joinEntry" class="hidden">
-    <button class="back-link" data-action="go-landing">&larr; Back</button>
+    <button class="back-link" data-action="go-landing" data-i18n="common.back">&larr; Back</button>
     <div class="panel">
-      <div class="field-label">Enter the 4-letter room code</div>
+      <div class="field-label" data-i18n="games.tugOfWar.join.label">Enter the 4-letter room code</div>
       <input class="code-input" id="joinCodeInput" maxlength="4" placeholder="----" autocomplete="off">
-      <button class="btn block" id="joinCodeGo">Find Room</button>
+      <button class="btn block" id="joinCodeGo" data-i18n="games.tugOfWar.join.findRoom">Find Room</button>
       <div class="err" id="joinErr"></div>
     </div>
   </section>
 
   <!-- JOIN: choose role in room -->
   <section data-view="joinRoleSelect" class="hidden">
-    <button class="back-link" data-action="go-landing">&larr; Back</button>
+    <button class="back-link" data-action="go-landing" data-i18n="common.back">&larr; Back</button>
     <div class="panel">
-      <div class="field-label">Room <span class="mono" id="joinRoleCode"></span> &middot; <span id="joinRoleTier"></span></div>
+      <div class="field-label"><span data-i18n="games.tugOfWar.join.roomLabel">Room</span> <span class="mono" id="joinRoleCode"></span> &middot; <span id="joinRoleTier"></span></div>
       <div class="team-pick">
-        <button class="team-btn a" id="joinAsA">🔴 Join Red</button>
-        <button class="team-btn b" id="joinAsB">🔵 Join Blue</button>
+        <button class="team-btn a" id="joinAsA" data-i18n="games.tugOfWar.join.joinRed">🔴 Join Red</button>
+        <button class="team-btn b" id="joinAsB" data-i18n="games.tugOfWar.join.joinBlue">🔵 Join Blue</button>
       </div>
-      <button class="btn secondary block" id="joinAsDisplay">📺 Just watch on this device</button>
+      <button class="btn secondary block" id="joinAsDisplay" data-i18n="games.tugOfWar.join.watchBigScreen">📺 Watch on the Big Screen</button>
       <div class="err" id="joinRoleErr"></div>
     </div>
   </section>
@@ -95,10 +105,13 @@
   <section data-view="lobby" class="hidden">
     <div class="panel">
       <div class="field-label" id="lobbyTier"></div>
-      <div class="code-display" id="lobbyCode"></div>
+      <div class="code-row">
+        <div class="code-display" id="lobbyCode"></div>
+        <button type="button" class="btn secondary" id="copyLobbyCode" data-i18n="common.copy">Copy code</button>
+      </div>
       <div class="roster" id="lobbyRoster"></div>
-      <button class="btn block" id="lobbyStart" disabled>Waiting for both teams&hellip;</button>
-      <button class="btn secondary block" data-action="go-landing">Leave Room</button>
+      <button class="btn block" id="lobbyStart" disabled data-i18n="games.tugOfWar.lobby.waitingBothTeams">Waiting for both teams&hellip;</button>
+      <button class="btn secondary block" data-action="go-landing" data-i18n="games.tugOfWar.lobby.leaveRoom">Leave Room</button>
     </div>
   </section>
 
@@ -109,7 +122,7 @@
       <span class="mono" id="matchClock">3:00</span>
     </div>
     <div class="rope-wrap">
-      <div class="rope-labels"><span class="a">🔴 RED</span><span class="b">BLUE 🔵</span></div>
+      <div class="rope-labels"><span class="a" data-i18n="games.tugOfWar.match.redTag">🔴 RED</span><span class="b" data-i18n="games.tugOfWar.match.blueTag">BLUE 🔵</span></div>
       <div class="rope-track" id="ropeTrack">
         <div class="rope-strand"></div>
         <div class="rope-center"></div>
@@ -134,16 +147,16 @@
     <div id="displayPlay" class="hidden">
       <div class="display-stats">
         <div class="display-team a">
-          <div class="lab">Red Team</div>
+          <div class="lab" data-i18n="games.tugOfWar.lobby.redTeam">Red Team</div>
           <div class="big" id="dispACorrect">0</div>
-          <div class="row"><span>Wrong</span><span id="dispAWrong">0</span></div>
-          <div class="row"><span>Accuracy</span><span id="dispAAcc">&ndash;</span></div>
+          <div class="row"><span data-i18n="games.tugOfWar.display.wrong">Wrong</span><span id="dispAWrong">0</span></div>
+          <div class="row"><span data-i18n="games.tugOfWar.display.accuracy">Accuracy</span><span id="dispAAcc">&ndash;</span></div>
         </div>
         <div class="display-team b">
-          <div class="lab">Blue Team</div>
+          <div class="lab" data-i18n="games.tugOfWar.lobby.blueTeam">Blue Team</div>
           <div class="big" id="dispBCorrect">0</div>
-          <div class="row"><span>Wrong</span><span id="dispBWrong">0</span></div>
-          <div class="row"><span>Accuracy</span><span id="dispBAcc">&ndash;</span></div>
+          <div class="row"><span data-i18n="games.tugOfWar.display.wrong">Wrong</span><span id="dispBWrong">0</span></div>
+          <div class="row"><span data-i18n="games.tugOfWar.display.accuracy">Accuracy</span><span id="dispBAcc">&ndash;</span></div>
         </div>
       </div>
     </div>
@@ -157,29 +170,32 @@
     </div>
     <div class="recap">
       <div class="card a">
-        <div class="field-label" style="color:#fff; opacity:0.85;">Red Team</div>
-        <div class="k"><span>Correct</span><span id="endACorrect">0</span></div>
-        <div class="k"><span>Wrong</span><span id="endAWrong">0</span></div>
-        <div class="k"><span>Accuracy</span><span id="endAAcc">&ndash;</span></div>
+        <div class="field-label" style="color:#fff; opacity:0.85;" data-i18n="games.tugOfWar.lobby.redTeam">Red Team</div>
+        <div class="k"><span data-i18n="games.tugOfWar.display.correct">Correct</span><span id="endACorrect">0</span></div>
+        <div class="k"><span data-i18n="games.tugOfWar.display.wrong">Wrong</span><span id="endAWrong">0</span></div>
+        <div class="k"><span data-i18n="games.tugOfWar.display.accuracy">Accuracy</span><span id="endAAcc">&ndash;</span></div>
       </div>
       <div class="card b">
-        <div class="field-label" style="color:#fff; opacity:0.85;">Blue Team</div>
-        <div class="k"><span>Correct</span><span id="endBCorrect">0</span></div>
-        <div class="k"><span>Wrong</span><span id="endBWrong">0</span></div>
-        <div class="k"><span>Accuracy</span><span id="endBAcc">&ndash;</span></div>
+        <div class="field-label" style="color:#fff; opacity:0.85;" data-i18n="games.tugOfWar.lobby.blueTeam">Blue Team</div>
+        <div class="k"><span data-i18n="games.tugOfWar.display.correct">Correct</span><span id="endBCorrect">0</span></div>
+        <div class="k"><span data-i18n="games.tugOfWar.display.wrong">Wrong</span><span id="endBWrong">0</span></div>
+        <div class="k"><span data-i18n="games.tugOfWar.display.accuracy">Accuracy</span><span id="endBAcc">&ndash;</span></div>
       </div>
     </div>
     <div class="end-actions">
-      <button class="btn" id="endRematch">Rematch</button>
-      <button class="btn secondary" data-action="go-landing">New Match</button>
+      <button class="btn" id="endRematch" data-i18n="games.tugOfWar.end.rematch">Rematch</button>
+      <button class="btn secondary" data-action="go-landing" data-i18n="games.tugOfWar.end.newMatch">New Match</button>
     </div>
   </section>
 </div>
 
 <canvas id="confetti" class="hidden"></canvas>
 
+<script src="/shared/i18n/dictionaries.js"></script>
+<script src="/shared/i18n.js"></script>
+<script src="/shared/clipboard.js"></script>
 <script src="/socket.io/socket.io.js"></script>
-<script src="problems.js"></script>
+<script src="tiers.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

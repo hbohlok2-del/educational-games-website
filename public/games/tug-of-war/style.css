@@ -1,43 +1,4 @@
-:root{
-  --dusk:#16213E;
-  --dusk-2:#0E1730;
-  --turf:#1B4332;
-  --turf-2:#173B2B;
-  --chalk:#F4F1E8;
-  --chalk-dim:#B9C4C2;
-  --team-a:#E63946;
-  --team-a-dim:#5A1A20;
-  --team-b:#2E86FF;
-  --team-b-dim:#12335F;
-  --gold:#FFC145;
-  --line:rgba(244,241,232,0.16);
-  --rope:#C79A5B;
-  --rope-dark:#9C7444;
-  color-scheme: dark;
-}
-
-*{box-sizing:border-box;}
-body{
-  margin:0;
-  background:
-    radial-gradient(ellipse 60% 40% at 15% -10%, rgba(255,193,69,0.16), transparent 60%),
-    radial-gradient(ellipse 60% 40% at 85% -10%, rgba(255,193,69,0.16), transparent 60%),
-    var(--dusk);
-  color:var(--chalk);
-  font-family:'Nunito',system-ui,sans-serif;
-  min-height:100vh;
-  -webkit-font-smoothing:antialiased;
-}
-h1,h2,h3,.display{
-  font-family:'Anton',system-ui,sans-serif;
-  font-weight:400;
-  letter-spacing:0.02em;
-  margin:0;
-}
-.mono{font-family:'JetBrains Mono',monospace; font-weight:700; font-variant-numeric:tabular-nums;}
-button{font-family:inherit; cursor:pointer;}
-button:focus-visible, input:focus-visible{outline:3px solid var(--gold); outline-offset:2px;}
-.hidden{display:none !important;}
+@import url("/shared/tokens.css");
 
 #app{max-width:720px; margin:0 auto; padding:28px 20px 60px; display:flex; flex-direction:column; gap:20px;}
 

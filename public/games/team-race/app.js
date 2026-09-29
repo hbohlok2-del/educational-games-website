@@ -1,6 +1,7 @@
 (function () {
   "use strict";
 
+  var NS = "games.teamRace.";
   var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   var socket = io("/team-race");
@@ -39,8 +40,14 @@
   }
 
   socket.on("connect_error", function () {
-    notice("Can't reach the game server right now. Check your connection and reload.");
+    notice(t(NS + "notice.connectError"));
   });
+
+  wireCopyButton($("copyLobbyCode"), function () { return $("lobbyCode").textContent; });
+
+  function questionCountLabel(n) {
+    return t(NS + (n === 1 ? "lobby.questionSingular" : "lobby.questionPlural"), { n: n });
+  }
 
   // ---------------- Room state application ----------------
   function applyRoomUpdate(room) {
@@ -94,16 +101,16 @@
   $("joinCodeGo").addEventListener("click", function () {
     var code = $("joinCodeInput").value.trim().toUpperCase();
     var errorEl = $("joinErr");
-    if (code.length !== 4) { errorEl.textContent = "Enter the 4-letter code."; return; }
+    if (code.length !== 4) { errorEl.textContent = t(NS + "err.enterCode"); return; }
     socket.emit("peek-room", { code: code }, function (ack) {
-      if (!ack.ok) { errorEl.textContent = ack.error; return; }
+      if (!ack.ok) { errorEl.textContent = tError(ack.error); return; }
       S.pendingCode = code;
       if (S.pendingRole === "display") {
         joinAs(code, null);
         return;
       }
       $("joinRoleCode").textContent = code;
-      $("joinRoleTitle").textContent = ack.room.title || "Team Race";
+      $("joinRoleTitle").textContent = ack.room.title || t(NS + "defaultTitle");
       $("joinAsA").disabled = ack.room.teamA.joined;
       $("joinAsB").disabled = ack.room.teamB.joined;
       $("joinRoleErr").textContent = "";
@@ -114,7 +121,7 @@
   function joinAs(code, team) {
     socket.emit("join-room", { code: code, team: team }, function (ack) {
       var errEl = S.view === "joinRoleSelect" ? $("joinRoleErr") : $("joinErr");
-      if (!ack.ok) { errEl.textContent = ack.error; return; }
+      if (!ack.ok) { errEl.textContent = tError(ack.error); return; }
       S.role = team;
       S.code = code;
       showView("lobby");
@@ -136,21 +143,20 @@
   // ---------------- Lobby ----------------
   function renderLobby() {
     var d = S.room; if (!d) return;
-    var qLabel = d.questionCount + (d.questionCount === 1 ? " question" : " questions");
-    $("lobbyTitle").textContent = (d.title || "Team Race") + " · " + qLabel;
+    $("lobbyTitle").textContent = (d.title || t(NS + "defaultTitle")) + " · " + questionCountLabel(d.questionCount);
     $("lobbyCode").textContent = d.code;
     var roster = $("lobbyRoster"); roster.innerHTML = "";
-    [["A", "Red Team", d.teamA], ["B", "Blue Team", d.teamB]].forEach(function (t) {
+    [["A", t(NS + "lobby.redTeam"), d.teamA], ["B", t(NS + "lobby.blueTeam"), d.teamB]].forEach(function (row3) {
       var row = document.createElement("div");
-      row.className = "roster-row" + (t[2] && t[2].joined ? " ready" : "");
-      row.innerHTML = '<span class="dot ' + t[0].toLowerCase() + '"></span><span class="name">' + t[1] + '</span><span class="status">' +
-        (t[2] && t[2].joined ? "Ready" : "Waiting…") + '</span>';
+      row.className = "roster-row" + (row3[2] && row3[2].joined ? " ready" : "");
+      row.innerHTML = '<span class="dot ' + row3[0].toLowerCase() + '"></span><span class="name">' + row3[1] + '</span><span class="status">' +
+        (row3[2] && row3[2].joined ? t(NS + "lobby.ready") : t(NS + "lobby.waiting")) + '</span>';
       roster.appendChild(row);
     });
     var bothReady = d.teamA && d.teamA.joined && d.teamB && d.teamB.joined;
     var startBtn = $("lobbyStart");
     startBtn.disabled = !bothReady || d.status === "active";
-    startBtn.textContent = d.status === "active" ? "Match starting…" : (bothReady ? "Start Race" : "Waiting for both teams…");
+    startBtn.textContent = d.status === "active" ? t(NS + "lobby.matchStarting") : (bothReady ? t(NS + "lobby.startRace") : t(NS + "lobby.waitingBothTeams"));
   }
 
   // ---------------- Match ----------------
@@ -162,7 +168,7 @@
     if (isTeam) {
       var card = $("teamCard");
       card.className = "team-card " + S.role.toLowerCase();
-      $("teamTag").textContent = (S.role === "A" ? "🔴 RED TEAM" : "🔵 BLUE TEAM");
+      $("teamTag").textContent = t(NS + (S.role === "A" ? "match.teamTagRed" : "match.teamTagBlue"));
       startCountdownThenPlay();
     }
     var isRocket = S.room && S.room.theme === "rocket";
@@ -305,10 +311,10 @@
     if (!(S.role === "A" || S.role === "B") || !S.room) return;
     var streak = 0;
     for (var i = S.myPulls.length - 1; i >= 0; i--) { if (S.myPulls[i].c) streak++; else break; }
-    $("chipStreak").textContent = "Streak " + streak;
+    $("chipStreak").textContent = t(NS + "match.streak", { n: streak });
     var stats = S.room.stats[S.role];
     var total = stats.correct + stats.wrong;
-    $("chipAcc").textContent = "Accuracy " + (total ? Math.round(100 * stats.correct / total) + "%" : "–");
+    $("chipAcc").textContent = t(NS + "match.accuracy", { value: total ? Math.round(100 * stats.correct / total) + "%" : "–" });
   }
 
   function renderDisplayStats() {
@@ -328,8 +334,8 @@
     if (S.clockTimer) { clearInterval(S.clockTimer); S.clockTimer = null; }
     var winner = room.winner;
     $("endTrophy").textContent = winner ? "🏆" : "🤝";
-    $("endHeadline").textContent = winner === "A" ? "Red Team wins the race!" :
-      winner === "B" ? "Blue Team wins the race!" : "It's a draw!";
+    $("endHeadline").textContent = winner === "A" ? t(NS + "end.redWins") :
+      winner === "B" ? t(NS + "end.blueWins") : t(NS + "end.draw");
     fillEndCard("A", room.stats.A); fillEndCard("B", room.stats.B);
     renderRope();
     if (!reduceMotion && winner) launchConfetti(winner);
@@ -370,6 +376,10 @@
     }
     frame();
   }
+
+  document.addEventListener("i18nchange", function () {
+    if (S.view === "lobby") renderLobby();
+  });
 
   // ---------------- Init ----------------
   var params = new URLSearchParams(location.search);

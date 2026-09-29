@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title><%= title %> · Course Notes</title>
+<link rel="stylesheet" href="/vendor/katex/katex.min.css">
+<link rel="stylesheet" href="/lessons.css">
+</head>
+<body>
+<header class="lesson-header">
+  <a class="brand" href="/" data-i18n="lessons.brand">Educational Games</a>
+  <nav class="lesson-nav"><a href="/lessons/" data-i18n="lessons.nav">Course Notes</a></nav>
+  <div class="lang-switch">
+    <label class="sr-only" for="langSwitch" data-i18n="common.langLabel">Language</label>
+    <select id="langSwitch">
+      <option value="en">English</option>
+      <option value="fr">Français</option>
+      <option value="ar">العربية</option>
+      <option value="pl">Polski</option>
+    </select>
+  </div>
+</header>
+<main class="lesson-main">
+<%- body %>
+</main>
+<script src="/shared/i18n/dictionaries.js"></script>
+<script src="/shared/i18n.js"></script>
+<script src="/vendor/katex/katex.min.js"></script>
+<script src="/vendor/katex/contrib/auto-render.min.js"></script>
+<script src="/vendor/katex/contrib/mhchem.min.js"></script>
+<script src="/shared/mathRender.js"></script>
+<script>
+  renderMathIn(document.body);
+</script>
+</body>
+</html>

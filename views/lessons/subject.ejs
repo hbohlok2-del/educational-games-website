@@ -1,0 +1,18 @@
+<section class="lesson-list">
+  <p class="eyebrow"><a href="/lessons/" data-i18n="lessons.nav">Course Notes</a></p>
+  <h1 data-i18n="lessons.subjects.<%= subject %>"><%= subject.charAt(0).toUpperCase() + subject.slice(1) %></h1>
+  <% if (lessons.length === 0) { %>
+    <p class="empty" data-i18n="lessons.emptySubject">No lessons here yet.</p>
+  <% } else { %>
+  <ul class="lesson-links">
+    <% lessons.forEach(function (lesson) { %>
+      <li>
+        <a href="/lessons/<%= subject %>/<%= lesson.slug %>">
+          <span class="lesson-title"><%= lesson.title %></span>
+          <% if (lesson.summary) { %><span class="lesson-summary"><%= lesson.summary %></span><% } %>
+        </a>
+      </li>
+    <% }); %>
+  </ul>
+  <% } %>
+</section>
