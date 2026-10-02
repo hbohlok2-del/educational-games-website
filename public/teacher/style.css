@@ -73,6 +73,19 @@ textarea.text-input { resize: vertical; }
 
 .err { color: var(--danger); font-size: 0.85rem; font-weight: 700; min-height: 1.1em; }
 
+.btn.small { padding: 0.45rem 0.8rem; font-size: 0.85rem; }
+
+.library-head { display: flex; align-items: center; justify-content: space-between; }
+#libraryList { display: flex; flex-direction: column; gap: 0.6rem; margin-top: 0.8rem; }
+.library-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 0.75rem;
+  background: #f7f5ee; border: 1px solid var(--line); border-radius: 10px; padding: 0.7rem 0.9rem;
+}
+.library-info { display: flex; flex-direction: column; gap: 0.15rem; min-width: 0; }
+.library-title { font-weight: 700; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.library-meta { font-size: 0.78rem; color: var(--ink-dim); }
+.library-actions { display: flex; align-items: center; gap: 0.4rem; flex: none; }
+
 .theme-pick { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
 .theme-btn {
   border: 1.5px solid var(--line); background: #f7f5ee; border-radius: 10px; padding: 0.7rem 0.5rem;

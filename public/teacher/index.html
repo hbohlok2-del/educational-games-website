@@ -30,6 +30,16 @@
   </header>
 
   <section id="formView">
+    <button type="button" class="btn secondary block" id="openLibrary" data-i18n="teacher.library.loadButton">📂 Load a saved quiz</button>
+
+    <div class="panel hidden" id="libraryPanel">
+      <div class="library-head">
+        <div class="field-label" data-i18n="teacher.library.heading">Saved Quizzes</div>
+        <button type="button" class="btn secondary" id="closeLibrary" data-i18n="teacher.library.close">Close</button>
+      </div>
+      <div id="libraryList"></div>
+    </div>
+
     <div class="panel">
       <label class="field-label" for="titleInput" data-i18n="teacher.field.title">Game title</label>
       <input id="titleInput" class="text-input" placeholder="e.g. Chapter 6 Vocabulary" maxlength="80" data-i18n-placeholder="teacher.field.titlePlaceholder">
@@ -50,6 +60,7 @@
 
     <div class="panel">
       <button type="button" class="btn block" id="createGo" data-i18n="teacher.createRoom">Create Room</button>
+      <button type="button" class="btn secondary block" id="saveQuiz" data-i18n="teacher.library.saveButton">💾 Save for later</button>
       <div class="err" id="createErr"></div>
     </div>
   </section>

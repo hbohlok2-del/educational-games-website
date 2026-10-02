@@ -28,6 +28,7 @@
       var b = document.createElement("button");
       b.type = "button";
       b.className = "theme-btn" + (i === 0 ? " active" : "");
+      b.setAttribute("data-theme-id", theme.id);
       b.innerHTML = theme.icon + "<span>" + t(theme.key) + "</span>";
       b.addEventListener("click", function () {
         Array.prototype.forEach.call(wrap.querySelectorAll(".theme-btn"), function (x) { x.classList.remove("active"); });
@@ -140,6 +141,8 @@
       rowEl.remove();
       renumber();
     });
+
+    return rowEl;
   }
 
   $("addQuestion").addEventListener("click", addQuestionRow);
@@ -205,6 +208,139 @@
 
   $("createAnother").addEventListener("click", function () {
     location.reload();
+  });
+
+  // ---------------- Saved-quiz library ----------------
+  function loadSet(set) {
+    $("titleInput").value = set.title || "";
+
+    var mechBtn = $("mechanicPick").querySelector('[data-mechanic="' + set.mechanic + '"]');
+    if (mechBtn) mechBtn.click();
+
+    var themeBtn = $("themePick").querySelector('[data-theme-id="' + set.theme + '"]');
+    if (themeBtn) themeBtn.click();
+
+    questionList.innerHTML = "";
+    (set.questions || []).forEach(function (q) {
+      var rowEl = addQuestionRow();
+      var promptInput = rowEl.querySelector(".prompt-input");
+      promptInput.value = q.prompt || "";
+      promptInput.dispatchEvent(new Event("input", { bubbles: true }));
+
+      var typeRadio = rowEl.querySelector('.type-row input[value="' + q.type + '"]');
+      if (typeRadio) {
+        typeRadio.checked = true;
+        typeRadio.dispatchEvent(new Event("change", { bubbles: true }));
+      }
+
+      if (q.type === "multiple-choice") {
+        var choicesWrap = rowEl.querySelector(".choices");
+        choicesWrap.innerHTML = "";
+        var addBtn = rowEl.querySelector(".add-choice");
+        (q.choices || []).forEach(function () { addBtn.click(); });
+        var choiceRows = choicesWrap.querySelectorAll(".choice-row");
+        (q.choices || []).forEach(function (choiceText, idx) {
+          var cr = choiceRows[idx];
+          if (!cr) return;
+          cr.querySelector(".choice-text").value = choiceText;
+          if (idx === q.answer) cr.querySelector(".choice-correct").checked = true;
+        });
+      } else {
+        rowEl.querySelector(".answer-input").value = q.answer || "";
+      }
+    });
+
+    $("libraryPanel").classList.add("hidden");
+  }
+
+  function renderLibraryList(sets) {
+    var list = $("libraryList");
+    list.innerHTML = "";
+    if (!sets.length) {
+      var empty = document.createElement("p");
+      empty.className = "lede";
+      empty.textContent = t("teacher.library.empty");
+      list.appendChild(empty);
+      return;
+    }
+    sets.forEach(function (set) {
+      var row = document.createElement("div");
+      row.className = "library-row";
+
+      var info = document.createElement("div");
+      info.className = "library-info";
+      var title = document.createElement("span");
+      title.className = "library-title";
+      title.textContent = set.title;
+      var meta = document.createElement("span");
+      meta.className = "library-meta";
+      meta.textContent = t(set.questionCount === 1 ? "teacher.library.questionSingular" : "teacher.library.questionPlural", { n: set.questionCount });
+      info.appendChild(title);
+      info.appendChild(meta);
+
+      var actions = document.createElement("div");
+      actions.className = "library-actions";
+      var loadBtn = document.createElement("button");
+      loadBtn.type = "button";
+      loadBtn.className = "btn small";
+      loadBtn.textContent = t("teacher.library.load");
+      loadBtn.addEventListener("click", function () {
+        fetch("/api/question-sets/" + set.id)
+          .then(function (r) { return r.json(); })
+          .then(function (data) { if (data.ok) loadSet(data.set); });
+      });
+      var delBtn = document.createElement("button");
+      delBtn.type = "button";
+      delBtn.className = "remove-q";
+      delBtn.title = t("teacher.library.delete");
+      delBtn.textContent = "×";
+      delBtn.addEventListener("click", function () {
+        fetch("/api/question-sets/" + set.id, { method: "DELETE" }).then(openLibrary);
+      });
+      actions.appendChild(loadBtn);
+      actions.appendChild(delBtn);
+
+      row.appendChild(info);
+      row.appendChild(actions);
+      list.appendChild(row);
+    });
+  }
+
+  function openLibrary() {
+    $("libraryPanel").classList.remove("hidden");
+    $("libraryList").textContent = "";
+    fetch("/api/question-sets")
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        if (!data.ok) { $("libraryList").textContent = t("teacher.library.unavailable"); return; }
+        renderLibraryList(data.sets);
+      })
+      .catch(function () { $("libraryList").textContent = t("teacher.library.unavailable"); });
+  }
+
+  $("openLibrary").addEventListener("click", openLibrary);
+  $("closeLibrary").addEventListener("click", function () { $("libraryPanel").classList.add("hidden"); });
+
+  $("saveQuiz").addEventListener("click", function () {
+    var errEl = $("createErr");
+    var res = collectQuestions();
+    if (res.errors.length) { errEl.textContent = res.errors[0]; return; }
+    if (!res.out.length) { errEl.textContent = t("teacher.err.needOneQuestion"); return; }
+    errEl.textContent = "";
+
+    fetch("/api/question-sets", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ title: $("titleInput").value.trim(), mechanic: selectedMechanic, theme: selectedTheme, questions: res.out }),
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        if (!data.ok) { errEl.textContent = t("teacher.library.unavailable"); return; }
+        var btn = $("saveQuiz");
+        btn.textContent = t("teacher.library.saved");
+        setTimeout(function () { btn.textContent = t("teacher.library.saveButton"); }, 1500);
+      })
+      .catch(function () { errEl.textContent = t("teacher.library.unavailable"); });
   });
 
   document.addEventListener("i18nchange", function () {

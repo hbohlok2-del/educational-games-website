@@ -95,6 +95,19 @@ window.I18N_DICTIONARIES = {
         questionNeedsAnswer: "Question {{n}} needs a correct answer.",
         needOneQuestion: "Add at least one complete question.",
         createFailed: "Couldn't create the room."
+      },
+      library: {
+        saveButton: "💾 Save for later",
+        saved: "Saved!",
+        loadButton: "📂 Load a saved quiz",
+        heading: "Saved Quizzes",
+        empty: "No saved quizzes yet.",
+        close: "Close",
+        load: "Load",
+        delete: "Delete",
+        questionSingular: "{{n}} question",
+        questionPlural: "{{n}} questions",
+        unavailable: "Saved quizzes aren't available right now."
       }
     },
     lessons: {
@@ -274,6 +287,19 @@ window.I18N_DICTIONARIES = {
         questionNeedsAnswer: "La question {{n}} a besoin d'une réponse correcte.",
         needOneQuestion: "Ajoutez au moins une question complète.",
         createFailed: "Impossible de créer la salle."
+      },
+      library: {
+        saveButton: "💾 Enregistrer pour plus tard",
+        saved: "Enregistré !",
+        loadButton: "📂 Charger un quiz enregistré",
+        heading: "Quiz enregistrés",
+        empty: "Aucun quiz enregistré pour le moment.",
+        close: "Fermer",
+        load: "Charger",
+        delete: "Supprimer",
+        questionSingular: "{{n}} question",
+        questionPlural: "{{n}} questions",
+        unavailable: "Les quiz enregistrés ne sont pas disponibles pour le moment."
       }
     },
     lessons: {
@@ -453,6 +479,19 @@ window.I18N_DICTIONARIES = {
         questionNeedsAnswer: "السؤال {{n}} يحتاج إلى إجابة صحيحة.",
         needOneQuestion: "أضف سؤالاً واحداً كاملاً على الأقل.",
         createFailed: "تعذّر إنشاء الغرفة."
+      },
+      library: {
+        saveButton: "💾 حفظ لوقت لاحق",
+        saved: "تم الحفظ!",
+        loadButton: "📂 تحميل اختبار محفوظ",
+        heading: "الاختبارات المحفوظة",
+        empty: "لا توجد اختبارات محفوظة بعد.",
+        close: "إغلاق",
+        load: "تحميل",
+        delete: "حذف",
+        questionSingular: "{{n}} سؤال",
+        questionPlural: "{{n}} أسئلة",
+        unavailable: "الاختبارات المحفوظة غير متاحة الآن."
       }
     },
     lessons: {
@@ -632,6 +671,19 @@ window.I18N_DICTIONARIES = {
         questionNeedsAnswer: "Pytanie {{n}} wymaga poprawnej odpowiedzi.",
         needOneQuestion: "Dodaj co najmniej jedno pełne pytanie.",
         createFailed: "Nie udało się utworzyć pokoju."
+      },
+      library: {
+        saveButton: "💾 Zapisz na później",
+        saved: "Zapisano!",
+        loadButton: "📂 Wczytaj zapisany quiz",
+        heading: "Zapisane quizy",
+        empty: "Nie zapisano jeszcze żadnego quizu.",
+        close: "Zamknij",
+        load: "Wczytaj",
+        delete: "Usuń",
+        questionSingular: "{{n}} pytanie",
+        questionPlural: "{{n}} pytań",
+        unavailable: "Zapisane quizy nie są teraz dostępne."
       }
     },
     lessons: {
