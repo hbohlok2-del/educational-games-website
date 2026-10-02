@@ -2,8 +2,13 @@ const crypto = require("crypto");
 const { client } = require("../db");
 const { buildQuestions } = require("./questions");
 
+function requireClient() {
+  if (!client) throw new Error("database unavailable");
+  return client;
+}
+
 async function listQuestionSets() {
-  const result = await client.execute(
+  const result = await requireClient().execute(
     "SELECT id, title, mechanic, theme, questions, created_at FROM question_sets ORDER BY created_at DESC"
   );
   return result.rows.map((row) => ({
@@ -17,7 +22,7 @@ async function listQuestionSets() {
 }
 
 async function getQuestionSet(id) {
-  const result = await client.execute({
+  const result = await requireClient().execute({
     sql: "SELECT id, title, mechanic, theme, questions, created_at FROM question_sets WHERE id = ?",
     args: [id],
   });
@@ -42,7 +47,7 @@ async function saveQuestionSet({ title, mechanic, theme, questions }) {
 
   const id = crypto.randomUUID();
   const createdAt = new Date().toISOString();
-  await client.execute({
+  await requireClient().execute({
     sql: "INSERT INTO question_sets (id, title, mechanic, theme, questions, created_at) VALUES (?, ?, ?, ?, ?, ?)",
     args: [id, cleanTitle, cleanMechanic, cleanTheme, JSON.stringify(questions), createdAt],
   });
@@ -50,7 +55,7 @@ async function saveQuestionSet({ title, mechanic, theme, questions }) {
 }
 
 async function deleteQuestionSet(id) {
-  await client.execute({ sql: "DELETE FROM question_sets WHERE id = ?", args: [id] });
+  await requireClient().execute({ sql: "DELETE FROM question_sets WHERE id = ?", args: [id] });
 }
 
 module.exports = { listQuestionSets, getQuestionSet, saveQuestionSet, deleteQuestionSet };
