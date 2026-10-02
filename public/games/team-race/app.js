@@ -192,16 +192,14 @@
     if (marker) marker.style.left = pos + "%";
     var track = $("ropeTrack");
     if (track) track.classList.toggle("tense", (pos < 18 || pos > 82) && !reduceMotion);
-    renderRocketTrack(pos);
+    renderRocketTrack(S.room ? S.room.progressA : 0, S.room ? S.room.progressB : 0);
   }
 
   var ROCKET_PAD_PCT = 6;
   var ROCKET_FINISH_PCT = 80;
-  function renderRocketTrack(pos) {
-    var progressA = Math.max(0, 50 - pos) / 50;
-    var progressB = Math.max(0, pos - 50) / 50;
-    var bottomA = ROCKET_PAD_PCT + progressA * (ROCKET_FINISH_PCT - ROCKET_PAD_PCT);
-    var bottomB = ROCKET_PAD_PCT + progressB * (ROCKET_FINISH_PCT - ROCKET_PAD_PCT);
+  function renderRocketTrack(progressA, progressB) {
+    var bottomA = ROCKET_PAD_PCT + ((progressA || 0) / 100) * (ROCKET_FINISH_PCT - ROCKET_PAD_PCT);
+    var bottomB = ROCKET_PAD_PCT + ((progressB || 0) / 100) * (ROCKET_FINISH_PCT - ROCKET_PAD_PCT);
     var rocketA = $("rocketA"), rocketB = $("rocketB");
     if (rocketA) rocketA.style.bottom = bottomA + "%";
     if (rocketB) rocketB.style.bottom = bottomB + "%";

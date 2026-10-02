@@ -27,6 +27,8 @@ function publicRoom(room) {
     teamA: { joined: !!room.teams.A },
     teamB: { joined: !!room.teams.B },
     position: room.position,
+    progressA: room.progressA,
+    progressB: room.progressB,
     stats: room.stats,
     matchStartAt: room.matchStartAt,
     winner: room.winner,
@@ -47,7 +49,9 @@ function attach(io) {
     const elapsed = Date.now() - room.matchStartAt;
     if (elapsed < MATCH_DURATION_MS) return;
     room.status = "finished";
-    room.winner = room.position < ROPE_CENTER ? "A" : room.position > ROPE_CENTER ? "B" : null;
+    room.winner = room.theme === "rocket"
+      ? (room.progressA > room.progressB ? "A" : room.progressB > room.progressA ? "B" : null)
+      : (room.position < ROPE_CENTER ? "A" : room.position > ROPE_CENTER ? "B" : null);
     room.timedOut = true;
     broadcastRoom(room);
   }
@@ -72,6 +76,8 @@ function attach(io) {
         status: "waiting",
         round: 1,
         position: ROPE_CENTER,
+        progressA: 0,
+        progressB: 0,
         stats: freshStats(),
         matchStartAt: null,
         winner: null,
@@ -120,6 +126,8 @@ function attach(io) {
       room.status = "active";
       room.round = room.round || 1;
       room.position = ROPE_CENTER;
+      room.progressA = 0;
+      room.progressB = 0;
       room.stats = freshStats();
       room.winner = null;
       room.timedOut = false;
@@ -133,6 +141,8 @@ function attach(io) {
       room.round += 1;
       room.status = "active";
       room.position = ROPE_CENTER;
+      room.progressA = 0;
+      room.progressB = 0;
       room.stats = freshStats();
       room.winner = null;
       room.timedOut = false;
@@ -168,14 +178,22 @@ function attach(io) {
       const issued = socket.data.lastQuestion;
       const timeMs = issued && issued.index === index ? Date.now() - issued.at : 99999;
       const mag = correct ? pullMagnitude(timeMs) : 0;
-      const sign = team === "A" ? -1 : 1;
-      room.position = Math.max(ROPE_MIN, Math.min(ROPE_MAX, room.position + sign * mag));
+
+      let winner = null;
+      if (room.theme === "rocket") {
+        const key = team === "A" ? "progressA" : "progressB";
+        room[key] = Math.min(ROPE_MAX, room[key] + mag);
+        if (room.progressA >= ROPE_MAX) winner = "A";
+        else if (room.progressB >= ROPE_MAX) winner = "B";
+      } else {
+        const sign = team === "A" ? -1 : 1;
+        room.position = Math.max(ROPE_MIN, Math.min(ROPE_MAX, room.position + sign * mag));
+        if (room.position <= ROPE_MIN) winner = "A";
+        else if (room.position >= ROPE_MAX) winner = "B";
+      }
       if (correct) room.stats[team].correct += 1;
       else room.stats[team].wrong += 1;
 
-      let winner = null;
-      if (room.position <= ROPE_MIN) winner = "A";
-      else if (room.position >= ROPE_MAX) winner = "B";
       if (winner) {
         room.status = "finished";
         room.winner = winner;
