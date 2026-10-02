@@ -12,17 +12,6 @@
     });
   }
 
-  function notice(msg) {
-    var n = $("notice");
-    if (!msg) { n.style.display = "none"; n.textContent = ""; return; }
-    n.style.display = "block"; n.textContent = msg;
-  }
-
-  var raceSocket = io("/team-race");
-  var buzzerSocket = io("/team-buzzer");
-  var tugSocket = io("/tug-of-war");
-  raceSocket.on("connect_error", function () { notice(t("play.notice.connectError")); });
-
   document.addEventListener("click", function (e) {
     var el = e.target.closest("[data-action]");
     if (!el) return;
@@ -42,14 +31,6 @@
     $("codeInput").focus();
   }
 
-  function peek(socket, code) {
-    return new Promise(function (resolve) {
-      socket.emit("peek-room", { code: code }, function (ack) {
-        resolve(!!(ack && ack.ok));
-      });
-    });
-  }
-
   function basePathFor(gameType) {
     if (gameType === "tug-of-war") return "/games/tug-of-war/";
     if (gameType === "team-race") return "/games/team-race/";
@@ -67,13 +48,17 @@
     errEl.textContent = "";
     $("codeGo").disabled = true;
 
-    Promise.all([peek(raceSocket, code), peek(buzzerSocket, code), peek(tugSocket, code)]).then(function (results) {
-      $("codeGo").disabled = false;
-      var isRace = results[0], isBuzzer = results[1], isTug = results[2];
-      var gameType = isRace ? "team-race" : (isBuzzer ? "team-buzzer" : (isTug ? "tug-of-war" : null));
-      if (!gameType) { errEl.textContent = t("play.lookup.errNotFound"); return; }
-      goToRoom(gameType, code, mode === "spotlight");
-    });
+    fetch("/api/rooms/" + encodeURIComponent(code))
+      .then(function (res) { return res.json(); })
+      .then(function (data) {
+        $("codeGo").disabled = false;
+        if (!data.ok) { errEl.textContent = t("play.lookup.errNotFound"); return; }
+        goToRoom(data.gameType, code, mode === "spotlight");
+      })
+      .catch(function () {
+        $("codeGo").disabled = false;
+        errEl.textContent = t("play.notice.connectError");
+      });
   });
 
   $("codeInput").addEventListener("keydown", function (e) {
