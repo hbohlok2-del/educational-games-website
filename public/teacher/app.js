@@ -6,6 +6,7 @@
   var qId = 0;
   var selectedMechanic = "race";
   var selectedTheme = "rope";
+  var loadedSetId = null;
 
   var THEME_IDS_BY_MECHANIC = {
     race: [
@@ -211,7 +212,13 @@
   });
 
   // ---------------- Saved-quiz library ----------------
+  function updateSaveButtonLabel() {
+    $("saveQuiz").textContent = t(loadedSetId ? "teacher.library.updateButton" : "teacher.library.saveButton");
+  }
+
   function loadSet(set) {
+    loadedSetId = set.id;
+    updateSaveButtonLabel();
     $("titleInput").value = set.title || "";
 
     var mechBtn = $("mechanicPick").querySelector('[data-mechanic="' + set.mechanic + '"]');
@@ -328,17 +335,21 @@
     if (!res.out.length) { errEl.textContent = t("teacher.err.needOneQuestion"); return; }
     errEl.textContent = "";
 
-    fetch("/api/question-sets", {
-      method: "POST",
+    var isUpdate = !!loadedSetId;
+    var url = isUpdate ? "/api/question-sets/" + loadedSetId : "/api/question-sets";
+
+    fetch(url, {
+      method: isUpdate ? "PUT" : "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ title: $("titleInput").value.trim(), mechanic: selectedMechanic, theme: selectedTheme, questions: res.out }),
     })
       .then(function (r) { return r.json(); })
       .then(function (data) {
         if (!data.ok) { errEl.textContent = t("teacher.library.unavailable"); return; }
+        if (!isUpdate) loadedSetId = data.set.id;
         var btn = $("saveQuiz");
-        btn.textContent = t("teacher.library.saved");
-        setTimeout(function () { btn.textContent = t("teacher.library.saveButton"); }, 1500);
+        btn.textContent = t(isUpdate ? "teacher.library.updated" : "teacher.library.saved");
+        setTimeout(updateSaveButtonLabel, 1500);
       })
       .catch(function () { errEl.textContent = t("teacher.library.unavailable"); });
   });
@@ -346,5 +357,6 @@
   document.addEventListener("i18nchange", function () {
     renumber();
     renderThemePick();
+    updateSaveButtonLabel();
   });
 })();

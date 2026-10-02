@@ -1,5 +1,5 @@
 const express = require("express");
-const { listQuestionSets, getQuestionSet, saveQuestionSet, deleteQuestionSet } = require("../content/questionSets");
+const { listQuestionSets, getQuestionSet, saveQuestionSet, updateQuestionSet, deleteQuestionSet } = require("../content/questionSets");
 
 const router = express.Router();
 
@@ -33,6 +33,17 @@ router.post("/", async (req, res) => {
     const saved = await saveQuestionSet({ title, mechanic, theme, questions });
     if (!saved) return res.status(400).json({ ok: false, error: "no-questions" });
     res.json({ ok: true, set: saved });
+  } catch (err) {
+    handleDbError(res, err);
+  }
+});
+
+router.put("/:id", async (req, res) => {
+  try {
+    const { title, mechanic, theme, questions } = req.body || {};
+    const updated = await updateQuestionSet(req.params.id, { title, mechanic, theme, questions });
+    if (!updated) return res.status(404).json({ ok: false, error: "not-found" });
+    res.json({ ok: true, set: updated });
   } catch (err) {
     handleDbError(res, err);
   }

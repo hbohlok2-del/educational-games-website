@@ -99,6 +99,8 @@ window.I18N_DICTIONARIES = {
       library: {
         saveButton: "💾 Save for later",
         saved: "Saved!",
+        updateButton: "💾 Update Quiz",
+        updated: "Updated!",
         loadButton: "📂 Load a saved quiz",
         heading: "Saved Quizzes",
         empty: "No saved quizzes yet.",
@@ -291,6 +293,8 @@ window.I18N_DICTIONARIES = {
       library: {
         saveButton: "💾 Enregistrer pour plus tard",
         saved: "Enregistré !",
+        updateButton: "💾 Mettre à jour le quiz",
+        updated: "Mis à jour !",
         loadButton: "📂 Charger un quiz enregistré",
         heading: "Quiz enregistrés",
         empty: "Aucun quiz enregistré pour le moment.",
@@ -483,6 +487,8 @@ window.I18N_DICTIONARIES = {
       library: {
         saveButton: "💾 حفظ لوقت لاحق",
         saved: "تم الحفظ!",
+        updateButton: "💾 تحديث الاختبار",
+        updated: "تم التحديث!",
         loadButton: "📂 تحميل اختبار محفوظ",
         heading: "الاختبارات المحفوظة",
         empty: "لا توجد اختبارات محفوظة بعد.",
@@ -675,6 +681,8 @@ window.I18N_DICTIONARIES = {
       library: {
         saveButton: "💾 Zapisz na później",
         saved: "Zapisano!",
+        updateButton: "💾 Zaktualizuj quiz",
+        updated: "Zaktualizowano!",
         loadButton: "📂 Wczytaj zapisany quiz",
         heading: "Zapisane quizy",
         empty: "Nie zapisano jeszcze żadnego quizu.",

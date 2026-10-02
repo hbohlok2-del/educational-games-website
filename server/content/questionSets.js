@@ -54,8 +54,23 @@ async function saveQuestionSet({ title, mechanic, theme, questions }) {
   return { id, title: cleanTitle, mechanic: cleanMechanic, theme: cleanTheme, questionCount: validated.length, createdAt };
 }
 
+async function updateQuestionSet(id, { title, mechanic, theme, questions }) {
+  const cleanTitle = String(title || "").trim().slice(0, 80) || "Untitled quiz";
+  const cleanMechanic = mechanic === "buzzer" ? "buzzer" : "race";
+  const cleanTheme = String(theme || "").trim() || "rope";
+  const validated = buildQuestions(questions);
+  if (validated.length < 1) return null;
+
+  const result = await requireClient().execute({
+    sql: "UPDATE question_sets SET title = ?, mechanic = ?, theme = ?, questions = ? WHERE id = ?",
+    args: [cleanTitle, cleanMechanic, cleanTheme, JSON.stringify(questions), id],
+  });
+  if (result.rowsAffected === 0) return null;
+  return { id, title: cleanTitle, mechanic: cleanMechanic, theme: cleanTheme, questionCount: validated.length };
+}
+
 async function deleteQuestionSet(id) {
   await requireClient().execute({ sql: "DELETE FROM question_sets WHERE id = ?", args: [id] });
 }
 
-module.exports = { listQuestionSets, getQuestionSet, saveQuestionSet, deleteQuestionSet };
+module.exports = { listQuestionSets, getQuestionSet, saveQuestionSet, updateQuestionSet, deleteQuestionSet };
