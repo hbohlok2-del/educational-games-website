@@ -80,6 +80,9 @@
     row.dataset.id = id;
     questionList.appendChild(frag);
     var rowEl = questionList.lastElementChild;
+    Array.prototype.forEach.call(rowEl.querySelectorAll('input[name="type"]'), function (r) {
+      r.name = "type-" + id;
+    });
     applyStaticI18n(rowEl);
     renumber();
 
@@ -104,7 +107,7 @@
     }
     promptInput.addEventListener("input", schedulePreview);
 
-    var typeRadios = rowEl.querySelectorAll('input[name="type"]');
+    var typeRadios = rowEl.querySelectorAll('.type-row input[type="radio"]');
     var shortFields = rowEl.querySelector(".short-answer-fields");
     var mcFields = rowEl.querySelector(".mc-fields");
     var choicesWrap = rowEl.querySelector(".choices");
@@ -127,7 +130,7 @@
 
     Array.prototype.forEach.call(typeRadios, function (r) {
       r.addEventListener("change", function () {
-        var isMc = rowEl.querySelector('input[name="type"]:checked').value === "multiple-choice";
+        var isMc = rowEl.querySelector('.type-row input[type="radio"]:checked').value === "multiple-choice";
         shortFields.classList.toggle("hidden", isMc);
         mcFields.classList.toggle("hidden", !isMc);
       });
@@ -148,7 +151,7 @@
     Array.prototype.forEach.call(questionList.querySelectorAll(".q-row"), function (row, i) {
       var prompt = row.querySelector(".prompt-input").value.trim();
       var n = i + 1;
-      var type = row.querySelector('input[name="type"]:checked').value;
+      var type = row.querySelector('.type-row input[type="radio"]:checked').value;
       if (!prompt) { errors.push(t("teacher.err.questionNeedsText", { n: n })); return; }
       if (type === "multiple-choice") {
         var choices = [];
