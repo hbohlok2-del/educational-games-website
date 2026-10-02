@@ -182,8 +182,8 @@
     errEl.textContent = "";
     var title = $("titleInput").value.trim();
     var res = collectQuestions();
-    if (!res.out.length) { errEl.textContent = t("teacher.err.needOneQuestion"); return; }
     if (res.errors.length) { errEl.textContent = res.errors[0]; return; }
+    if (!res.out.length) { errEl.textContent = t("teacher.err.needOneQuestion"); return; }
 
     $("createGo").disabled = true;
     var socket = selectedMechanic === "buzzer" ? socketBuzzer : socketRace;
