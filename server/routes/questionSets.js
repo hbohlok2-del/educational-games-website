@@ -7,9 +7,11 @@ function handleDbError(res, err) {
   res.status(503).json({ ok: false, error: "unavailable" });
 }
 
-// launchers: { race: createRoom, buzzer: createRoom } from the game modules,
+// launchers: { race, buzzer, board } createRoom functions from the game modules,
 // so a saved quiz can become a live room without its answers ever leaving
 // the server.
+const GAME_TYPES = { race: "team-race", buzzer: "team-buzzer", board: "team-board" };
+
 function createQuestionSetsRouter({ launchers }) {
   const router = express.Router();
 
@@ -34,10 +36,10 @@ function createQuestionSetsRouter({ launchers }) {
     try {
       const set = await getQuestionSet(req.params.id);
       if (!set) return res.status(404).json({ ok: false, error: "not-found" });
-      const mechanic = set.mechanic === "buzzer" ? "buzzer" : "race";
-      const room = launchers[mechanic]({ title: set.title, theme: set.theme, questions: set.questions });
+      const mechanic = launchers[set.mechanic] ? set.mechanic : "race";
+      const room = launchers[mechanic]({ title: set.title, theme: set.theme, questions: set.questions, settings: set.settings });
       if (!room) return res.status(400).json({ ok: false, error: "no-questions" });
-      res.json({ ok: true, gameType: mechanic === "buzzer" ? "team-buzzer" : "team-race", code: room.code });
+      res.json({ ok: true, gameType: GAME_TYPES[mechanic], code: room.code });
     } catch (err) {
       handleDbError(res, err);
     }
@@ -56,8 +58,8 @@ function createQuestionSetsRouter({ launchers }) {
 
   router.post("/", requireTeacher, async (req, res) => {
     try {
-      const { title, mechanic, theme, questions } = req.body || {};
-      const saved = await saveQuestionSet({ title, mechanic, theme, questions });
+      const { title, mechanic, theme, questions, settings } = req.body || {};
+      const saved = await saveQuestionSet({ title, mechanic, theme, questions, settings });
       if (!saved) return res.status(400).json({ ok: false, error: "no-questions" });
       res.json({ ok: true, set: saved });
     } catch (err) {
@@ -67,8 +69,8 @@ function createQuestionSetsRouter({ launchers }) {
 
   router.put("/:id", requireTeacher, async (req, res) => {
     try {
-      const { title, mechanic, theme, questions } = req.body || {};
-      const updated = await updateQuestionSet(req.params.id, { title, mechanic, theme, questions });
+      const { title, mechanic, theme, questions, settings } = req.body || {};
+      const updated = await updateQuestionSet(req.params.id, { title, mechanic, theme, questions, settings });
       if (!updated) return res.status(404).json({ ok: false, error: "not-found" });
       res.json({ ok: true, set: updated });
     } catch (err) {

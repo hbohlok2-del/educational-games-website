@@ -5,7 +5,7 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "test": "node tests/problems-check.js && node tests/smoke-test.js && node tests/team-race-smoke-test.js && node tests/team-buzzer-smoke-test.js && node tests/hub-lookup-test.js && node tests/question-sets-test.js"
+    "test": "node tests/problems-check.js && node tests/smoke-test.js && node tests/team-race-smoke-test.js && node tests/team-buzzer-smoke-test.js && node tests/hub-lookup-test.js && node tests/question-sets-test.js && node tests/team-board-smoke-test.js"
   },
   "dependencies": {
     "@libsql/client": "^0.18.0",

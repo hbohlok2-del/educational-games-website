@@ -3,6 +3,9 @@
 
   var socketRace = io("/team-race");
   var socketBuzzer = io("/team-buzzer");
+  var socketBoard = io("/team-board");
+  var SOCKETS = { race: socketRace, buzzer: socketBuzzer, board: socketBoard };
+  var GAME_PATHS = { race: "team-race", buzzer: "team-buzzer", board: "team-board" };
   var qId = 0;
   var selectedMechanic = "race";
   var selectedTheme = "rope";
@@ -15,6 +18,9 @@
     ],
     buzzer: [
       { id: "spotlight", icon: "🔔", key: "teacher.themes.spotlight" },
+    ],
+    board: [
+      { id: "classic", icon: "🟦", key: "teacher.themes.classic" },
     ],
   };
 
@@ -132,8 +138,28 @@
       b.classList.add("active");
       selectedMechanic = b.getAttribute("data-mechanic");
       renderThemePick();
+      applyMechanic();
     });
   });
+
+  // Board games add category + points to every question and allow open
+  // answers judged by the host; other games hide those fields.
+  function applyMechanicToRow(rowEl) {
+    var board = selectedMechanic === "board";
+    rowEl.querySelector(".board-fields").classList.toggle("hidden", !board);
+    rowEl.querySelector(".open-type").classList.toggle("hidden", !board);
+    var openRadio = rowEl.querySelector('.type-row input[value="open"]');
+    if (!board && openRadio.checked) {
+      var shortRadio = rowEl.querySelector('.type-row input[value="short-answer"]');
+      shortRadio.checked = true;
+      shortRadio.dispatchEvent(new Event("change", { bubbles: true }));
+    }
+  }
+
+  function applyMechanic() {
+    $("boardSettings").classList.toggle("hidden", selectedMechanic !== "board");
+    Array.prototype.forEach.call(questionList.querySelectorAll(".q-row"), applyMechanicToRow);
+  }
 
   var TEMPLATES = [
     { key: "teacher.templates.fraction", text: "$\\frac{a}{b}$", selStart: 7, selEnd: 8 },
@@ -214,11 +240,16 @@
     addChoice();
     addChoice();
 
+    var answerLabel = rowEl.querySelector(".answer-label");
     Array.prototype.forEach.call(typeRadios, function (r) {
       r.addEventListener("change", function () {
-        var isMc = rowEl.querySelector('.type-row input[type="radio"]:checked').value === "multiple-choice";
+        var type = rowEl.querySelector('.type-row input[type="radio"]:checked').value;
+        var isMc = type === "multiple-choice";
         shortFields.classList.toggle("hidden", isMc);
         mcFields.classList.toggle("hidden", !isMc);
+        var key = type === "open" ? "teacher.q.expectedAnswer" : "teacher.q.correctAnswer";
+        answerLabel.setAttribute("data-i18n", key);
+        answerLabel.textContent = t(key);
       });
     });
 
@@ -227,6 +258,7 @@
       renumber();
     });
 
+    applyMechanicToRow(rowEl);
     return rowEl;
   }
 
@@ -236,11 +268,18 @@
   function collectQuestions() {
     var out = [];
     var errors = [];
+    var board = selectedMechanic === "board";
     Array.prototype.forEach.call(questionList.querySelectorAll(".q-row"), function (row, i) {
       var prompt = row.querySelector(".prompt-input").value.trim();
       var n = i + 1;
       var type = row.querySelector('.type-row input[type="radio"]:checked').value;
       if (!prompt) { errors.push(t("teacher.err.questionNeedsText", { n: n })); return; }
+      var extra = {};
+      if (board) {
+        var category = row.querySelector(".category-input").value.trim();
+        if (!category) { errors.push(t("teacher.err.questionNeedsCategory", { n: n })); return; }
+        extra = { category: category, points: Number(row.querySelector(".points-input").value) };
+      }
       if (type === "multiple-choice") {
         var choices = [];
         var correctIdx = -1;
@@ -252,11 +291,11 @@
         });
         if (choices.length < 2) { errors.push(t("teacher.err.questionNeedsChoices", { n: n })); return; }
         if (correctIdx === -1) { errors.push(t("teacher.err.questionNeedsCorrectChoice", { n: n })); return; }
-        out.push({ prompt: prompt, type: "multiple-choice", choices: choices, answer: correctIdx });
+        out.push(Object.assign({ prompt: prompt, type: "multiple-choice", choices: choices, answer: correctIdx }, extra));
       } else {
         var answer = row.querySelector(".answer-input").value.trim();
         if (!answer) { errors.push(t("teacher.err.questionNeedsAnswer", { n: n })); return; }
-        out.push({ prompt: prompt, type: "short-answer", answer: answer });
+        out.push(Object.assign({ prompt: prompt, type: type === "open" ? "open" : "short-answer", answer: answer }, extra));
       }
     });
     return { out: out, errors: errors };
@@ -264,6 +303,11 @@
 
   function updateBuzzerHint() {
     $("buzzerHint").classList.toggle("hidden", selectedMechanic !== "buzzer");
+    $("boardHint").classList.toggle("hidden", selectedMechanic !== "board");
+  }
+
+  function currentSettings() {
+    return { penalty: $("penaltyInput").checked };
   }
 
   wireCopyButton($("copyCode"), function () { return $("doneCode").textContent; });
@@ -277,12 +321,12 @@
     if (!res.out.length) { errEl.textContent = t("teacher.err.needOneQuestion"); return; }
 
     $("createGo").disabled = true;
-    var socket = selectedMechanic === "buzzer" ? socketBuzzer : socketRace;
-    socket.emit("create-room", { title: title, theme: selectedTheme, questions: res.out }, function (ack) {
+    var socket = SOCKETS[selectedMechanic];
+    socket.emit("create-room", { title: title, theme: selectedTheme, questions: res.out, settings: currentSettings() }, function (ack) {
       $("createGo").disabled = false;
       if (!ack || !ack.ok) { errEl.textContent = (ack && ack.error) ? tError(ack.error) : t("teacher.err.createFailed"); return; }
       $("doneCode").textContent = ack.room.code;
-      var joinBase = location.origin + "/games/" + (selectedMechanic === "buzzer" ? "team-buzzer" : "team-race") + "/";
+      var joinBase = location.origin + "/games/" + GAME_PATHS[selectedMechanic] + "/";
       $("doneLede").textContent = t("teacher.done.lede", { link: joinBase });
       $("openStudentView").href = joinBase + "?code=" + ack.room.code;
       updateBuzzerHint();
@@ -311,6 +355,7 @@
 
     var themeBtn = $("themePick").querySelector('[data-theme-id="' + set.theme + '"]');
     if (themeBtn) themeBtn.click();
+    $("penaltyInput").checked = !!(set.settings && set.settings.penalty);
 
     questionList.innerHTML = "";
     (set.questions || []).forEach(function (q) {
@@ -324,6 +369,8 @@
         typeRadio.checked = true;
         typeRadio.dispatchEvent(new Event("change", { bubbles: true }));
       }
+      if (q.category) rowEl.querySelector(".category-input").value = q.category;
+      if (q.points) rowEl.querySelector(".points-input").value = String(q.points);
 
       if (q.type === "multiple-choice") {
         var choicesWrap = rowEl.querySelector(".choices");
@@ -436,7 +483,7 @@
     fetch(url, {
       method: isUpdate ? "PUT" : "POST",
       headers: teacherHeaders({ "Content-Type": "application/json" }),
-      body: JSON.stringify({ title: $("titleInput").value.trim(), mechanic: selectedMechanic, theme: selectedTheme, questions: res.out }),
+      body: JSON.stringify({ title: $("titleInput").value.trim(), mechanic: selectedMechanic, theme: selectedTheme, questions: res.out, settings: currentSettings() }),
     })
       .then(function (r) { return r.json(); })
       .then(function (data) {

@@ -73,10 +73,16 @@
       <div class="theme-pick" id="mechanicPick">
         <button type="button" class="theme-btn active" data-mechanic="race">🏁<span data-i18n="teacher.mechanic.race">Race</span></button>
         <button type="button" class="theme-btn" data-mechanic="buzzer">🔔<span data-i18n="teacher.mechanic.buzzer">Buzzer</span></button>
+        <button type="button" class="theme-btn" data-mechanic="board">🟦<span data-i18n="teacher.mechanic.board">Board</span></button>
       </div>
 
       <label class="field-label" data-i18n="teacher.field.theme">Theme</label>
       <div class="theme-pick" id="themePick"></div>
+
+      <label class="check-row hidden" id="boardSettings">
+        <input type="checkbox" id="penaltyInput">
+        <span data-i18n="teacher.board.penalty">Wrong answers lose points</span>
+      </label>
     </div>
 
     <div id="questionList"></div>
@@ -98,6 +104,7 @@
         <button type="button" class="btn secondary" id="copyCode" data-i18n="common.copy">Copy code</button>
       </div>
       <p class="lede" id="doneLede"></p>
+      <p class="lede buzzer-hint hidden" id="boardHint" data-i18n="teacher.done.boardHint">This is a board game. Open the Big Screen link and project it: the host picks squares and judges open answers there, while teams answer from their own devices.</p>
       <p class="lede buzzer-hint hidden" id="buzzerHint" data-i18n="teacher.done.buzzerHint">This is a buzzer game — open the Big Screen link and project it for the whole class; teams buzz in from their own devices.</p>
       <a class="btn block" id="openStudentView" target="_blank" rel="noopener" data-i18n="teacher.done.openStudentView">Open student join page</a>
       <button type="button" class="btn secondary block" id="createAnother" data-i18n="teacher.done.createAnother">Create another race</button>
@@ -111,15 +118,32 @@
       <span class="q-num">Question</span>
       <button type="button" class="remove-q" title="Remove question" data-i18n-title="teacher.q.remove">&times;</button>
     </div>
+    <div class="board-fields hidden">
+      <div>
+        <label class="field-label" data-i18n="teacher.q.category">Category</label>
+        <input class="category-input text-input" maxlength="40" placeholder="e.g. Fractions" data-i18n-placeholder="teacher.q.categoryPlaceholder">
+      </div>
+      <div>
+        <label class="field-label" data-i18n="teacher.q.points">Points</label>
+        <select class="points-input text-input">
+          <option value="100">100</option>
+          <option value="200">200</option>
+          <option value="300">300</option>
+          <option value="400">400</option>
+          <option value="500">500</option>
+        </select>
+      </div>
+    </div>
     <div class="toolbar"></div>
     <textarea class="prompt-input text-input" rows="2" placeholder="Question text -- use a toolbar button to insert math, or type $...$ yourself" data-i18n-placeholder="teacher.q.promptPlaceholder"></textarea>
     <div class="preview" data-i18n="teacher.q.previewPlaceholder">Preview will appear here</div>
     <div class="type-row">
       <label><input type="radio" name="type" value="short-answer" checked> <span data-i18n="teacher.q.shortAnswer">Short answer</span></label>
       <label><input type="radio" name="type" value="multiple-choice"> <span data-i18n="teacher.q.multipleChoice">Multiple choice</span></label>
+      <label class="open-type hidden"><input type="radio" name="type" value="open"> <span data-i18n="teacher.q.openAnswer">Open answer (teacher judges)</span></label>
     </div>
     <div class="short-answer-fields">
-      <label class="field-label" data-i18n="teacher.q.correctAnswer">Correct answer</label>
+      <label class="field-label answer-label" data-i18n="teacher.q.correctAnswer">Correct answer</label>
       <input class="answer-input text-input" placeholder="e.g. Paris, or 42" data-i18n-placeholder="teacher.q.correctAnswerPlaceholder">
     </div>
     <div class="mc-fields hidden">

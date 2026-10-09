@@ -128,6 +128,21 @@ async function main() {
   check("buzzer room joinable and answer-free", joinC.ok && !JSON.stringify(joinC).includes("SecretTokyo") && !cSeen.some((p) => p.includes("SecretTokyo")));
   c.close();
 
+  // --- Board quizzes: settings persist, launch routes to the board game ---
+  const boardQuiz = {
+    title: "Board", mechanic: "board", theme: "classic", settings: { penalty: true },
+    questions: [{ category: "Science", points: 300, prompt: "What is H2O?", type: "open", answer: "SecretWater" }],
+  };
+  const savedBoard = await call("POST", api, { headers: GOOD, body: boardQuiz });
+  check("board quiz with an open question saves", savedBoard.json.ok && savedBoard.json.set.mechanic === "board");
+  const boardFull = await call("GET", `${api}/${savedBoard.json.set.id}`, { headers: GOOD });
+  check("board settings and category survive the round trip",
+    boardFull.json.set.settings.penalty === true && boardFull.json.set.questions[0].category === "Science");
+  const launchBoard = await call("POST", `${api}/${savedBoard.json.set.id}/launch`);
+  check("launching a board quiz routes to the board game", launchBoard.json.ok && launchBoard.json.gameType === "team-board" && !launchBoard.text.includes("Secret"));
+  const raceWithOpen = await call("POST", api, { headers: GOOD, body: { ...boardQuiz, mechanic: "race" } });
+  check("open questions are refused outside board quizzes", raceWithOpen.status === 400);
+
   const launchMissing = await call("POST", `${api}/does-not-exist/launch`);
   check("launching an unknown quiz is a 404", launchMissing.status === 404);
 

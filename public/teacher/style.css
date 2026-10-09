@@ -156,3 +156,9 @@ textarea.text-input { resize: vertical; }
 .hint { color: var(--ink-dim); font-size: 0.85rem; margin: 0; }
 .hint.ok { color: var(--accent); font-weight: 700; }
 .hint.bad { color: var(--danger); font-weight: 700; }
+
+#mechanicPick { grid-template-columns: repeat(3, 1fr); }
+.check-row { display: flex; align-items: center; gap: 0.5rem; font-weight: 700; font-size: 0.9rem; cursor: pointer; }
+.board-fields { display: grid; grid-template-columns: 2fr 1fr; gap: 0.6rem; }
+.board-fields .field-label { display: block; margin-bottom: 0.3rem; }
+.type-row { flex-wrap: wrap; }

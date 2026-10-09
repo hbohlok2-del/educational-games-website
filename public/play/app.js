@@ -33,6 +33,7 @@
   function basePathFor(gameType) {
     if (gameType === "tug-of-war") return "/games/tug-of-war/";
     if (gameType === "team-race") return "/games/team-race/";
+    if (gameType === "team-board") return "/games/team-board/";
     return "/games/team-buzzer/";
   }
 
@@ -172,7 +173,7 @@
       title.textContent = set.title;
       var meta = document.createElement("span");
       meta.className = "lobby-meta";
-      meta.textContent = t(set.mechanic === "buzzer" ? "play.library.buzzer" : "play.library.race") + " · " +
+      meta.textContent = t("play.library." + (set.mechanic === "buzzer" || set.mechanic === "board" ? set.mechanic : "race")) + " · " +
         t(set.questionCount === 1 ? "play.library.questionSingular" : "play.library.questionPlural", { n: set.questionCount });
       info.appendChild(title);
       info.appendChild(meta);
