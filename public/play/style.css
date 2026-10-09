@@ -56,7 +56,7 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--gold); outline
 .hero .lede{margin:14px auto 0;}
 
 .role-grid{display:grid; grid-template-columns:1fr; gap:14px;}
-@media(min-width:560px){ .role-grid{grid-template-columns:repeat(3,1fr);} }
+@media(min-width:560px){ .role-grid{grid-template-columns:repeat(2,1fr);} }
 
 .role-card{
   background:linear-gradient(180deg, var(--turf), var(--turf-2));
@@ -118,3 +118,12 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--gold); outline
 .lobby-actions{display:flex; gap:8px; flex:none;}
 .btn.small{padding:8px 12px; font-size:13px; border-radius:8px;}
 .btn.secondary{background:rgba(255,255,255,0.08); color:var(--chalk); border:1px solid var(--line);}
+
+.tabs{display:flex; gap:6px; background:rgba(0,0,0,0.25); border:1px solid var(--line); border-radius:12px; padding:5px;}
+.tab{
+  flex:1; border:none; border-radius:8px; padding:10px 12px; background:none;
+  color:var(--chalk-dim); font-weight:800; font-size:14px;
+}
+.tab.active{background:var(--gold); color:#2A1B00;}
+[data-panel]{display:flex; flex-direction:column; gap:20px;}
+.lobby-meta{font-size:12px; color:var(--chalk-dim);}

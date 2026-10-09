@@ -17,7 +17,6 @@
     if (!el) return;
     var act = el.getAttribute("data-action");
     if (act === "go-landing") { showView("landing"); }
-    if (act === "go-create") { location.href = "/teacher/"; }
     if (act === "go-join") { openLookup("join"); }
     if (act === "go-spotlight") { openLookup("spotlight"); }
   });
@@ -121,6 +120,102 @@
 
   refreshLobby();
   setInterval(refreshLobby, 4000);
+
+  // ---------------- Tabs ----------------
+  function showTab(name) {
+    qsa(".tab").forEach(function (tab) {
+      var on = tab.getAttribute("data-tab") === name;
+      tab.classList.toggle("active", on);
+      tab.setAttribute("aria-selected", on ? "true" : "false");
+    });
+    qsa("[data-panel]").forEach(function (panel) {
+      panel.classList.toggle("hidden", panel.getAttribute("data-panel") !== name);
+    });
+    if (name === "all") refreshLibrary();
+  }
+
+  qsa(".tab").forEach(function (tab) {
+    tab.addEventListener("click", function () { showTab(tab.getAttribute("data-tab")); });
+  });
+
+  // ---------------- All Games: saved quizzes ----------------
+  // The list carries titles and counts only. Play asks the server to start a
+  // fresh room from the saved quiz, so its answers never reach this page.
+  var librarySets = null;
+  var libraryLoaded = false;
+
+  function renderLibrary() {
+    var list = $("libraryList");
+    list.innerHTML = "";
+    if (librarySets === null) {
+      var unavailable = document.createElement("p");
+      unavailable.className = "lobby-empty";
+      unavailable.textContent = t("play.library.unavailable");
+      list.appendChild(unavailable);
+      return;
+    }
+    if (!librarySets.length) {
+      var empty = document.createElement("p");
+      empty.className = "lobby-empty";
+      empty.textContent = t("play.library.empty");
+      list.appendChild(empty);
+      return;
+    }
+    librarySets.forEach(function (set) {
+      var row = document.createElement("div");
+      row.className = "lobby-row";
+
+      var info = document.createElement("div");
+      info.className = "lobby-info";
+      var title = document.createElement("span");
+      title.className = "lobby-title";
+      title.textContent = set.title;
+      var meta = document.createElement("span");
+      meta.className = "lobby-meta";
+      meta.textContent = t(set.mechanic === "buzzer" ? "play.library.buzzer" : "play.library.race") + " · " +
+        t(set.questionCount === 1 ? "play.library.questionSingular" : "play.library.questionPlural", { n: set.questionCount });
+      info.appendChild(title);
+      info.appendChild(meta);
+
+      var playBtn = document.createElement("button");
+      playBtn.type = "button";
+      playBtn.className = "btn small";
+      playBtn.textContent = t("play.library.play");
+      playBtn.addEventListener("click", function () { launchSet(set.id, playBtn); });
+
+      row.appendChild(info);
+      row.appendChild(playBtn);
+      list.appendChild(row);
+    });
+  }
+
+  function refreshLibrary() {
+    fetch("/api/question-sets")
+      .then(function (res) { return res.json(); })
+      .then(function (data) { librarySets = data.ok ? data.sets : null; libraryLoaded = true; renderLibrary(); })
+      .catch(function () { librarySets = null; libraryLoaded = true; renderLibrary(); });
+  }
+
+  function launchSet(id, btn) {
+    var errEl = $("libraryErr");
+    errEl.textContent = "";
+    btn.disabled = true;
+    fetch("/api/question-sets/" + encodeURIComponent(id) + "/launch", { method: "POST" })
+      .then(function (res) { return res.json(); })
+      .then(function (data) {
+        btn.disabled = false;
+        if (!data.ok) { errEl.textContent = t("play.library.launchFailed"); return; }
+        goToRoom(data.gameType, data.code, false);
+      })
+      .catch(function () {
+        btn.disabled = false;
+        errEl.textContent = t("play.library.launchFailed");
+      });
+  }
+
+  document.addEventListener("i18nchange", function () {
+    if (libraryLoaded) renderLibrary();
+  });
 
   showView("landing");
 })();

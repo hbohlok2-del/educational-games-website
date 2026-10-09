@@ -10,18 +10,21 @@ window.I18N_DICTIONARIES = {
       roomNotFound: "No match found with that code.",
       invalidTeam: "Invalid team.",
       teamTaken: "That team is already taken.",
-      noQuestions: "Add at least one valid question first."
+      noQuestions: "Add at least one valid question first.",
+      badPasscode: "Incorrect teacher passcode.",
+      passcodeNotConfigured: "Saved quizzes are locked until the site's teacher passcode is set.",
+      notFound: "That item no longer exists."
     },
     hub: {
       title: "Educational Games",
       card: {
-        tugOfWar: {
-          title: "Number Haul",
-          desc: "A math tug-of-war. Two teams, two devices, one rope. Answer arithmetic problems correctly and quickly to haul the rope to your side."
+        play: {
+          title: "Play a Game",
+          desc: "Join a game that's running now, or pick a saved quiz from your teachers and start a new match."
         },
-        teamGames: {
-          title: "Team Games",
-          desc: "Create your own race or buzzer game for any subject, join with a class code, or put it up on the big screen."
+        create: {
+          title: "Create a Game",
+          desc: "Write your own questions for any subject, or start a quick Number Haul math match."
         },
         courseNotes: {
           title: "Course Notes",
@@ -33,9 +36,8 @@ window.I18N_DICTIONARIES = {
       title: "Team Games",
       eyebrow: "team games",
       heroTitle: "Team Games",
-      lede: "Race or buzzer, any subject. Create a game as a teacher, join as a student, or put the action on the Big Screen.",
+      lede: "Join a game that's open now, or start a new match from a quiz your teachers have saved.",
       role: {
-        create: { title: "Create a Game", desc: "Write your own questions, pick a race or buzzer format, and get a room code for your class.", button: "Create a Game" },
         join: { title: "Join a Game", desc: "Got a room code from your teacher? Enter it here and pick your team.", button: "Join a Game" },
         bigScreen: { title: "Big Screen", desc: "Put the game up on a projector for the whole class to watch.", button: "Big Screen" }
       },
@@ -54,13 +56,24 @@ window.I18N_DICTIONARIES = {
         join: "Join",
         bigScreen: "Big Screen"
       },
+      tabs: { active: "Active Games", all: "All Games" },
+      library: {
+        heading: "Saved games from teachers",
+        empty: "No saved games yet.",
+        unavailable: "Saved games aren't available right now.",
+        play: "Play",
+        launchFailed: "Couldn't start that game. Try again.",
+        race: "Race",
+        buzzer: "Buzzer",
+        questionSingular: "{{n}} question",
+        questionPlural: "{{n}} questions"
+      },
       notice: {
         connectError: "Can't reach the game server right now. Check your connection and reload."
       }
     },
     teacher: {
       back: "← Educational Games",
-      title: "Create a Class Race",
       lede: "Write your own questions for any subject — math and science notation supported — and get a room code your students join from any device.",
       field: { title: "Game title", titlePlaceholder: "e.g. Chapter 6 Vocabulary", gameType: "Game type", theme: "Theme" },
       mechanic: { race: "Race", buzzer: "Buzzer" },
@@ -96,6 +109,12 @@ window.I18N_DICTIONARIES = {
         needOneQuestion: "Add at least one complete question.",
         createFailed: "Couldn't create the room."
       },
+      choose: {
+        heading: "What would you like to create?",
+        custom: { title: "Write your own questions", desc: "Any subject, race or buzzer format, with math and science notation." },
+        numberHaul: { title: "Number Haul", desc: "A quick math tug-of-war. Questions are generated automatically, no setup needed." }
+      },
+      passcode: { label: "Teacher passcode", placeholder: "Enter the teacher passcode", hint: "Needed to load, save, edit or delete saved quizzes.", button: "Unlock", ok: "Unlocked" },
       library: {
         saveButton: "💾 Save for later",
         saved: "Saved!",
@@ -204,18 +223,21 @@ window.I18N_DICTIONARIES = {
       roomNotFound: "Aucune partie trouvée avec ce code.",
       invalidTeam: "Équipe invalide.",
       teamTaken: "Cette équipe est déjà prise.",
-      noQuestions: "Ajoutez au moins une question valide."
+      noQuestions: "Ajoutez au moins une question valide.",
+      badPasscode: "Code enseignant incorrect.",
+      passcodeNotConfigured: "Les quiz enregistrés sont verrouillés tant que le code enseignant du site n'est pas défini.",
+      notFound: "Cet élément n'existe plus."
     },
     hub: {
       title: "Jeux éducatifs",
       card: {
-        tugOfWar: {
-          title: "Chiffre à la corde",
-          desc: "Un jeu de tir à la corde mathématique. Deux équipes, deux appareils, une corde. Répondez correctement et rapidement aux calculs pour tirer la corde de votre côté."
+        play: {
+          title: "Jouer à un jeu",
+          desc: "Rejoignez une partie en cours, ou choisissez un quiz enregistré par vos enseignants et lancez une nouvelle partie."
         },
-        teamGames: {
-          title: "Jeux d'équipe",
-          desc: "Créez votre propre jeu de course ou de buzzer pour n'importe quelle matière, rejoignez avec un code de classe, ou affichez-le sur grand écran."
+        create: {
+          title: "Créer un jeu",
+          desc: "Rédigez vos propres questions pour n'importe quelle matière, ou lancez une partie rapide de Chiffre à la corde."
         },
         courseNotes: {
           title: "Notes de cours",
@@ -227,9 +249,8 @@ window.I18N_DICTIONARIES = {
       title: "Jeux d'équipe",
       eyebrow: "jeux d'équipe",
       heroTitle: "Jeux d'équipe",
-      lede: "Course ou buzzer, toutes matières. Créez un jeu en tant qu'enseignant, rejoignez en tant qu'élève, ou lancez l'action sur le grand écran.",
+      lede: "Rejoignez une partie ouverte, ou lancez une nouvelle partie à partir d'un quiz enregistré par vos enseignants.",
       role: {
-        create: { title: "Créer un jeu", desc: "Rédigez vos propres questions, choisissez un format course ou buzzer, et obtenez un code pour votre classe.", button: "Créer un jeu" },
         join: { title: "Rejoindre un jeu", desc: "Vous avez un code de votre enseignant ? Entrez-le ici et choisissez votre équipe.", button: "Rejoindre un jeu" },
         bigScreen: { title: "Grand écran", desc: "Affichez le jeu sur un projecteur pour que toute la classe puisse regarder.", button: "Grand écran" }
       },
@@ -248,13 +269,24 @@ window.I18N_DICTIONARIES = {
         join: "Rejoindre",
         bigScreen: "Grand écran"
       },
+      tabs: { active: "Parties en cours", all: "Tous les jeux" },
+      library: {
+        heading: "Jeux enregistrés par les enseignants",
+        empty: "Aucun jeu enregistré pour le moment.",
+        unavailable: "Les jeux enregistrés ne sont pas disponibles pour le moment.",
+        play: "Jouer",
+        launchFailed: "Impossible de lancer ce jeu. Réessayez.",
+        race: "Course",
+        buzzer: "Buzzer",
+        questionSingular: "{{n}} question",
+        questionPlural: "{{n}} questions"
+      },
       notice: {
         connectError: "Impossible de joindre le serveur de jeu pour le moment. Vérifiez votre connexion et rechargez la page."
       }
     },
     teacher: {
       back: "← Jeux éducatifs",
-      title: "Créer une course de classe",
       lede: "Rédigez vos propres questions pour n'importe quelle matière — notation mathématique et scientifique prise en charge — et obtenez un code que vos élèves utilisent depuis n'importe quel appareil.",
       field: { title: "Titre du jeu", titlePlaceholder: "ex. Chapitre 6 Vocabulaire", gameType: "Type de jeu", theme: "Thème" },
       mechanic: { race: "Course", buzzer: "Buzzer" },
@@ -290,6 +322,12 @@ window.I18N_DICTIONARIES = {
         needOneQuestion: "Ajoutez au moins une question complète.",
         createFailed: "Impossible de créer la salle."
       },
+      choose: {
+        heading: "Que voulez-vous créer ?",
+        custom: { title: "Rédiger vos propres questions", desc: "Toutes matières, format course ou buzzer, avec notation mathématique et scientifique." },
+        numberHaul: { title: "Chiffre à la corde", desc: "Un tir à la corde mathématique rapide. Les questions sont générées automatiquement, sans préparation." }
+      },
+      passcode: { label: "Code enseignant", placeholder: "Entrez le code enseignant", hint: "Nécessaire pour charger, enregistrer, modifier ou supprimer des quiz enregistrés.", button: "Déverrouiller", ok: "Déverrouillé" },
       library: {
         saveButton: "💾 Enregistrer pour plus tard",
         saved: "Enregistré !",
@@ -398,18 +436,21 @@ window.I18N_DICTIONARIES = {
       roomNotFound: "لم يتم العثور على مباراة بهذا الرمز.",
       invalidTeam: "فريق غير صالح.",
       teamTaken: "هذا الفريق مأخوذ بالفعل.",
-      noQuestions: "أضف سؤالاً واحداً صالحاً على الأقل."
+      noQuestions: "أضف سؤالاً واحداً صالحاً على الأقل.",
+      badPasscode: "رمز المعلم غير صحيح.",
+      passcodeNotConfigured: "الاختبارات المحفوظة مقفلة حتى يتم تعيين رمز المعلم للموقع.",
+      notFound: "هذا العنصر لم يعد موجودًا."
     },
     hub: {
       title: "الألعاب التعليمية",
       card: {
-        tugOfWar: {
-          title: "شد الحبل بالأرقام",
-          desc: "لعبة شد حبل رياضية. فريقان، جهازان، حبل واحد. أجب عن المسائل الحسابية بشكل صحيح وسريع لتسحب الحبل إلى جهتك."
+        play: {
+          title: "العب لعبة",
+          desc: "انضم إلى لعبة جارية الآن، أو اختر اختبارًا محفوظًا من معلميك وابدأ مباراة جديدة."
         },
-        teamGames: {
-          title: "ألعاب الفرق",
-          desc: "أنشئ لعبة سباق أو جرس خاصة بك لأي مادة، وانضم برمز الصف، أو اعرضها على الشاشة الكبيرة."
+        create: {
+          title: "إنشاء لعبة",
+          desc: "اكتب أسئلتك الخاصة لأي مادة، أو ابدأ مباراة سريعة في شد الحبل بالأرقام."
         },
         courseNotes: {
           title: "ملاحظات الدروس",
@@ -421,9 +462,8 @@ window.I18N_DICTIONARIES = {
       title: "ألعاب الفرق",
       eyebrow: "ألعاب الفرق",
       heroTitle: "ألعاب الفرق",
-      lede: "سباق أو جرس، لأي مادة. أنشئ لعبة كمعلم، أو انضم كطالب، أو اعرض اللعبة على الشاشة الكبيرة.",
+      lede: "انضم إلى لعبة مفتوحة الآن، أو ابدأ مباراة جديدة من اختبار حفظه معلموك.",
       role: {
-        create: { title: "إنشاء لعبة", desc: "اكتب أسئلتك الخاصة، واختر نمط السباق أو الجرس، واحصل على رمز غرفة لصفك.", button: "إنشاء لعبة" },
         join: { title: "الانضمام إلى لعبة", desc: "هل لديك رمز غرفة من معلمك؟ أدخله هنا واختر فريقك.", button: "الانضمام إلى لعبة" },
         bigScreen: { title: "الشاشة الكبيرة", desc: "اعرض اللعبة على جهاز عرض ليشاهدها الصف بأكمله.", button: "الشاشة الكبيرة" }
       },
@@ -442,13 +482,24 @@ window.I18N_DICTIONARIES = {
         join: "انضمام",
         bigScreen: "الشاشة الكبيرة"
       },
+      tabs: { active: "الألعاب النشطة", all: "كل الألعاب" },
+      library: {
+        heading: "ألعاب محفوظة من المعلمين",
+        empty: "لا توجد ألعاب محفوظة بعد.",
+        unavailable: "الألعاب المحفوظة غير متاحة الآن.",
+        play: "العب",
+        launchFailed: "تعذّر بدء هذه اللعبة. حاول مرة أخرى.",
+        race: "سباق",
+        buzzer: "جرس",
+        questionSingular: "{{n}} سؤال",
+        questionPlural: "{{n}} أسئلة"
+      },
       notice: {
         connectError: "تعذّر الوصول إلى خادم اللعبة الآن. تحقق من اتصالك وأعد تحميل الصفحة."
       }
     },
     teacher: {
       back: "→ الألعاب التعليمية",
-      title: "إنشاء سباق للصف",
       lede: "اكتب أسئلتك الخاصة لأي مادة — مع دعم الرموز الرياضية والعلمية — واحصل على رمز ينضم به طلابك من أي جهاز.",
       field: { title: "عنوان اللعبة", titlePlaceholder: "مثال: مفردات الفصل 6", gameType: "نوع اللعبة", theme: "السمة" },
       mechanic: { race: "سباق", buzzer: "جرس" },
@@ -484,6 +535,12 @@ window.I18N_DICTIONARIES = {
         needOneQuestion: "أضف سؤالاً واحداً كاملاً على الأقل.",
         createFailed: "تعذّر إنشاء الغرفة."
       },
+      choose: {
+        heading: "ماذا تريد أن تنشئ؟",
+        custom: { title: "اكتب أسئلتك الخاصة", desc: "لأي مادة، بنمط السباق أو الجرس، مع دعم الرموز الرياضية والعلمية." },
+        numberHaul: { title: "شد الحبل بالأرقام", desc: "لعبة شد حبل رياضية سريعة. تُنشأ الأسئلة تلقائيًا دون أي إعداد." }
+      },
+      passcode: { label: "رمز المعلم", placeholder: "أدخل رمز المعلم", hint: "مطلوب لتحميل الاختبارات المحفوظة أو حفظها أو تعديلها أو حذفها.", button: "فتح", ok: "تم الفتح" },
       library: {
         saveButton: "💾 حفظ لوقت لاحق",
         saved: "تم الحفظ!",
@@ -592,18 +649,21 @@ window.I18N_DICTIONARIES = {
       roomNotFound: "Nie znaleziono gry z tym kodem.",
       invalidTeam: "Nieprawidłowa drużyna.",
       teamTaken: "Ta drużyna jest już zajęta.",
-      noQuestions: "Dodaj co najmniej jedno prawidłowe pytanie."
+      noQuestions: "Dodaj co najmniej jedno prawidłowe pytanie.",
+      badPasscode: "Nieprawidłowy kod nauczyciela.",
+      passcodeNotConfigured: "Zapisane quizy są zablokowane, dopóki nie zostanie ustawiony kod nauczyciela strony.",
+      notFound: "Ten element już nie istnieje."
     },
     hub: {
       title: "Gry edukacyjne",
       card: {
-        tugOfWar: {
-          title: "Przeciąganie liczb",
-          desc: "Matematyczne przeciąganie liny. Dwie drużyny, dwa urządzenia, jedna lina. Odpowiadaj poprawnie i szybko na zadania, aby przeciągnąć linę na swoją stronę."
+        play: {
+          title: "Zagraj",
+          desc: "Dołącz do trwającej gry albo wybierz zapisany quiz od nauczycieli i rozpocznij nowy mecz."
         },
-        teamGames: {
-          title: "Gry drużynowe",
-          desc: "Stwórz własny wyścig lub grę z brzęczykiem na dowolny temat, dołącz kodem klasy lub wyświetl grę na dużym ekranie."
+        create: {
+          title: "Stwórz grę",
+          desc: "Napisz własne pytania na dowolny temat albo rozpocznij szybki mecz Przeciągania liczb."
         },
         courseNotes: {
           title: "Notatki z lekcji",
@@ -615,9 +675,8 @@ window.I18N_DICTIONARIES = {
       title: "Gry drużynowe",
       eyebrow: "gry drużynowe",
       heroTitle: "Gry drużynowe",
-      lede: "Wyścig lub brzęczyk, dowolny temat. Stwórz grę jako nauczyciel, dołącz jako uczeń albo wyświetl akcję na dużym ekranie.",
+      lede: "Dołącz do otwartej gry albo rozpocznij nowy mecz z quizu zapisanego przez nauczycieli.",
       role: {
-        create: { title: "Stwórz grę", desc: "Napisz własne pytania, wybierz tryb wyścigu lub brzęczyka i otrzymaj kod pokoju dla swojej klasy.", button: "Stwórz grę" },
         join: { title: "Dołącz do gry", desc: "Masz kod od nauczyciela? Wpisz go tutaj i wybierz drużynę.", button: "Dołącz do gry" },
         bigScreen: { title: "Duży ekran", desc: "Wyświetl grę na projektorze, aby cała klasa mogła oglądać.", button: "Duży ekran" }
       },
@@ -636,13 +695,24 @@ window.I18N_DICTIONARIES = {
         join: "Dołącz",
         bigScreen: "Duży ekran"
       },
+      tabs: { active: "Aktywne gry", all: "Wszystkie gry" },
+      library: {
+        heading: "Zapisane gry nauczycieli",
+        empty: "Nie ma jeszcze zapisanych gier.",
+        unavailable: "Zapisane gry nie są teraz dostępne.",
+        play: "Graj",
+        launchFailed: "Nie udało się uruchomić gry. Spróbuj ponownie.",
+        race: "Wyścig",
+        buzzer: "Brzęczyk",
+        questionSingular: "{{n}} pytanie",
+        questionPlural: "{{n}} pytań"
+      },
       notice: {
         connectError: "Nie można teraz połączyć się z serwerem gry. Sprawdź połączenie i odśwież stronę."
       }
     },
     teacher: {
       back: "← Gry edukacyjne",
-      title: "Stwórz wyścig klasowy",
       lede: "Napisz własne pytania na dowolny temat — obsługiwana notacja matematyczna i naukowa — i otrzymaj kod, którym uczniowie dołączą z dowolnego urządzenia.",
       field: { title: "Tytuł gry", titlePlaceholder: "np. Rozdział 6 - słownictwo", gameType: "Typ gry", theme: "Motyw" },
       mechanic: { race: "Wyścig", buzzer: "Brzęczyk" },
@@ -678,6 +748,12 @@ window.I18N_DICTIONARIES = {
         needOneQuestion: "Dodaj co najmniej jedno pełne pytanie.",
         createFailed: "Nie udało się utworzyć pokoju."
       },
+      choose: {
+        heading: "Co chcesz stworzyć?",
+        custom: { title: "Napisz własne pytania", desc: "Dowolny temat, tryb wyścigu lub brzęczyka, z notacją matematyczną i naukową." },
+        numberHaul: { title: "Przeciąganie liczb", desc: "Szybkie matematyczne przeciąganie liny. Pytania generują się automatycznie, bez przygotowań." }
+      },
+      passcode: { label: "Kod nauczyciela", placeholder: "Wpisz kod nauczyciela", hint: "Potrzebny do wczytywania, zapisywania, edytowania i usuwania zapisanych quizów.", button: "Odblokuj", ok: "Odblokowano" },
       library: {
         saveButton: "💾 Zapisz na później",
         saved: "Zapisano!",

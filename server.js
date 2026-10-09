@@ -6,6 +6,7 @@ const tugOfWar = require("./server/games/tugOfWar");
 const teamRace = require("./server/games/teamRace");
 const teamBuzzer = require("./server/games/teamBuzzer");
 const { initDb } = require("./server/db");
+const { createQuestionSetsRouter } = require("./server/routes/questionSets");
 
 const app = express();
 const server = http.createServer(app);
@@ -18,15 +19,18 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
 app.use("/vendor/katex", express.static(path.join(__dirname, "node_modules", "katex", "dist")));
 app.use("/lessons", require("./server/routes/lessons"));
-app.use("/api/question-sets", require("./server/routes/questionSets"));
 
 initDb().catch((err) => {
   console.warn("Saved-quiz database unavailable, question-sets routes will return 503:", err.message);
 });
 
 const { rooms: tugRooms } = tugOfWar.attach(io);
-const { rooms: raceRooms } = teamRace.attach(io);
-const { rooms: buzzerRooms } = teamBuzzer.attach(io);
+const { rooms: raceRooms, createRoom: createRaceRoom } = teamRace.attach(io);
+const { rooms: buzzerRooms, createRoom: createBuzzerRoom } = teamBuzzer.attach(io);
+
+app.use("/api/question-sets", createQuestionSetsRouter({
+  launchers: { race: createRaceRoom, buzzer: createBuzzerRoom },
+}));
 
 function capitalize(word) {
   return word ? word.charAt(0).toUpperCase() + word.slice(1) : word;

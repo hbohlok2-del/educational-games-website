@@ -1,4 +1,5 @@
 const { buildQuestions } = require("../content/questions");
+const { sweepUnclaimedRooms } = require("./roomSweep");
 
 const CODE_CHARS = "ABCDEFGHJKMNPQRSTUVWXYZ";
 const START_COUNTDOWN_MS = 3000;
@@ -72,7 +73,40 @@ function attach(io) {
     room.nextAt = Date.now() + NEXT_QUESTION_DELAY_MS;
   }
 
+  // Builds and registers a room with no socket attached. Used both by the
+  // create-room socket event and by launching a saved quiz over HTTP, so the
+  // question list (with answers) never has to pass through a browser.
+  function createRoom(opts) {
+    const title = String((opts && opts.title) || "").trim().slice(0, 80) || "Class Buzzer";
+    const questions = buildQuestions(opts && opts.questions);
+    if (questions.length < 1) return null;
+
+    const code = generateRoomCode(rooms);
+    const room = {
+      code,
+      title,
+      theme: "spotlight",
+      status: "waiting",
+      round: 1,
+      scores: { A: 0, B: 0 },
+      stats: freshStats(),
+      matchStartAt: null,
+      winner: null,
+      teams: { A: null, B: null },
+      questions,
+      currentIndex: -1,
+      locked: true,
+      lastResult: null,
+      questionRevealedAt: null,
+      nextAt: null,
+      createdAt: Date.now(),
+    };
+    rooms.set(code, room);
+    return room;
+  }
+
   setInterval(() => {
+    sweepUnclaimedRooms(nsp, rooms);
     const now = Date.now();
     for (const room of rooms.values()) {
       if (room.status !== "active") continue;
@@ -100,33 +134,10 @@ function attach(io) {
   nsp.on("connection", (socket) => {
     socket.on("create-room", (opts, ack) => {
       if (typeof ack !== "function") return;
-      const title = String((opts && opts.title) || "").trim().slice(0, 80) || "Class Buzzer";
-      const theme = opts && opts.theme === "spotlight" ? "spotlight" : "spotlight";
-      const questions = buildQuestions(opts && opts.questions);
-      if (questions.length < 1) return ack({ ok: false, error: "no-questions" });
-
-      const code = generateRoomCode(rooms);
-      const room = {
-        code,
-        title,
-        theme,
-        status: "waiting",
-        round: 1,
-        scores: { A: 0, B: 0 },
-        stats: freshStats(),
-        matchStartAt: null,
-        winner: null,
-        teams: { A: null, B: null },
-        questions,
-        currentIndex: -1,
-        locked: true,
-        lastResult: null,
-        questionRevealedAt: null,
-        nextAt: null,
-      };
-      rooms.set(code, room);
-      socket.join(code);
-      socket.data.code = code;
+      const room = createRoom(opts);
+      if (!room) return ack({ ok: false, error: "no-questions" });
+      socket.join(room.code);
+      socket.data.code = room.code;
       socket.data.team = null;
       ack({ ok: true, room: publicRoom(room) });
     });
@@ -232,7 +243,7 @@ function attach(io) {
     });
   });
 
-  return { rooms };
+  return { rooms, createRoom };
 }
 
 module.exports = { attach, BUZZ_WINDOW_MS, WIN_SCORE };

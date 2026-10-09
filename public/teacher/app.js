@@ -22,6 +22,90 @@
   var questionList = $("questionList");
   var rowTpl = $("questionRowTpl");
 
+  function showForm() {
+    $("chooseView").classList.add("hidden");
+    $("formView").classList.remove("hidden");
+  }
+  $("chooseCustom").addEventListener("click", showForm);
+  if (location.hash === "#write") showForm();
+
+  // ---------------- Teacher passcode ----------------
+  // Kept for this browser tab only. Every saved-quiz request that exposes
+  // answers or changes the library sends it; the server rejects it if wrong.
+  var PASSCODE_KEY = "teacherPasscode";
+  var passcodeState = "hint"; // "hint" | "ok" | "bad"
+  var passcodeError = null;
+
+  function storedPasscode() {
+    try { return sessionStorage.getItem(PASSCODE_KEY) || ""; } catch (e) { return ""; }
+  }
+  function storePasscode(value) {
+    try {
+      if (value) sessionStorage.setItem(PASSCODE_KEY, value);
+      else sessionStorage.removeItem(PASSCODE_KEY);
+    } catch (e) { /* storage unavailable: the typed value is still used */ }
+  }
+  function currentPasscode() {
+    return storedPasscode() || $("passcodeInput").value.trim();
+  }
+  function teacherHeaders(extra) {
+    var h = extra || {};
+    h["X-Teacher-Passcode"] = currentPasscode();
+    return h;
+  }
+
+  function setPasscodeState(state, errorCode) {
+    passcodeState = state;
+    passcodeError = errorCode || null;
+    renderPasscodeStatus();
+  }
+
+  function renderPasscodeStatus() {
+    var el = $("passcodeStatus");
+    el.classList.toggle("ok", passcodeState === "ok");
+    el.classList.toggle("bad", passcodeState === "bad");
+    if (passcodeState === "ok") el.textContent = t("teacher.passcode.ok");
+    else if (passcodeState === "bad") el.textContent = tError(passcodeError || "bad-passcode", t("teacher.library.unavailable"));
+    else el.textContent = t("teacher.passcode.hint");
+  }
+
+  // A protected route answering bad-passcode / passcode-not-configured means
+  // the stored passcode is missing or wrong: forget it and say so.
+  function handleAuthFailure(data) {
+    if (data && (data.error === "bad-passcode" || data.error === "passcode-not-configured")) {
+      storePasscode("");
+      setPasscodeState("bad", data.error);
+      return true;
+    }
+    return false;
+  }
+
+  $("passcodeGo").addEventListener("click", function () {
+    var value = $("passcodeInput").value.trim();
+    if (!value) return;
+    $("passcodeGo").disabled = true;
+    fetch("/api/question-sets/check-passcode", { method: "POST", headers: { "X-Teacher-Passcode": value } })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        $("passcodeGo").disabled = false;
+        if (data.ok) {
+          storePasscode(value);
+          $("passcodeInput").value = "";
+          setPasscodeState("ok");
+        } else if (!handleAuthFailure(data)) {
+          setPasscodeState("bad", data.error);
+        }
+      })
+      .catch(function () {
+        $("passcodeGo").disabled = false;
+        setPasscodeState("bad", "unavailable");
+      });
+  });
+  $("passcodeInput").addEventListener("keydown", function (e) {
+    if (e.key === "Enter") $("passcodeGo").click();
+  });
+  if (storedPasscode()) setPasscodeState("ok"); else renderPasscodeStatus();
+
   function renderThemePick() {
     var wrap = $("themePick");
     wrap.innerHTML = "";
@@ -208,6 +292,7 @@
   });
 
   $("createAnother").addEventListener("click", function () {
+    location.hash = "write";
     location.reload();
   });
 
@@ -292,9 +377,13 @@
       loadBtn.className = "btn small";
       loadBtn.textContent = t("teacher.library.load");
       loadBtn.addEventListener("click", function () {
-        fetch("/api/question-sets/" + set.id)
+        fetch("/api/question-sets/" + set.id, { headers: teacherHeaders() })
           .then(function (r) { return r.json(); })
-          .then(function (data) { if (data.ok) loadSet(data.set); });
+          .then(function (data) {
+            if (data.ok) { loadSet(data.set); return; }
+            if (!handleAuthFailure(data)) $("createErr").textContent = tError(data.error, t("teacher.library.unavailable"));
+          })
+          .catch(function () { $("createErr").textContent = t("teacher.library.unavailable"); });
       });
       var delBtn = document.createElement("button");
       delBtn.type = "button";
@@ -302,7 +391,13 @@
       delBtn.title = t("teacher.library.delete");
       delBtn.textContent = "×";
       delBtn.addEventListener("click", function () {
-        fetch("/api/question-sets/" + set.id, { method: "DELETE" }).then(openLibrary);
+        fetch("/api/question-sets/" + set.id, { method: "DELETE", headers: teacherHeaders() })
+          .then(function (r) { return r.json(); })
+          .then(function (data) {
+            if (data.ok) { openLibrary(); return; }
+            if (!handleAuthFailure(data)) $("createErr").textContent = tError(data.error, t("teacher.library.unavailable"));
+          })
+          .catch(function () { $("createErr").textContent = t("teacher.library.unavailable"); });
       });
       actions.appendChild(loadBtn);
       actions.appendChild(delBtn);
@@ -340,12 +435,15 @@
 
     fetch(url, {
       method: isUpdate ? "PUT" : "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: teacherHeaders({ "Content-Type": "application/json" }),
       body: JSON.stringify({ title: $("titleInput").value.trim(), mechanic: selectedMechanic, theme: selectedTheme, questions: res.out }),
     })
       .then(function (r) { return r.json(); })
       .then(function (data) {
-        if (!data.ok) { errEl.textContent = t("teacher.library.unavailable"); return; }
+        if (!data.ok) {
+          if (!handleAuthFailure(data)) errEl.textContent = tError(data.error, t("teacher.library.unavailable"));
+          return;
+        }
         if (!isUpdate) loadedSetId = data.set.id;
         var btn = $("saveQuiz");
         btn.textContent = t(isUpdate ? "teacher.library.updated" : "teacher.library.saved");
@@ -358,5 +456,6 @@
     renumber();
     renderThemePick();
     updateSaveButtonLabel();
+    renderPasscodeStatus();
   });
 })();

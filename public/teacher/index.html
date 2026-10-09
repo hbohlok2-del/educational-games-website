@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title data-i18n="teacher.title">Create a Class Race</title>
+<title data-i18n="hub.card.create.title">Create a Game</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=JetBrains+Mono:wght@600;700&display=swap">
@@ -25,11 +25,36 @@
 <div id="app">
   <header class="page-header">
     <a class="back-link" href="/" data-i18n="teacher.back">&larr; Educational Games</a>
-    <h1 data-i18n="teacher.title">Create a Class Race</h1>
+    <h1 data-i18n="hub.card.create.title">Create a Game</h1>
     <p class="lede" data-i18n="teacher.lede">Write your own questions for any subject — math and science notation supported — and get a room code your students join from any device.</p>
   </header>
 
-  <section id="formView">
+  <section id="chooseView">
+    <div class="field-label" data-i18n="teacher.choose.heading">What would you like to create?</div>
+    <div class="choose-grid">
+      <button type="button" class="choose-card" id="chooseCustom">
+        <span class="choose-icon">✏️</span>
+        <span class="choose-title" data-i18n="teacher.choose.custom.title">Write your own questions</span>
+        <span class="choose-desc" data-i18n="teacher.choose.custom.desc">Any subject, race or buzzer format, with math and science notation.</span>
+      </button>
+      <a class="choose-card" href="/games/tug-of-war/">
+        <span class="choose-icon">🪢</span>
+        <span class="choose-title" data-i18n="teacher.choose.numberHaul.title">Number Haul</span>
+        <span class="choose-desc" data-i18n="teacher.choose.numberHaul.desc">A quick math tug-of-war. Questions are generated automatically, no setup needed.</span>
+      </a>
+    </div>
+  </section>
+
+  <section id="formView" class="hidden">
+    <div class="panel">
+      <label class="field-label" for="passcodeInput" data-i18n="teacher.passcode.label">Teacher passcode</label>
+      <div class="passcode-row">
+        <input id="passcodeInput" class="text-input" type="password" autocomplete="current-password" placeholder="Enter the teacher passcode" data-i18n-placeholder="teacher.passcode.placeholder">
+        <button type="button" class="btn secondary" id="passcodeGo" data-i18n="teacher.passcode.button">Unlock</button>
+      </div>
+      <p class="hint" id="passcodeStatus">Needed to load, save, edit or delete saved quizzes.</p>
+    </div>
+
     <button type="button" class="btn secondary block" id="openLibrary" data-i18n="teacher.library.loadButton">📂 Load a saved quiz</button>
 
     <div class="panel hidden" id="libraryPanel">
