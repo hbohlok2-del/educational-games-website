@@ -1,6 +1,6 @@
 const crypto = require("crypto");
 const { client } = require("../db");
-const { buildQuestions } = require("./questions");
+const { buildQuestions, cleanBoardSettings } = require("./questions");
 
 function requireClient() {
   if (!client) throw new Error("database unavailable");
@@ -13,13 +13,8 @@ function cleanMechanic(mechanic) {
   return MECHANICS.includes(mechanic) ? mechanic : "race";
 }
 
-// Only known settings survive: currently just the board wrong-answer penalty.
-function cleanSettings(settings) {
-  return { penalty: !!(settings && settings.penalty) };
-}
-
 function parseSettings(text) {
-  try { return cleanSettings(JSON.parse(text || "{}")); } catch (e) { return cleanSettings(null); }
+  try { return cleanBoardSettings(JSON.parse(text || "{}")); } catch (e) { return cleanBoardSettings(null); }
 }
 
 async function listQuestionSets() {
@@ -60,7 +55,7 @@ async function saveQuestionSet({ title, mechanic, theme, questions, settings }) 
   const cleanTheme = String(theme || "").trim() || "rope";
   const validated = buildQuestions(questions, { board: mech === "board" });
   if (validated.length < 1) return null;
-  const cleaned = cleanSettings(settings);
+  const cleaned = cleanBoardSettings(settings);
 
   const id = crypto.randomUUID();
   const createdAt = new Date().toISOString();
@@ -77,7 +72,7 @@ async function updateQuestionSet(id, { title, mechanic, theme, questions, settin
   const cleanTheme = String(theme || "").trim() || "rope";
   const validated = buildQuestions(questions, { board: mech === "board" });
   if (validated.length < 1) return null;
-  const cleaned = cleanSettings(settings);
+  const cleaned = cleanBoardSettings(settings);
 
   const result = await requireClient().execute({
     sql: "UPDATE question_sets SET title = ?, mechanic = ?, theme = ?, questions = ?, settings = ? WHERE id = ?",

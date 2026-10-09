@@ -1,9 +1,10 @@
-const { buildQuestions } = require("../content/questions");
+const { buildQuestions, cleanBoardSettings } = require("../content/questions");
 const { sweepUnclaimedRooms } = require("./roomSweep");
 
 const CODE_CHARS = "ABCDEFGHJKMNPQRSTUVWXYZ";
+const TEAMS = ["A", "B", "C", "D"]; // red, blue, green, purple
+const MIN_TEAMS = 2;
 const START_COUNTDOWN_MS = 3000;
-const ANSWER_WINDOW_MS = 20000;
 const REVEAL_MS = 4500;
 const MAX_CATEGORIES = 6;
 const MAX_PER_CATEGORY = 6;
@@ -16,8 +17,18 @@ function generateRoomCode(rooms) {
   return code;
 }
 
+function perTeam(make) {
+  const out = {};
+  TEAMS.forEach((team) => { out[team] = make(); });
+  return out;
+}
+
 function freshStats() {
-  return { A: { correct: 0, wrong: 0 }, B: { correct: 0, wrong: 0 } };
+  return perTeam(() => ({ correct: 0, wrong: 0 }));
+}
+
+function joinedTeams(room) {
+  return TEAMS.filter((team) => room.teams[team]);
 }
 
 // Categories in the order the teacher first used them, each column sorted by
@@ -43,19 +54,15 @@ function buildBoard(questions) {
   return { categories, cells };
 }
 
-function freshAttempts() {
-  return { A: null, B: null };
-}
-
 function publicRoom(room) {
   const cell = room.currentCell == null ? null : room.cells[room.currentCell];
   const q = cell ? room.questions[cell.qIndex] : null;
   const revealing = room.phase === "reveal";
   const attempts = {};
-  ["A", "B"].forEach((team) => {
+  room.playing.forEach((team) => {
     const a = room.attempts[team];
     // A team's answer text stays hidden until the question closes, so the
-    // other team cannot copy it.
+    // other teams cannot copy it.
     attempts[team] = a ? { answered: true, result: a.result, input: revealing ? a.input : null } : { answered: false, result: null, input: null };
   });
   return {
@@ -63,10 +70,11 @@ function publicRoom(room) {
     title: room.title,
     theme: room.theme,
     penalty: room.settings.penalty,
+    timeLimit: room.settings.timeLimit,
     status: room.status,
     round: room.round,
-    teamA: { joined: !!room.teams.A },
-    teamB: { joined: !!room.teams.B },
+    teams: TEAMS.reduce((acc, team) => { acc[team] = { joined: !!room.teams[team] }; return acc; }, {}),
+    playing: room.playing,
     scores: room.scores,
     stats: room.stats,
     winner: room.winner,
@@ -79,7 +87,7 @@ function publicRoom(room) {
     currentCell: room.currentCell,
     question: q ? { prompt: q.prompt, type: q.type, choices: q.choices, points: cell.points, category: room.categories[cell.cat] } : null,
     openedAt: room.openedAt,
-    windowMs: ANSWER_WINDOW_MS,
+    windowMs: room.settings.timeLimit * 1000,
     attempts,
     cellWinner: room.cellWinner,
     answerText: revealing && q ? q.answerText : null,
@@ -121,16 +129,19 @@ function attach(io) {
     };
   }
 
+  // The teams joined at start are the ones that play this round; empty seats
+  // stay out until the next rematch.
   function resetMatch(room) {
     room.status = "active";
-    room.scores = { A: 0, B: 0 };
+    room.playing = joinedTeams(room);
+    room.scores = perTeam(() => 0);
     room.stats = freshStats();
     room.winner = null;
     room.cells.forEach((c) => { c.used = false; c.wonBy = null; });
-    room.control = "A";
+    room.control = room.playing[0];
     room.phase = "board";
     room.currentCell = null;
-    room.attempts = freshAttempts();
+    room.attempts = {};
     room.order = [];
     room.cellWinner = null;
     room.openedAt = null;
@@ -149,21 +160,22 @@ function attach(io) {
       code,
       title,
       theme: "classic",
-      settings: { penalty: !!(opts && opts.settings && opts.settings.penalty) },
+      settings: cleanBoardSettings(opts && opts.settings),
       status: "waiting",
       round: 1,
-      teams: { A: null, B: null },
+      teams: perTeam(() => null),
+      playing: [],
       questions,
       categories,
       cells,
-      scores: { A: 0, B: 0 },
+      scores: perTeam(() => 0),
       stats: freshStats(),
       winner: null,
       matchStartAt: null,
-      control: "A",
+      control: null,
       phase: "board",
       currentCell: null,
-      attempts: freshAttempts(),
+      attempts: {},
       order: [],
       cellWinner: null,
       openedAt: null,
@@ -194,22 +206,29 @@ function attach(io) {
     room.revealUntil = Date.now() + REVEAL_MS;
   }
 
+  // Highest score among the teams playing; a tie for first is a draw.
+  function topTeam(room) {
+    const best = Math.max(...room.playing.map((team) => room.scores[team]));
+    const leaders = room.playing.filter((team) => room.scores[team] === best);
+    return leaders.length === 1 ? leaders[0] : null;
+  }
+
   function finishReveal(room) {
     room.phase = "board";
     room.currentCell = null;
-    room.attempts = freshAttempts();
+    room.attempts = {};
     room.order = [];
     room.cellWinner = null;
     room.openedAt = null;
     room.revealUntil = null;
     if (room.cells.every((c) => c.used)) {
       room.status = "finished";
-      room.winner = room.scores.A === room.scores.B ? null : room.scores.A > room.scores.B ? "A" : "B";
+      room.winner = topTeam(room);
     }
   }
 
-  // Answers are in (both teams, or the window closed). Open questions go to
-  // the host if anyone answered; everything else reveals.
+  // Answers are in (every playing team, or the window closed). Open questions
+  // go to the host if anyone answered; everything else reveals.
   function closeAnswering(room) {
     const q = room.questions[room.cells[room.currentCell].qIndex];
     if (q.type === "open" && room.order.some((team) => room.attempts[team].result === null)) {
@@ -224,7 +243,7 @@ function attach(io) {
     const now = Date.now();
     for (const room of rooms.values()) {
       if (room.status !== "active") continue;
-      if (room.phase === "question" && now - room.openedAt >= ANSWER_WINDOW_MS) {
+      if (room.phase === "question" && now - room.openedAt >= room.settings.timeLimit * 1000) {
         closeAnswering(room);
         broadcastRoom(room);
       } else if (room.phase === "reveal" && now >= room.revealUntil) {
@@ -259,8 +278,11 @@ function attach(io) {
         return;
       }
 
-      if (!["A", "B"].includes(team)) return ack({ ok: false, error: "invalid-team" });
+      if (!TEAMS.includes(team)) return ack({ ok: false, error: "invalid-team" });
       if (room.teams[team]) return ack({ ok: false, error: "team-taken" });
+      // Once a game is under way only its own teams can (re)join, e.g. after
+      // a phone drops its connection.
+      if (room.status !== "waiting" && !room.playing.includes(team)) return ack({ ok: false, error: "game-started" });
 
       room.teams[team] = socket.id;
       socket.join(room.code);
@@ -279,14 +301,14 @@ function attach(io) {
 
     socket.on("start-match", () => {
       const room = rooms.get(socket.data.code);
-      if (!room || !room.teams.A || !room.teams.B || room.status === "active") return;
+      if (!room || room.status !== "waiting" || joinedTeams(room).length < MIN_TEAMS) return;
       resetMatch(room);
       broadcastRoom(room);
     });
 
     socket.on("rematch", () => {
       const room = rooms.get(socket.data.code);
-      if (!room || room.status !== "finished") return;
+      if (!room || room.status !== "finished" || joinedTeams(room).length < MIN_TEAMS) return;
       room.round += 1;
       resetMatch(room);
       broadcastRoom(room);
@@ -306,7 +328,7 @@ function attach(io) {
 
       room.phase = "question";
       room.currentCell = cell;
-      room.attempts = freshAttempts();
+      room.attempts = {};
       room.order = [];
       room.cellWinner = null;
       room.openedAt = Date.now();
@@ -321,6 +343,7 @@ function attach(io) {
       const room = rooms.get(socket.data.code);
       const team = socket.data.team;
       if (!room || room.status !== "active" || room.phase !== "question" || !team) return reply({ ok: false });
+      if (!room.playing.includes(team)) return reply({ ok: false });
       if (cell !== room.currentCell) return reply({ ok: false, tooLate: true });
       if (room.attempts[team]) return reply({ ok: false, error: "already-answered" });
       const text = String(input == null ? "" : input).trim().slice(0, 200);
@@ -343,7 +366,7 @@ function attach(io) {
           return;
         }
       }
-      if (room.attempts.A && room.attempts.B) closeAnswering(room);
+      if (room.playing.every((t) => room.attempts[t])) closeAnswering(room);
       broadcastRoom(room);
     });
 
@@ -376,11 +399,15 @@ function attach(io) {
         room.teams[socket.data.team] = null;
         broadcastRoom(room);
       }
-      if (!room.teams.A && !room.teams.B) rooms.delete(room.code);
+      // A waiting room outlives its creator's tab (or a refreshed Big Screen);
+      // the unclaimed-room sweep removes it if nobody comes. A game in
+      // progress ends once nobody at all is connected.
+      const connected = nsp.adapter.rooms.get(room.code);
+      if (room.status !== "waiting" && (!connected || connected.size === 0)) rooms.delete(room.code);
     });
   });
 
   return { rooms, createRoom };
 }
 
-module.exports = { attach, ANSWER_WINDOW_MS, REVEAL_MS, buildBoard };
+module.exports = { attach, REVEAL_MS, TEAMS, buildBoard };

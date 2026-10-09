@@ -141,6 +141,80 @@ async function main() {
   const r2 = await rematched;
   check("rematch clears the board and scores", r2.cells.every((c) => !c.used) && r2.scores.A === 0 && r2.scores.B === 0 && r2.control === "A");
 
+  check("default time limit is 30 seconds", r2.timeLimit === 30 && r2.windowMs === 30000);
+
+  // --- A waiting room survives its creator's tab closing ---
+  const creator = io(url);
+  await new Promise((r) => creator.on("connect", r));
+  const kept = await emit(creator, "create-room", { title: "Kept", questions: [QUESTIONS[1]] });
+  creator.close();
+  await wait(300);
+  const stillThere = await emit(host, "peek-room", { code: kept.room.code });
+  check("a waiting room survives its creator disconnecting", stillThere.ok === true);
+
+  // --- Three teams (Red, Green, Purple), 15-second limit ---
+  const solo = io(url);
+  const red = io(url);
+  const green = io(url);
+  const purple = io(url);
+  const lateBlue = io(url);
+  await Promise.all([solo, red, green, purple, lateBlue].map((s) => new Promise((r) => s.on("connect", r))));
+
+  const lonely = await emit(host, "create-room", { title: "Solo", questions: QUESTIONS.slice(0, 1) });
+  await emit(solo, "join-room", { code: lonely.room.code, team: "A" });
+  solo.emit("start-match");
+  await wait(300);
+  const stillWaiting = await emit(solo, "peek-room", { code: lonely.room.code });
+  check("one team alone cannot start", stillWaiting.room.status === "waiting");
+
+  const three = await emit(host, "create-room", {
+    title: "Three Teams",
+    questions: [QUESTIONS[1]],
+    settings: { timeLimit: 15, penalty: false },
+  });
+  const code3 = three.room.code;
+  check("chosen time limit is applied", three.room.timeLimit === 15 && three.room.windowMs === 15000);
+  const oddTime = await emit(host, "create-room", { title: "Odd", questions: [QUESTIONS[1]], settings: { timeLimit: 7 } });
+  check("an unlisted time falls back to 30 seconds", oddTime.room.timeLimit === 30);
+
+  await emit(red, "join-room", { code: code3, team: "A" });
+  await emit(green, "join-room", { code: code3, team: "C" });
+  await emit(purple, "join-room", { code: code3, team: "D" });
+  const badTeam = await emit(lateBlue, "join-room", { code: code3, team: "E" });
+  check("only teams A-D exist", badTeam.ok === false && badTeam.error === "invalid-team");
+
+  red.emit("start-match");
+  const started3 = await nextUpdate(red, (r) => r.status === "active");
+  check("three teams play, the empty seat does not", started3.playing.join("") === "ACD" && started3.control === "A");
+  const late = await emit(lateBlue, "join-room", { code: code3, team: "B" });
+  check("a new team cannot join after the start", late.ok === false && late.error === "game-started");
+
+  // Purple's phone drops and comes back.
+  purple.close();
+  await wait(200);
+  const purpleAgain = io(url);
+  await new Promise((r) => purpleAgain.on("connect", r));
+  const rejoin = await emit(purpleAgain, "join-room", { code: code3, team: "D" });
+  check("a playing team can rejoin after a dropped connection", rejoin.ok === true);
+
+  await wait(3100);
+  const opened3 = nextUpdate(red, (r) => r.phase === "question");
+  await emit(red, "pick-cell", { cell: 0 });
+  const q3 = await opened3;
+  check("answer status covers exactly the playing teams", Object.keys(q3.attempts).sort().join("") === "ACD");
+  await emit(red, "answer", { cell: 0, input: "0" });
+  await emit(green, "answer", { cell: 0, input: "2" });
+  const midway3 = await nextUpdate(red, (r) => r.attempts.C.answered);
+  check("square stays open until every playing team answers", midway3.phase === "question");
+  const t0 = Date.now();
+  const timedOut = nextUpdate(red, (r) => r.phase === "reveal");
+  const closed = await timedOut;
+  const elapsed = Date.now() - t0;
+  check("the square closes when the 15 s limit runs out", closed.cellWinner === null && elapsed > 9000 && elapsed < 16500);
+  const end3 = await nextUpdate(red, (r) => r.status === "finished");
+  check("a tie at the top is a draw", end3.winner === null && end3.playing.length === 3);
+
+  [solo, red, green, purpleAgain, lateBlue].forEach((s) => s.close());
   [host, a, b, display].forEach((s) => s.close());
   server.close(() => {
     console.log(failures ? `TEAM BOARD SMOKE TEST FAILED (${failures})` : "TEAM BOARD SMOKE TEST PASSED");
@@ -153,4 +227,4 @@ main().catch((e) => { console.error(e); process.exit(1); });
 setTimeout(() => {
   console.log("TIMEOUT - test did not complete");
   process.exit(1);
-}, 30000);
+}, 60000);

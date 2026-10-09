@@ -67,10 +67,7 @@
     <button class="back-link" data-action="go-landing" data-i18n="common.back">&larr; Back</button>
     <div class="panel">
       <div class="field-label"><span data-i18n="games.teamBoard.join.roomLabel">Room</span> <span class="mono" id="joinRoleCode"></span> &middot; <span id="joinRoleTitle"></span></div>
-      <div class="team-pick">
-        <button class="team-btn a" id="joinAsA" data-i18n="games.teamBoard.join.joinRed">🔴 Join Red</button>
-        <button class="team-btn b" id="joinAsB" data-i18n="games.teamBoard.join.joinBlue">🔵 Join Blue</button>
-      </div>
+      <div class="team-pick" id="teamPick"></div>
       <button class="btn secondary block" id="joinAsDisplay" data-i18n="games.teamBoard.join.watchBigScreen">📺 Watch on the Big Screen</button>
       <div class="err" id="joinRoleErr"></div>
     </div>
@@ -86,7 +83,7 @@
       </div>
       <p class="lede" id="lobbyRules"></p>
       <div class="roster" id="lobbyRoster"></div>
-      <button class="btn block" id="lobbyStart" disabled data-i18n="games.teamBoard.lobby.waitingBothTeams">Waiting for both teams&hellip;</button>
+      <button class="btn block" id="lobbyStart" disabled data-i18n="games.teamBoard.lobby.needTwoTeams">Waiting for at least 2 teams&hellip;</button>
       <button class="btn secondary block" data-action="go-landing" data-i18n="games.teamBoard.lobby.leaveRoom">Leave Room</button>
     </div>
   </section>
@@ -98,10 +95,7 @@
       <span id="controlLabel" class="control-label"></span>
     </div>
 
-    <div class="scoreboard">
-      <div class="score-chip a"><span class="lab" data-i18n="games.teamBoard.match.scoreRedTag">🔴 RED</span><span class="val" id="scoreA">0</span></div>
-      <div class="score-chip b"><span class="lab" data-i18n="games.teamBoard.match.scoreBlueTag">BLUE 🔵</span><span class="val" id="scoreB">0</span></div>
-    </div>
+    <div class="scoreboard" id="scoreboard"></div>
 
     <!-- Board: shown while a square is being picked -->
     <div id="boardView">
@@ -115,10 +109,7 @@
         <div class="q-meta" id="questionMeta"></div>
         <div class="equation" id="questionText"></div>
         <div class="timer-track"><div class="timer-bar" id="timerBar"></div></div>
-        <div class="attempts">
-          <div class="attempt a"><span data-i18n="games.teamBoard.lobby.redTeam">Red Team</span><span id="attemptA"></span></div>
-          <div class="attempt b"><span data-i18n="games.teamBoard.lobby.blueTeam">Blue Team</span><span id="attemptB"></span></div>
-        </div>
+        <div class="attempts" id="attempts"></div>
       </div>
       <div class="result-banner hidden" id="resultBanner"></div>
 
@@ -154,20 +145,7 @@
       <div class="trophy" id="endTrophy">🏆</div>
       <h2 id="endHeadline"></h2>
     </div>
-    <div class="recap">
-      <div class="card a">
-        <div class="field-label" style="color:#fff; opacity:0.85;" data-i18n="games.teamBoard.lobby.redTeam">Red Team</div>
-        <div class="k"><span data-i18n="games.teamBoard.end.points">Points</span><span id="endAScore">0</span></div>
-        <div class="k"><span data-i18n="games.teamBoard.display.correct">Correct</span><span id="endACorrect">0</span></div>
-        <div class="k"><span data-i18n="games.teamBoard.display.wrong">Wrong</span><span id="endAWrong">0</span></div>
-      </div>
-      <div class="card b">
-        <div class="field-label" style="color:#fff; opacity:0.85;" data-i18n="games.teamBoard.lobby.blueTeam">Blue Team</div>
-        <div class="k"><span data-i18n="games.teamBoard.end.points">Points</span><span id="endBScore">0</span></div>
-        <div class="k"><span data-i18n="games.teamBoard.display.correct">Correct</span><span id="endBCorrect">0</span></div>
-        <div class="k"><span data-i18n="games.teamBoard.display.wrong">Wrong</span><span id="endBWrong">0</span></div>
-      </div>
-    </div>
+    <div class="recap" id="recap"></div>
     <div class="end-actions">
       <button class="btn" id="endRematch" data-i18n="games.teamBoard.end.rematch">Rematch</button>
       <button class="btn secondary" data-action="go-landing" data-i18n="games.teamBoard.end.newGame">New Game</button>

@@ -13,7 +13,8 @@ window.I18N_DICTIONARIES = {
       noQuestions: "Add at least one valid question first.",
       badPasscode: "Incorrect teacher passcode.",
       passcodeNotConfigured: "Saved quizzes are locked until the site's teacher passcode is set.",
-      notFound: "That item no longer exists."
+      notFound: "That item no longer exists.",
+      gameStarted: "This game has already started."
     },
     hub: {
       title: "Educational Games",
@@ -117,7 +118,7 @@ window.I18N_DICTIONARIES = {
         needOneQuestion: "Add at least one complete question.",
         createFailed: "Couldn't create the room."
       },
-      board: { penalty: "Wrong answers lose points" },
+      board: { penalty: "Wrong answers lose points", timeLimit: "Time per question", seconds: "{{n}} s" },
       choose: {
         heading: "What would you like to create?",
         custom: { title: "Write your own questions", desc: "Any subject, race or buzzer format, with math and science notation." },
@@ -199,7 +200,7 @@ window.I18N_DICTIONARIES = {
         title: "Quiz Board",
         eyebrow: "a classroom quiz board",
         heroTitle: "Quiz Board",
-        lede: "Two teams, one board. Pick a square, answer on your device, and win its points.",
+        lede: "Two to four teams, one board. Pick a square, answer on your device, and win its points.",
         role: {
           join: {
             title: "Join a Board Game",
@@ -212,40 +213,42 @@ window.I18N_DICTIONARIES = {
             button: "Big Screen"
           }
         },
-        howto: "<b>How it works:</b> the team in control picks a square. Each team gets one answer. The first correct answer wins the square's points and control of the board. When every square is gone, the highest score wins.",
+        howto: "<b>How it works:</b> up to 4 teams can join. The team in control picks a square, and every team gets one answer. The first correct answer wins the square's points and control of the board. When every square is gone, the highest score wins.",
         join: {
+          joinTeam: "Join {{team}}",
           label: "Enter the 4-letter room code",
           findRoom: "Find Room",
           roomLabel: "Room",
-          joinRed: "🔴 Join Red",
-          joinBlue: "🔵 Join Blue",
           watchBigScreen: "📺 Watch on the Big Screen"
+        },
+        teams: {
+          A: "Red Team",
+          B: "Blue Team",
+          C: "Green Team",
+          D: "Purple Team"
         },
         defaultTitle: "Quiz Board",
         lobby: {
+          open: "Open seat",
+          needTwoTeams: "Waiting for at least 2 teams…",
+          timeLimit: "{{n}} seconds per question.",
           questionSingular: "{{n}} square",
           questionPlural: "{{n}} squares",
-          redTeam: "Red Team",
-          blueTeam: "Blue Team",
           ready: "Ready",
-          waiting: "Waiting…",
-          startGame: "Start Game",
+          startGame: "Start Game ({{n}} teams)",
           matchStarting: "Game starting…",
-          waitingBothTeams: "Waiting for both teams…",
           leaveRoom: "Leave Room",
           penaltyOn: "In this game, wrong answers lose the square's points.",
           penaltyOff: "In this game, wrong answers cost nothing."
         },
         match: {
-          teamTagRed: "🔴 RED TEAM",
-          teamTagBlue: "🔵 BLUE TEAM",
+          teamPicks: "{{team}} picks",
+          teamWins: "{{team}} wins {{points}} points!",
           typeYourAnswer: "Type your answer",
           submit: "Submit",
           getReady: "Get ready…",
-          redPicks: "🔴 Red picks",
-          bluePicks: "🔵 Blue picks",
           yourPick: "Your team picks a square.",
-          waitPick: "Waiting for the other team to pick…",
+          waitPick: "Waiting for the team in control to pick…",
           hostPickHint: "Click a square to pick it for the team in control.",
           notAnswered: "No answer yet",
           answered: "Answer sent",
@@ -254,12 +257,8 @@ window.I18N_DICTIONARIES = {
           correct: "✓ Correct",
           wrong: "✗ Wrong",
           notJudged: "Not needed",
-          redWins: "🔴 Red Team wins {{points}} points!",
-          blueWins: "🔵 Blue Team wins {{points}} points!",
           nobody: "Nobody got it.",
-          answerWas: "Answer: {{answer}}",
-          scoreRedTag: "🔴 RED",
-          scoreBlueTag: "BLUE 🔵"
+          answerWas: "Answer: {{answer}}"
         },
         judge: {
           heading: "Judge the answer",
@@ -273,8 +272,7 @@ window.I18N_DICTIONARIES = {
           wrong: "Wrong"
         },
         end: {
-          redWins: "Red Team wins the board!",
-          blueWins: "Blue Team wins the board!",
+          teamWins: "{{team}} wins the board!",
           draw: "It's a draw!",
           rematch: "Rematch",
           newGame: "New Game",
@@ -327,7 +325,8 @@ window.I18N_DICTIONARIES = {
       noQuestions: "Ajoutez au moins une question valide.",
       badPasscode: "Code enseignant incorrect.",
       passcodeNotConfigured: "Les quiz enregistrés sont verrouillés tant que le code enseignant du site n'est pas défini.",
-      notFound: "Cet élément n'existe plus."
+      notFound: "Cet élément n'existe plus.",
+      gameStarted: "Cette partie a déjà commencé."
     },
     hub: {
       title: "Jeux éducatifs",
@@ -431,7 +430,7 @@ window.I18N_DICTIONARIES = {
         needOneQuestion: "Ajoutez au moins une question complète.",
         createFailed: "Impossible de créer la salle."
       },
-      board: { penalty: "Les mauvaises réponses font perdre des points" },
+      board: { penalty: "Les mauvaises réponses font perdre des points", timeLimit: "Temps par question", seconds: "{{n}} s" },
       choose: {
         heading: "Que voulez-vous créer ?",
         custom: { title: "Rédiger vos propres questions", desc: "Toutes matières, format course ou buzzer, avec notation mathématique et scientifique." },
@@ -513,7 +512,7 @@ window.I18N_DICTIONARIES = {
         title: "Tableau de quiz",
         eyebrow: "un tableau de quiz pour la classe",
         heroTitle: "Tableau de quiz",
-        lede: "Deux équipes, un tableau. Choisissez une case, répondez sur votre appareil et gagnez ses points.",
+        lede: "De deux à quatre équipes, un tableau. Choisissez une case, répondez sur votre appareil et gagnez ses points.",
         role: {
           join: {
             title: "Rejoindre un tableau",
@@ -526,40 +525,42 @@ window.I18N_DICTIONARIES = {
             button: "Grand écran"
           }
         },
-        howto: "<b>Comment ça marche :</b> l'équipe qui a la main choisit une case. Chaque équipe a droit à une réponse. La première bonne réponse gagne les points de la case et la main sur le tableau. Quand toutes les cases sont jouées, le meilleur score gagne.",
+        howto: "<b>Comment ça marche :</b> jusqu'à 4 équipes peuvent rejoindre. L'équipe qui a la main choisit une case, et chaque équipe a droit à une réponse. La première bonne réponse gagne les points de la case et la main sur le tableau. Quand toutes les cases sont jouées, le meilleur score gagne.",
         join: {
+          joinTeam: "Rejoindre : {{team}}",
           label: "Entrez le code de la salle à 4 lettres",
           findRoom: "Trouver la salle",
           roomLabel: "Salle",
-          joinRed: "🔴 Rejoindre Rouge",
-          joinBlue: "🔵 Rejoindre Bleu",
           watchBigScreen: "📺 Regarder sur le grand écran"
+        },
+        teams: {
+          A: "Équipe Rouge",
+          B: "Équipe Bleue",
+          C: "Équipe Verte",
+          D: "Équipe Violette"
         },
         defaultTitle: "Tableau de quiz",
         lobby: {
+          open: "Place libre",
+          needTwoTeams: "En attente d'au moins 2 équipes…",
+          timeLimit: "{{n}} secondes par question.",
           questionSingular: "{{n}} case",
           questionPlural: "{{n}} cases",
-          redTeam: "Équipe Rouge",
-          blueTeam: "Équipe Bleue",
           ready: "Prête",
-          waiting: "En attente…",
-          startGame: "Démarrer la partie",
+          startGame: "Démarrer la partie ({{n}} équipes)",
           matchStarting: "La partie démarre…",
-          waitingBothTeams: "En attente des deux équipes…",
           leaveRoom: "Quitter la salle",
           penaltyOn: "Dans cette partie, une mauvaise réponse fait perdre les points de la case.",
           penaltyOff: "Dans cette partie, une mauvaise réponse ne coûte rien."
         },
         match: {
-          teamTagRed: "🔴 ÉQUIPE ROUGE",
-          teamTagBlue: "🔵 ÉQUIPE BLEUE",
+          teamPicks: "{{team}} choisit",
+          teamWins: "{{team}} gagne {{points}} points !",
           typeYourAnswer: "Tapez votre réponse",
           submit: "Envoyer",
           getReady: "Préparez-vous…",
-          redPicks: "🔴 Rouge choisit",
-          bluePicks: "🔵 Bleu choisit",
           yourPick: "Votre équipe choisit une case.",
-          waitPick: "En attente du choix de l'autre équipe…",
+          waitPick: "En attente du choix de l'équipe qui a la main…",
           hostPickHint: "Cliquez sur une case pour la choisir à la place de l'équipe qui a la main.",
           notAnswered: "Pas encore de réponse",
           answered: "Réponse envoyée",
@@ -568,12 +569,8 @@ window.I18N_DICTIONARIES = {
           correct: "✓ Correct",
           wrong: "✗ Faux",
           notJudged: "Non nécessaire",
-          redWins: "🔴 L'équipe Rouge gagne {{points}} points !",
-          blueWins: "🔵 L'équipe Bleue gagne {{points}} points !",
           nobody: "Personne n'a trouvé.",
-          answerWas: "Réponse : {{answer}}",
-          scoreRedTag: "🔴 ROUGE",
-          scoreBlueTag: "BLEU 🔵"
+          answerWas: "Réponse : {{answer}}"
         },
         judge: {
           heading: "Juger la réponse",
@@ -587,8 +584,7 @@ window.I18N_DICTIONARIES = {
           wrong: "Fausses"
         },
         end: {
-          redWins: "L'équipe Rouge remporte le tableau !",
-          blueWins: "L'équipe Bleue remporte le tableau !",
+          teamWins: "{{team}} remporte le tableau !",
           draw: "Égalité !",
           rematch: "Revanche",
           newGame: "Nouvelle partie",
@@ -641,7 +637,8 @@ window.I18N_DICTIONARIES = {
       noQuestions: "أضف سؤالاً واحداً صالحاً على الأقل.",
       badPasscode: "رمز المعلم غير صحيح.",
       passcodeNotConfigured: "الاختبارات المحفوظة مقفلة حتى يتم تعيين رمز المعلم للموقع.",
-      notFound: "هذا العنصر لم يعد موجودًا."
+      notFound: "هذا العنصر لم يعد موجودًا.",
+      gameStarted: "هذه اللعبة بدأت بالفعل."
     },
     hub: {
       title: "الألعاب التعليمية",
@@ -745,7 +742,7 @@ window.I18N_DICTIONARIES = {
         needOneQuestion: "أضف سؤالاً واحداً كاملاً على الأقل.",
         createFailed: "تعذّر إنشاء الغرفة."
       },
-      board: { penalty: "الإجابات الخاطئة تخسر النقاط" },
+      board: { penalty: "الإجابات الخاطئة تخسر النقاط", timeLimit: "الوقت لكل سؤال", seconds: "{{n}} ث" },
       choose: {
         heading: "ماذا تريد أن تنشئ؟",
         custom: { title: "اكتب أسئلتك الخاصة", desc: "لأي مادة، بنمط السباق أو الجرس، مع دعم الرموز الرياضية والعلمية." },
@@ -827,7 +824,7 @@ window.I18N_DICTIONARIES = {
         title: "لوحة الأسئلة",
         eyebrow: "لوحة أسئلة للصف",
         heroTitle: "لوحة الأسئلة",
-        lede: "فريقان ولوحة واحدة. اختر مربعًا، وأجب من جهازك، واربح نقاطه.",
+        lede: "من فريقين إلى أربعة فرق ولوحة واحدة. اختر مربعًا، وأجب من جهازك، واربح نقاطه.",
         role: {
           join: {
             title: "الانضمام إلى لعبة اللوحة",
@@ -840,40 +837,42 @@ window.I18N_DICTIONARIES = {
             button: "الشاشة الكبيرة"
           }
         },
-        howto: "<b>طريقة اللعب:</b> الفريق صاحب الدور يختار مربعًا. لكل فريق إجابة واحدة. أول إجابة صحيحة تربح نقاط المربع والدور في اللوحة. عندما تنتهي كل المربعات، يفوز صاحب أعلى نتيجة.",
+        howto: "<b>طريقة اللعب:</b> يمكن أن ينضم حتى 4 فرق. الفريق صاحب الدور يختار مربعًا، ولكل فريق إجابة واحدة. أول إجابة صحيحة تربح نقاط المربع والدور في اللوحة. عندما تنتهي كل المربعات، يفوز صاحب أعلى نتيجة.",
         join: {
+          joinTeam: "انضم إلى {{team}}",
           label: "أدخل رمز الغرفة المكوّن من 4 أحرف",
           findRoom: "البحث عن الغرفة",
           roomLabel: "الغرفة",
-          joinRed: "🔴 انضم للأحمر",
-          joinBlue: "🔵 انضم للأزرق",
           watchBigScreen: "📺 المشاهدة على الشاشة الكبيرة"
+        },
+        teams: {
+          A: "الفريق الأحمر",
+          B: "الفريق الأزرق",
+          C: "الفريق الأخضر",
+          D: "الفريق البنفسجي"
         },
         defaultTitle: "لوحة الأسئلة",
         lobby: {
+          open: "مقعد شاغر",
+          needTwoTeams: "في انتظار فريقين على الأقل…",
+          timeLimit: "{{n}} ثانية لكل سؤال.",
           questionSingular: "{{n}} مربع",
           questionPlural: "{{n}} مربعات",
-          redTeam: "الفريق الأحمر",
-          blueTeam: "الفريق الأزرق",
           ready: "جاهز",
-          waiting: "في الانتظار…",
-          startGame: "بدء اللعبة",
+          startGame: "بدء اللعبة ({{n}} فرق)",
           matchStarting: "اللعبة تبدأ…",
-          waitingBothTeams: "في انتظار كلا الفريقين…",
           leaveRoom: "مغادرة الغرفة",
           penaltyOn: "في هذه اللعبة، الإجابة الخاطئة تخسر نقاط المربع.",
           penaltyOff: "في هذه اللعبة، الإجابة الخاطئة لا تكلف شيئًا."
         },
         match: {
-          teamTagRed: "🔴 الفريق الأحمر",
-          teamTagBlue: "🔵 الفريق الأزرق",
+          teamPicks: "دور {{team}}",
+          teamWins: "{{team}} يربح {{points}} نقطة!",
           typeYourAnswer: "اكتب إجابتك",
           submit: "إرسال",
           getReady: "استعد…",
-          redPicks: "🔴 دور الأحمر",
-          bluePicks: "🔵 دور الأزرق",
           yourPick: "فريقك يختار مربعًا.",
-          waitPick: "في انتظار اختيار الفريق الآخر…",
+          waitPick: "في انتظار اختيار الفريق صاحب الدور…",
           hostPickHint: "انقر على مربع لاختياره نيابة عن الفريق صاحب الدور.",
           notAnswered: "لا إجابة بعد",
           answered: "تم إرسال الإجابة",
@@ -882,12 +881,8 @@ window.I18N_DICTIONARIES = {
           correct: "✓ صحيح",
           wrong: "✗ خطأ",
           notJudged: "غير مطلوب",
-          redWins: "🔴 الفريق الأحمر يربح {{points}} نقطة!",
-          blueWins: "🔵 الفريق الأزرق يربح {{points}} نقطة!",
           nobody: "لم يعرفها أحد.",
-          answerWas: "الإجابة: {{answer}}",
-          scoreRedTag: "🔴 الأحمر",
-          scoreBlueTag: "الأزرق 🔵"
+          answerWas: "الإجابة: {{answer}}"
         },
         judge: {
           heading: "احكم على الإجابة",
@@ -901,8 +896,7 @@ window.I18N_DICTIONARIES = {
           wrong: "خطأ"
         },
         end: {
-          redWins: "الفريق الأحمر يفوز باللوحة!",
-          blueWins: "الفريق الأزرق يفوز باللوحة!",
+          teamWins: "{{team}} يفوز باللوحة!",
           draw: "تعادل!",
           rematch: "إعادة المباراة",
           newGame: "لعبة جديدة",
@@ -955,7 +949,8 @@ window.I18N_DICTIONARIES = {
       noQuestions: "Dodaj co najmniej jedno prawidłowe pytanie.",
       badPasscode: "Nieprawidłowy kod nauczyciela.",
       passcodeNotConfigured: "Zapisane quizy są zablokowane, dopóki nie zostanie ustawiony kod nauczyciela strony.",
-      notFound: "Ten element już nie istnieje."
+      notFound: "Ten element już nie istnieje.",
+      gameStarted: "Ta gra już się rozpoczęła."
     },
     hub: {
       title: "Gry edukacyjne",
@@ -1059,7 +1054,7 @@ window.I18N_DICTIONARIES = {
         needOneQuestion: "Dodaj co najmniej jedno pełne pytanie.",
         createFailed: "Nie udało się utworzyć pokoju."
       },
-      board: { penalty: "Błędne odpowiedzi odejmują punkty" },
+      board: { penalty: "Błędne odpowiedzi odejmują punkty", timeLimit: "Czas na pytanie", seconds: "{{n}} s" },
       choose: {
         heading: "Co chcesz stworzyć?",
         custom: { title: "Napisz własne pytania", desc: "Dowolny temat, tryb wyścigu lub brzęczyka, z notacją matematyczną i naukową." },
@@ -1141,7 +1136,7 @@ window.I18N_DICTIONARIES = {
         title: "Plansza quizowa",
         eyebrow: "klasowa plansza quizowa",
         heroTitle: "Plansza quizowa",
-        lede: "Dwie drużyny, jedna plansza. Wybierz pole, odpowiedz na swoim urządzeniu i zdobądź jego punkty.",
+        lede: "Od dwóch do czterech drużyn, jedna plansza. Wybierz pole, odpowiedz na swoim urządzeniu i zdobądź jego punkty.",
         role: {
           join: {
             title: "Dołącz do gry planszowej",
@@ -1154,40 +1149,42 @@ window.I18N_DICTIONARIES = {
             button: "Duży ekran"
           }
         },
-        howto: "<b>Jak to działa:</b> drużyna, która ma ruch, wybiera pole. Każda drużyna ma jedną odpowiedź. Pierwsza poprawna odpowiedź zdobywa punkty pola i ruch na planszy. Gdy wszystkie pola zostaną zagrane, wygrywa najwyższy wynik.",
+        howto: "<b>Jak to działa:</b> może dołączyć do 4 drużyn. Drużyna, która ma ruch, wybiera pole, a każda drużyna ma jedną odpowiedź. Pierwsza poprawna odpowiedź zdobywa punkty pola i ruch na planszy. Gdy wszystkie pola zostaną zagrane, wygrywa najwyższy wynik.",
         join: {
+          joinTeam: "Dołącz: {{team}}",
           label: "Wpisz 4-literowy kod pokoju",
           findRoom: "Znajdź pokój",
           roomLabel: "Pokój",
-          joinRed: "🔴 Dołącz do Czerwonych",
-          joinBlue: "🔵 Dołącz do Niebieskich",
           watchBigScreen: "📺 Oglądaj na dużym ekranie"
+        },
+        teams: {
+          A: "Czerwona drużyna",
+          B: "Niebieska drużyna",
+          C: "Zielona drużyna",
+          D: "Fioletowa drużyna"
         },
         defaultTitle: "Plansza quizowa",
         lobby: {
+          open: "Wolne miejsce",
+          needTwoTeams: "Czekanie na co najmniej 2 drużyny…",
+          timeLimit: "{{n}} sekund na pytanie.",
           questionSingular: "{{n}} pole",
           questionPlural: "{{n}} pól",
-          redTeam: "Czerwona drużyna",
-          blueTeam: "Niebieska drużyna",
           ready: "Gotowa",
-          waiting: "Czeka…",
-          startGame: "Zacznij grę",
+          startGame: "Zacznij grę (drużyny: {{n}})",
           matchStarting: "Gra się zaczyna…",
-          waitingBothTeams: "Czekanie na obie drużyny…",
           leaveRoom: "Opuść pokój",
           penaltyOn: "W tej grze błędna odpowiedź odejmuje punkty pola.",
           penaltyOff: "W tej grze błędna odpowiedź nic nie kosztuje."
         },
         match: {
-          teamTagRed: "🔴 CZERWONA DRUŻYNA",
-          teamTagBlue: "🔵 NIEBIESKA DRUŻYNA",
+          teamPicks: "Wybiera: {{team}}",
+          teamWins: "{{team}} zdobywa {{points}} punktów!",
           typeYourAnswer: "Wpisz odpowiedź",
           submit: "Wyślij",
           getReady: "Przygotuj się…",
-          redPicks: "🔴 Wybierają Czerwoni",
-          bluePicks: "🔵 Wybierają Niebiescy",
           yourPick: "Twoja drużyna wybiera pole.",
-          waitPick: "Czekanie na wybór drugiej drużyny…",
+          waitPick: "Czekanie na wybór drużyny, która ma ruch…",
           hostPickHint: "Kliknij pole, aby wybrać je za drużynę, która ma ruch.",
           notAnswered: "Brak odpowiedzi",
           answered: "Odpowiedź wysłana",
@@ -1196,12 +1193,8 @@ window.I18N_DICTIONARIES = {
           correct: "✓ Dobrze",
           wrong: "✗ Źle",
           notJudged: "Niepotrzebne",
-          redWins: "🔴 Czerwona drużyna zdobywa {{points}} punktów!",
-          blueWins: "🔵 Niebieska drużyna zdobywa {{points}} punktów!",
           nobody: "Nikt nie odgadł.",
-          answerWas: "Odpowiedź: {{answer}}",
-          scoreRedTag: "🔴 CZERWONI",
-          scoreBlueTag: "NIEBIESCY 🔵"
+          answerWas: "Odpowiedź: {{answer}}"
         },
         judge: {
           heading: "Oceń odpowiedź",
@@ -1215,8 +1208,7 @@ window.I18N_DICTIONARIES = {
           wrong: "Źle"
         },
         end: {
-          redWins: "Czerwona drużyna wygrywa planszę!",
-          blueWins: "Niebieska drużyna wygrywa planszę!",
+          teamWins: "{{team}} wygrywa planszę!",
           draw: "Remis!",
           rematch: "Rewanż",
           newGame: "Nowa gra",

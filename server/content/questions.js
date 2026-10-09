@@ -1,4 +1,16 @@
 const BOARD_POINTS = [100, 200, 300, 400, 500];
+const BOARD_TIME_LIMITS = [15, 30, 45, 60, 90, 120]; // seconds per question
+const DEFAULT_TIME_LIMIT = 30;
+
+// Board game settings, shared by live rooms and saved quizzes. Unknown keys
+// are dropped; an unlisted time falls back to the default.
+function cleanBoardSettings(settings) {
+  const timeLimit = Number(settings && settings.timeLimit);
+  return {
+    penalty: !!(settings && settings.penalty),
+    timeLimit: BOARD_TIME_LIMITS.includes(timeLimit) ? timeLimit : DEFAULT_TIME_LIMIT,
+  };
+}
 
 // opts.board keeps each question's category and point value and allows the
 // "open" type (a free response the host judges on the Big Screen). Race and
@@ -59,4 +71,4 @@ function buildQuestions(rawList, opts) {
   return rawList.map((raw) => buildQuestion(raw, opts)).filter(Boolean);
 }
 
-module.exports = { buildQuestion, buildQuestions, BOARD_POINTS };
+module.exports = { buildQuestion, buildQuestions, cleanBoardSettings, BOARD_POINTS, BOARD_TIME_LIMITS, DEFAULT_TIME_LIMIT };

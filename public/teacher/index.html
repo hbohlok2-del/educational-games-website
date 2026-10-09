@@ -79,10 +79,23 @@
       <label class="field-label" data-i18n="teacher.field.theme">Theme</label>
       <div class="theme-pick" id="themePick"></div>
 
-      <label class="check-row hidden" id="boardSettings">
-        <input type="checkbox" id="penaltyInput">
-        <span data-i18n="teacher.board.penalty">Wrong answers lose points</span>
-      </label>
+      <div class="board-settings hidden" id="boardSettings">
+        <div>
+          <label class="field-label" for="timeLimitInput" data-i18n="teacher.board.timeLimit">Time per question</label>
+          <select id="timeLimitInput" class="text-input">
+            <option value="15">15 s</option>
+            <option value="30" selected>30 s</option>
+            <option value="45">45 s</option>
+            <option value="60">60 s</option>
+            <option value="90">90 s</option>
+            <option value="120">120 s</option>
+          </select>
+        </div>
+        <label class="check-row">
+          <input type="checkbox" id="penaltyInput">
+          <span data-i18n="teacher.board.penalty">Wrong answers lose points</span>
+        </label>
+      </div>
     </div>
 
     <div id="questionList"></div>

@@ -191,3 +191,28 @@ canvas#confetti{position:fixed; inset:0; pointer-events:none; z-index:5;}
 
 /* Keep the top row clear of the language picker on phones. */
 @media (max-width:600px){ #app{padding-top:64px;} }
+
+/* Teams 3 and 4 (green, purple), alongside red and blue. */
+.team-btn.c{background:var(--team-c);}
+.team-btn.d{background:var(--team-d);}
+.dot.c{background:var(--team-c);} .dot.d{background:var(--team-d);}
+.score-chip.c{background:linear-gradient(90deg, var(--team-c), #1E8A57);}
+.score-chip.d{background:linear-gradient(90deg, var(--team-d), #73378C);}
+.score-chip.in-control{box-shadow:0 0 0 3px var(--gold);}
+.score-chip .lab{overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0;}
+.control-label.c{background:var(--team-c);}
+.control-label.d{background:var(--team-d);}
+.attempt.c{background:rgba(43,182,115,0.18);}
+.attempt.d{background:rgba(155,89,182,0.20);}
+.board-cell.used.won-c{background:rgba(43,182,115,0.35);}
+.board-cell.used.won-d{background:rgba(155,89,182,0.40);}
+.recap .card.c{background:linear-gradient(180deg, var(--team-c), #1E8A57);}
+.recap .card.d{background:linear-gradient(180deg, var(--team-d), #73378C);}
+.recap-title{color:#fff; opacity:0.85;}
+.answer-row .text-answer-input{min-width:0;}
+@media (max-width:600px){
+  .scoreboard{grid-template-columns:repeat(2, minmax(0, 1fr)) !important;}
+  .score-chip{padding:8px 10px; gap:6px;}
+  .score-chip .lab{font-size:12px;}
+  .score-chip .val{font-size:22px;}
+}

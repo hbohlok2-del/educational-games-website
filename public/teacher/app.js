@@ -306,8 +306,15 @@
     $("boardHint").classList.toggle("hidden", selectedMechanic !== "board");
   }
 
+  function renderTimeOptions() {
+    Array.prototype.forEach.call($("timeLimitInput").options, function (opt) {
+      opt.textContent = t("teacher.board.seconds", { n: opt.value });
+    });
+  }
+  renderTimeOptions();
+
   function currentSettings() {
-    return { penalty: $("penaltyInput").checked };
+    return { penalty: $("penaltyInput").checked, timeLimit: Number($("timeLimitInput").value) };
   }
 
   wireCopyButton($("copyCode"), function () { return $("doneCode").textContent; });
@@ -356,6 +363,7 @@
     var themeBtn = $("themePick").querySelector('[data-theme-id="' + set.theme + '"]');
     if (themeBtn) themeBtn.click();
     $("penaltyInput").checked = !!(set.settings && set.settings.penalty);
+    $("timeLimitInput").value = String((set.settings && set.settings.timeLimit) || 30);
 
     questionList.innerHTML = "";
     (set.questions || []).forEach(function (q) {
@@ -504,5 +512,6 @@
     renderThemePick();
     updateSaveButtonLabel();
     renderPasscodeStatus();
+    renderTimeOptions();
   });
 })();

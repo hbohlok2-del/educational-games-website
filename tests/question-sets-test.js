@@ -130,14 +130,14 @@ async function main() {
 
   // --- Board quizzes: settings persist, launch routes to the board game ---
   const boardQuiz = {
-    title: "Board", mechanic: "board", theme: "classic", settings: { penalty: true },
+    title: "Board", mechanic: "board", theme: "classic", settings: { penalty: true, timeLimit: 90 },
     questions: [{ category: "Science", points: 300, prompt: "What is H2O?", type: "open", answer: "SecretWater" }],
   };
   const savedBoard = await call("POST", api, { headers: GOOD, body: boardQuiz });
   check("board quiz with an open question saves", savedBoard.json.ok && savedBoard.json.set.mechanic === "board");
   const boardFull = await call("GET", `${api}/${savedBoard.json.set.id}`, { headers: GOOD });
   check("board settings and category survive the round trip",
-    boardFull.json.set.settings.penalty === true && boardFull.json.set.questions[0].category === "Science");
+    boardFull.json.set.settings.penalty === true && boardFull.json.set.settings.timeLimit === 90 && boardFull.json.set.questions[0].category === "Science");
   const launchBoard = await call("POST", `${api}/${savedBoard.json.set.id}/launch`);
   check("launching a board quiz routes to the board game", launchBoard.json.ok && launchBoard.json.gameType === "team-board" && !launchBoard.text.includes("Secret"));
   const raceWithOpen = await call("POST", api, { headers: GOOD, body: { ...boardQuiz, mechanic: "race" } });

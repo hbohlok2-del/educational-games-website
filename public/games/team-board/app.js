@@ -2,6 +2,8 @@
   "use strict";
 
   var NS = "games.teamBoard.";
+  var TEAMS = ["A", "B", "C", "D"];
+  var EMOJI = { A: "🔴", B: "🔵", C: "🟢", D: "🟣" };
   var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   var socket = io("/team-board");
@@ -23,8 +25,10 @@
 
   function $(id) { return document.getElementById(id); }
   function qsa(sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
-  function isTeam() { return S.role === "A" || S.role === "B"; }
-  function teamName(team) { return t(NS + (team === "A" ? "lobby.redTeam" : "lobby.blueTeam")); }
+  function isTeam() { return TEAMS.indexOf(S.role) !== -1; }
+  function teamName(team) { return t(NS + "teams." + team); }
+  function teamLabel(team) { return EMOJI[team] + " " + teamName(team); }
+  function joinedCount(room) { return TEAMS.filter(function (x) { return room.teams[x].joined; }).length; }
 
   function showView(name) {
     S.view = name;
@@ -104,8 +108,7 @@
       }
       $("joinRoleCode").textContent = code;
       $("joinRoleTitle").textContent = ack.room.title || t(NS + "defaultTitle");
-      $("joinAsA").disabled = ack.room.teamA.joined;
-      $("joinAsB").disabled = ack.room.teamB.joined;
+      renderTeamPick(ack.room);
       $("joinRoleErr").textContent = "";
       showView("joinRoleSelect");
     });
@@ -121,8 +124,20 @@
       applyRoomUpdate(ack.room);
     });
   }
-  $("joinAsA").addEventListener("click", function () { joinAs(S.pendingCode, "A"); });
-  $("joinAsB").addEventListener("click", function () { joinAs(S.pendingCode, "B"); });
+  // Free seats only. Once a game has started, only its own teams can rejoin.
+  function renderTeamPick(room) {
+    var wrap = $("teamPick");
+    wrap.innerHTML = "";
+    TEAMS.forEach(function (team) {
+      var b = document.createElement("button");
+      b.type = "button";
+      b.className = "team-btn " + team.toLowerCase();
+      b.textContent = t(NS + "join.joinTeam", { team: teamLabel(team) });
+      b.disabled = room.teams[team].joined || (room.status !== "waiting" && room.playing.indexOf(team) === -1);
+      b.addEventListener("click", function () { joinAs(S.pendingCode, team); });
+      wrap.appendChild(b);
+    });
+  }
   $("joinAsDisplay").addEventListener("click", function () { joinAs(S.pendingCode, null); });
 
   $("lobbyStart").addEventListener("click", function () {
@@ -139,33 +154,33 @@
     $("lobbyTitle").textContent = (d.title || t(NS + "defaultTitle")) + " · " +
       t(NS + (d.questionCount === 1 ? "lobby.questionSingular" : "lobby.questionPlural"), { n: d.questionCount });
     $("lobbyCode").textContent = d.code;
-    $("lobbyRules").textContent = t(NS + (d.penalty ? "lobby.penaltyOn" : "lobby.penaltyOff"));
+    $("lobbyRules").textContent = t(NS + "lobby.timeLimit", { n: d.timeLimit }) + " " +
+      t(NS + (d.penalty ? "lobby.penaltyOn" : "lobby.penaltyOff"));
     var roster = $("lobbyRoster"); roster.innerHTML = "";
-    [["A", d.teamA], ["B", d.teamB]].forEach(function (pair) {
+    TEAMS.forEach(function (team) {
+      var joined = d.teams[team].joined;
       var row = document.createElement("div");
-      row.className = "roster-row" + (pair[1].joined ? " ready" : "");
-      var dot = document.createElement("span"); dot.className = "dot " + pair[0].toLowerCase();
-      var name = document.createElement("span"); name.className = "name"; name.textContent = teamName(pair[0]);
+      row.className = "roster-row" + (joined ? " ready" : "");
+      var dot = document.createElement("span"); dot.className = "dot " + team.toLowerCase();
+      var name = document.createElement("span"); name.className = "name"; name.textContent = teamName(team);
       var status = document.createElement("span"); status.className = "status";
-      status.textContent = t(NS + (pair[1].joined ? "lobby.ready" : "lobby.waiting"));
+      status.textContent = t(NS + (joined ? "lobby.ready" : "lobby.open"));
       row.appendChild(dot); row.appendChild(name); row.appendChild(status);
       roster.appendChild(row);
     });
-    var bothReady = d.teamA.joined && d.teamB.joined;
+    var count = joinedCount(d);
     var startBtn = $("lobbyStart");
-    startBtn.disabled = !bothReady || d.status === "active";
+    startBtn.disabled = count < 2 || d.status !== "waiting";
     startBtn.textContent = d.status === "active" ? t(NS + "lobby.matchStarting") :
-      t(NS + (bothReady ? "lobby.startGame" : "lobby.waitingBothTeams"));
+      count < 2 ? t(NS + "lobby.needTwoTeams") : t(NS + "lobby.startGame", { n: count });
   }
 
   // ---------------- Match ----------------
   function renderMatch() {
     var room = S.room;
     $("matchTitleLabel").textContent = room.title || "";
-    $("scoreA").textContent = room.scores.A;
-    $("scoreB").textContent = room.scores.B;
-    var controlText = t(NS + (room.control === "A" ? "match.redPicks" : "match.bluePicks"));
-    $("controlLabel").textContent = controlText;
+    renderScoreboard(room);
+    $("controlLabel").textContent = t(NS + "match.teamPicks", { team: teamLabel(room.control) });
     $("controlLabel").className = "control-label " + room.control.toLowerCase();
 
     var onBoard = room.phase === "board";
@@ -173,6 +188,20 @@
     $("questionView").classList.toggle("hidden", onBoard);
     if (onBoard) renderBoard(room); else renderQuestion(room);
     renderJudge();
+  }
+
+  function renderScoreboard(room) {
+    var board = $("scoreboard");
+    board.innerHTML = "";
+    board.style.gridTemplateColumns = "repeat(" + room.playing.length + ", minmax(0, 1fr))";
+    room.playing.forEach(function (team) {
+      var chip = document.createElement("div");
+      chip.className = "score-chip " + team.toLowerCase() + (room.control === team ? " in-control" : "");
+      var lab = document.createElement("span"); lab.className = "lab"; lab.textContent = teamLabel(team);
+      var val = document.createElement("span"); val.className = "val"; val.textContent = room.scores[team];
+      chip.appendChild(lab); chip.appendChild(val);
+      board.appendChild(chip);
+    });
   }
 
   function canPick(room) {
@@ -244,10 +273,18 @@
       if (q.type === "multiple-choice") buildChoices(q.choices || []);
     }
 
-    ["A", "B"].forEach(function (team) {
-      var el = $("attempt" + team);
-      el.textContent = attemptLabel(room.attempts[team]);
-      if (room.phase === "reveal" && room.attempts[team].input) el.textContent += " (" + room.attempts[team].input + ")";
+    var attempts = $("attempts");
+    attempts.innerHTML = "";
+    attempts.style.gridTemplateColumns = "repeat(" + Math.min(room.playing.length, 2) + ", minmax(0, 1fr))";
+    room.playing.forEach(function (team) {
+      var a = room.attempts[team];
+      var box = document.createElement("div");
+      box.className = "attempt " + team.toLowerCase();
+      var name = document.createElement("span"); name.textContent = teamName(team);
+      var status = document.createElement("span");
+      status.textContent = attemptLabel(a) + (room.phase === "reveal" && a.input ? " (" + a.input + ")" : "");
+      box.appendChild(name); box.appendChild(status);
+      attempts.appendChild(box);
     });
 
     // Timer bar runs only while answers are open.
@@ -268,7 +305,7 @@
       banner.classList.remove("hidden");
       banner.classList.toggle("wrong-team", !room.cellWinner);
       var head = room.cellWinner
-        ? t(NS + (room.cellWinner === "A" ? "match.redWins" : "match.blueWins"), { points: q.points })
+        ? t(NS + "match.teamWins", { team: teamLabel(room.cellWinner), points: q.points })
         : t(NS + "match.nobody");
       banner.textContent = head + "  " + t(NS + "match.answerWas", { answer: room.answerText });
       renderMathIn(banner);
@@ -278,7 +315,7 @@
 
     $("teamPlay").classList.toggle("hidden", !isTeam());
     if (isTeam()) {
-      $("teamTag").textContent = t(NS + (S.role === "A" ? "match.teamTagRed" : "match.teamTagBlue"));
+      $("teamTag").textContent = teamLabel(S.role);
       var mine = room.attempts[S.role];
       var open = room.phase === "question" && !mine.answered;
       var mc = q.type === "multiple-choice";
@@ -346,22 +383,39 @@
   function showEnd(room) {
     showView("end");
     stopTimers();
+    refreshEndText(room);
+    if (!reduceMotion && room.winner) launchConfetti(room.winner);
+  }
+
+  function refreshEndText(room) {
     var winner = room.winner;
     $("endTrophy").textContent = winner ? "🏆" : "🤝";
-    $("endHeadline").textContent = t(NS + (winner === "A" ? "end.redWins" : winner === "B" ? "end.blueWins" : "end.draw"));
-    ["A", "B"].forEach(function (team) {
-      $("end" + team + "Score").textContent = room.scores[team];
-      $("end" + team + "Correct").textContent = room.stats[team].correct;
-      $("end" + team + "Wrong").textContent = room.stats[team].wrong;
+    $("endHeadline").textContent = winner ? t(NS + "end.teamWins", { team: teamLabel(winner) }) : t(NS + "end.draw");
+    var recap = $("recap");
+    recap.innerHTML = "";
+    recap.style.gridTemplateColumns = "repeat(" + Math.min(room.playing.length, 2) + ", minmax(0, 1fr))";
+    room.playing.forEach(function (team) {
+      var card = document.createElement("div");
+      card.className = "card " + team.toLowerCase();
+      var title = document.createElement("div");
+      title.className = "field-label recap-title";
+      title.textContent = teamName(team);
+      card.appendChild(title);
+      [["end.points", room.scores[team]], ["display.correct", room.stats[team].correct], ["display.wrong", room.stats[team].wrong]].forEach(function (row) {
+        var k = document.createElement("div"); k.className = "k";
+        var label = document.createElement("span"); label.textContent = t(NS + row[0]);
+        var value = document.createElement("span"); value.textContent = row[1];
+        k.appendChild(label); k.appendChild(value); card.appendChild(k);
+      });
+      recap.appendChild(card);
     });
-    if (!reduceMotion && winner) launchConfetti(winner);
   }
 
   function launchConfetti(winner) {
     var canvas = $("confetti"); canvas.classList.remove("hidden");
     canvas.width = window.innerWidth; canvas.height = window.innerHeight;
     var ctx = canvas.getContext("2d");
-    var color = winner === "A" ? "#E63946" : "#2E86FF";
+    var color = { A: "#E63946", B: "#2E86FF", C: "#2BB673", D: "#9B59B6" }[winner];
     var particles = [];
     for (var i = 0; i < 80; i++) {
       particles.push({
@@ -389,6 +443,7 @@
   document.addEventListener("i18nchange", function () {
     if (S.view === "lobby") renderLobby();
     if (S.view === "match") { S.lastOpenedAt = undefined; renderMatch(); }
+    if (S.view === "end" && S.room) refreshEndText(S.room);
   });
 
   // ---------------- Init ----------------

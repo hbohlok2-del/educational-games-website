@@ -162,3 +162,6 @@ textarea.text-input { resize: vertical; }
 .board-fields { display: grid; grid-template-columns: 2fr 1fr; gap: 0.6rem; }
 .board-fields .field-label { display: block; margin-bottom: 0.3rem; }
 .type-row { flex-wrap: wrap; }
+.board-settings { display: flex; flex-direction: column; gap: 0.7rem; }
+.board-settings .field-label { display: block; margin-bottom: 0.3rem; }
+.board-settings select { max-width: 12rem; }
