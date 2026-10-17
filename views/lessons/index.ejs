@@ -1,13 +1,26 @@
-<section class="lesson-index">
+<section class="wrap notes-head">
   <p class="eyebrow" data-i18n="lessons.nav">Course Notes</p>
   <h1 data-i18n="lessons.pickSubject">Pick a subject</h1>
+  <p class="notes-lede" data-i18n="lessons.lede">Clear explanations and worked examples, with properly typeset equations.</p>
+</section>
+<section class="wrap notes-section">
   <% if (subjects.length === 0) { %>
     <p class="empty" data-i18n="lessons.empty">No lessons have been published yet.</p>
   <% } else { %>
   <div class="subject-grid">
     <% subjects.forEach(function (subject) { %>
-      <a class="subject-card" href="/lessons/<%= subject %>/">
+      <a class="card card-link subject-card" href="/lessons/<%= subject %>/">
+        <% if (subject === "math") { %>
+          <span class="subject-icon glyph" aria-hidden="true">π</span>
+        <% } else if (subject === "physics") { %>
+          <svg class="subject-icon" viewBox="0 0 40 40" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="2.4"><ellipse cx="20" cy="20" rx="17" ry="6.5"/><ellipse cx="20" cy="20" rx="17" ry="6.5" transform="rotate(60 20 20)"/><ellipse cx="20" cy="20" rx="17" ry="6.5" transform="rotate(-60 20 20)"/></g><circle cx="20" cy="20" r="3" fill="currentColor"/></svg>
+        <% } else if (subject === "chemistry") { %>
+          <svg class="subject-icon" viewBox="0 0 40 40" aria-hidden="true"><path d="M15 5h10M17 5v11L7 33a2.5 2.5 0 0 0 2.2 3.5h21.6A2.5 2.5 0 0 0 33 33L23 16V5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/><path d="M11.5 26h17" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+        <% } else { %>
+          <span class="subject-icon glyph" aria-hidden="true">?</span>
+        <% } %>
         <h2 data-i18n="lessons.subjects.<%= subject %>"><%= subject.charAt(0).toUpperCase() + subject.slice(1) %></h2>
+        <span class="more"><span data-i18n="lessons.openSubject">Open notes</span> <span class="arrow" aria-hidden="true">&rarr;</span></span>
       </a>
     <% }); %>
   </div>

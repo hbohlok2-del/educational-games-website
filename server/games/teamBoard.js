@@ -28,7 +28,13 @@ function freshStats() {
 }
 
 function joinedTeams(room) {
-  return TEAMS.filter((team) => room.teams[team]);
+  return room.slots.filter((team) => room.teams[team]);
+}
+
+// The seats this room offers: the teacher's 2 or 4. A quiz saved before the
+// choice existed keeps the original 4.
+function teamSlots(settings) {
+  return TEAMS.slice(0, settings.teams || TEAMS.length);
 }
 
 // Categories in the order the teacher first used them, each column sorted by
@@ -73,7 +79,8 @@ function publicRoom(room) {
     timeLimit: room.settings.timeLimit,
     status: room.status,
     round: room.round,
-    teams: TEAMS.reduce((acc, team) => { acc[team] = { joined: !!room.teams[team] }; return acc; }, {}),
+    teamSlots: room.slots,
+    teams: room.slots.reduce((acc, team) => { acc[team] = { joined: !!room.teams[team] }; return acc; }, {}),
     playing: room.playing,
     scores: room.scores,
     stats: room.stats,
@@ -156,11 +163,13 @@ function attach(io) {
     const { categories, cells } = buildBoard(questions);
 
     const code = generateRoomCode(rooms);
+    const settings = cleanBoardSettings(opts && opts.settings);
     const room = {
       code,
       title,
       theme: "classic",
-      settings: cleanBoardSettings(opts && opts.settings),
+      settings,
+      slots: teamSlots(settings),
       status: "waiting",
       round: 1,
       teams: perTeam(() => null),
@@ -278,7 +287,7 @@ function attach(io) {
         return;
       }
 
-      if (!TEAMS.includes(team)) return ack({ ok: false, error: "invalid-team" });
+      if (!room.slots.includes(team)) return ack({ ok: false, error: "invalid-team" });
       if (room.teams[team]) return ack({ ok: false, error: "team-taken" });
       // Once a game is under way only its own teams can (re)join, e.g. after
       // a phone drops its connection.

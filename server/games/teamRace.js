@@ -1,10 +1,12 @@
 const { pullMagnitude, ROPE_MIN, ROPE_MAX, ROPE_CENTER } = require("./tugOfWar");
-const { buildQuestions } = require("../content/questions");
+const { buildQuestions, cleanBoardSettings } = require("../content/questions");
 const { sweepUnclaimedRooms } = require("./roomSweep");
 
 const MATCH_DURATION_MS = 180000;
 const START_COUNTDOWN_MS = 3000;
 const CODE_CHARS = "ABCDEFGHJKMNPQRSTUVWXYZ";
+const TEAMS = ["A", "B", "C", "D"]; // red, blue, green, purple
+const MIN_TEAMS = 2;
 
 function generateRoomCode(rooms) {
   let code;
@@ -14,8 +16,20 @@ function generateRoomCode(rooms) {
   return code;
 }
 
-function freshStats() {
-  return { A: { correct: 0, wrong: 0 }, B: { correct: 0, wrong: 0 } };
+function perSlot(room, make) {
+  const out = {};
+  room.slots.forEach((team) => { out[team] = make(); });
+  return out;
+}
+
+function joinedTeams(room) {
+  return room.slots.filter((team) => room.teams[team]);
+}
+
+// A rope has two ends, so the rope race is always 2 teams. Rocket races run
+// 2 or 4 lanes, as the teacher chose (2 when unset).
+function teamSlots(theme, settings) {
+  return TEAMS.slice(0, theme === "rocket" && settings.teams === 4 ? 4 : 2);
 }
 
 function publicRoom(room) {
@@ -25,11 +39,11 @@ function publicRoom(room) {
     theme: room.theme,
     status: room.status,
     round: room.round,
-    teamA: { joined: !!room.teams.A },
-    teamB: { joined: !!room.teams.B },
+    teamSlots: room.slots,
+    teams: room.slots.reduce((acc, team) => { acc[team] = { joined: !!room.teams[team] }; return acc; }, {}),
+    playing: room.playing,
     position: room.position,
-    progressA: room.progressA,
-    progressB: room.progressB,
+    progress: room.progress,
     stats: room.stats,
     matchStartAt: room.matchStartAt,
     winner: room.winner,
@@ -51,10 +65,29 @@ function attach(io) {
     if (elapsed < MATCH_DURATION_MS) return;
     room.status = "finished";
     room.winner = room.theme === "rocket"
-      ? (room.progressA > room.progressB ? "A" : room.progressB > room.progressA ? "B" : null)
+      ? highestRocket(room)
       : (room.position < ROPE_CENTER ? "A" : room.position > ROPE_CENTER ? "B" : null);
     room.timedOut = true;
     broadcastRoom(room);
+  }
+
+  // When time runs out the highest rocket wins; a tie for first is a draw.
+  function highestRocket(room) {
+    const best = Math.max(...room.playing.map((team) => room.progress[team]));
+    const leaders = room.playing.filter((team) => room.progress[team] === best);
+    return leaders.length === 1 ? leaders[0] : null;
+  }
+
+  // The teams joined at start are the ones that race this round.
+  function resetMatch(room) {
+    room.status = "active";
+    room.playing = joinedTeams(room);
+    room.position = ROPE_CENTER;
+    room.progress = perSlot(room, () => 0);
+    room.stats = perSlot(room, () => ({ correct: 0, wrong: 0 }));
+    room.winner = null;
+    room.timedOut = false;
+    room.matchStartAt = Date.now() + START_COUNTDOWN_MS;
   }
 
   setInterval(() => {
@@ -76,19 +109,20 @@ function attach(io) {
       code,
       title,
       theme,
+      slots: teamSlots(theme, cleanBoardSettings(opts && opts.settings)),
       status: "waiting",
       round: 1,
       position: ROPE_CENTER,
-      progressA: 0,
-      progressB: 0,
-      stats: freshStats(),
       matchStartAt: null,
       winner: null,
       timedOut: false,
-      teams: { A: null, B: null },
+      playing: [],
       questions,
       createdAt: Date.now(),
     };
+    room.teams = perSlot(room, () => null);
+    room.progress = perSlot(room, () => 0);
+    room.stats = perSlot(room, () => ({ correct: 0, wrong: 0 }));
     rooms.set(code, room);
     return room;
   }
@@ -115,8 +149,10 @@ function attach(io) {
         return ack({ ok: true, room: publicRoom(room), team: null });
       }
 
-      if (!["A", "B"].includes(team)) return ack({ ok: false, error: "invalid-team" });
+      if (!room.slots.includes(team)) return ack({ ok: false, error: "invalid-team" });
       if (room.teams[team]) return ack({ ok: false, error: "team-taken" });
+      // Once a race is under way only its own teams can (re)join.
+      if (room.status !== "waiting" && !room.playing.includes(team)) return ack({ ok: false, error: "game-started" });
 
       room.teams[team] = socket.id;
       socket.join(room.code);
@@ -132,33 +168,19 @@ function attach(io) {
       ack({ ok: true, room: publicRoom(room) });
     });
 
+    // A 2-team race needs both teams; a 4-lane race starts with any 2.
     socket.on("start-match", () => {
       const room = rooms.get(socket.data.code);
-      if (!room || !room.teams.A || !room.teams.B) return;
-      room.status = "active";
-      room.round = room.round || 1;
-      room.position = ROPE_CENTER;
-      room.progressA = 0;
-      room.progressB = 0;
-      room.stats = freshStats();
-      room.winner = null;
-      room.timedOut = false;
-      room.matchStartAt = Date.now() + START_COUNTDOWN_MS;
+      if (!room || room.status !== "waiting" || joinedTeams(room).length < MIN_TEAMS) return;
+      resetMatch(room);
       broadcastRoom(room);
     });
 
     socket.on("rematch", () => {
       const room = rooms.get(socket.data.code);
-      if (!room) return;
+      if (!room || joinedTeams(room).length < MIN_TEAMS) return;
       room.round += 1;
-      room.status = "active";
-      room.position = ROPE_CENTER;
-      room.progressA = 0;
-      room.progressB = 0;
-      room.stats = freshStats();
-      room.winner = null;
-      room.timedOut = false;
-      room.matchStartAt = Date.now() + START_COUNTDOWN_MS;
+      resetMatch(room);
       broadcastRoom(room);
     });
 
@@ -176,7 +198,7 @@ function attach(io) {
     socket.on("submit-answer", ({ index, input } = {}, ack) => {
       const room = rooms.get(socket.data.code);
       const team = socket.data.team;
-      if (!room || room.status !== "active" || !team || !room.questions.length) {
+      if (!room || room.status !== "active" || !team || !room.playing.includes(team) || !room.questions.length) {
         if (typeof ack === "function") ack({ ok: false });
         return;
       }
@@ -193,10 +215,8 @@ function attach(io) {
 
       let winner = null;
       if (room.theme === "rocket") {
-        const key = team === "A" ? "progressA" : "progressB";
-        room[key] = Math.min(ROPE_MAX, room[key] + mag);
-        if (room.progressA >= ROPE_MAX) winner = "A";
-        else if (room.progressB >= ROPE_MAX) winner = "B";
+        room.progress[team] = Math.min(ROPE_MAX, room.progress[team] + mag);
+        if (room.progress[team] >= ROPE_MAX) winner = team;
       } else {
         const sign = team === "A" ? -1 : 1;
         room.position = Math.max(ROPE_MIN, Math.min(ROPE_MAX, room.position + sign * mag));
@@ -222,11 +242,11 @@ function attach(io) {
         room.teams[socket.data.team] = null;
         broadcastRoom(room);
       }
-      if (!room.teams.A && !room.teams.B) rooms.delete(room.code);
+      if (joinedTeams(room).length === 0) rooms.delete(room.code);
     });
   });
 
   return { rooms, createRoom };
 }
 
-module.exports = { attach };
+module.exports = { attach, TEAMS };

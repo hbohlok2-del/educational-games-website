@@ -1,15 +1,20 @@
-<section class="lesson-list">
+<section class="wrap notes-head">
   <p class="eyebrow"><a href="/lessons/" data-i18n="lessons.nav">Course Notes</a></p>
   <h1 data-i18n="lessons.subjects.<%= subject %>"><%= subject.charAt(0).toUpperCase() + subject.slice(1) %></h1>
+</section>
+<section class="wrap notes-section">
   <% if (lessons.length === 0) { %>
     <p class="empty" data-i18n="lessons.emptySubject">No lessons here yet.</p>
   <% } else { %>
   <ul class="lesson-links">
     <% lessons.forEach(function (lesson) { %>
       <li>
-        <a href="/lessons/<%= subject %>/<%= lesson.slug %>">
-          <span class="lesson-title"><%= lesson.title %></span>
-          <% if (lesson.summary) { %><span class="lesson-summary"><%= lesson.summary %></span><% } %>
+        <a class="lesson-row" href="/lessons/<%= subject %>/<%= lesson.slug %>">
+          <span class="lesson-row-text" lang="en" dir="ltr">
+            <span class="lesson-title"><%= lesson.title %></span>
+            <% if (lesson.summary) { %><span class="lesson-summary"><%= lesson.summary %></span><% } %>
+          </span>
+          <span class="lesson-row-go"><span data-i18n="lessons.read">Read</span> <span class="arrow" aria-hidden="true">&rarr;</span></span>
         </a>
       </li>
     <% }); %>

@@ -6,39 +6,50 @@
 <title data-i18n="hub.card.create.title">Create a Game</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=JetBrains+Mono:wght@600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Cairo:wght@400;600;700;800&family=Nunito:wght@400;600;700;800&family=JetBrains+Mono:wght@600;700&display=swap">
 <link rel="stylesheet" href="/vendor/katex/katex.min.css">
+<link rel="stylesheet" href="/shared/tokens.css">
+<link rel="stylesheet" href="/shared/site.css">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="/"><span class="brand-mark" aria-hidden="true" dir="ltr">eg.</span><span class="brand-name" data-i18n="hub.title">Educational Games</span></a>
+    <div class="lang-links" role="group" aria-label="Language">
+      <button type="button" data-lang="en" lang="en">EN</button>
+      <button type="button" data-lang="fr" lang="fr">FR</button>
+      <button type="button" data-lang="pl" lang="pl">PL</button>
+      <button type="button" data-lang="ar" lang="ar">العربية</button>
+    </div>
+  </div>
+</header>
+<nav class="site-nav">
+  <div class="wrap">
+    <a href="/" data-i18n="hub.nav.home">Home</a>
+    <a href="/play/" data-i18n="hub.nav.play">Play</a>
+    <a href="/teacher/" aria-current="page" data-i18n="hub.nav.create">Create</a>
+    <a href="/lessons/" data-i18n="hub.nav.notes">Course Notes</a>
+  </div>
+</nav>
 
-<div class="lang-switch">
-  <label class="sr-only" for="langSwitch" data-i18n="common.langLabel">Language</label>
-  <select id="langSwitch">
-    <option value="en">English</option>
-    <option value="fr">Français</option>
-    <option value="ar">العربية</option>
-    <option value="pl">Polski</option>
-  </select>
-</div>
-
-<div id="app">
-  <header class="page-header">
-    <a class="back-link" href="/" data-i18n="teacher.back">&larr; Educational Games</a>
+<main id="app" class="wrap">
+  <header class="page-head">
+    <p class="eyebrow" data-i18n="teacher.eyebrow">Teacher workspace</p>
     <h1 data-i18n="hub.card.create.title">Create a Game</h1>
-    <p class="lede" data-i18n="teacher.lede">Write your own questions for any subject — math and science notation supported — and get a room code your students join from any device.</p>
+    <p class="lede" data-i18n="teacher.lede">Write your own questions for any subject, with math and science notation, and get a room code your students join from any device.</p>
   </header>
 
   <section id="chooseView">
-    <div class="field-label" data-i18n="teacher.choose.heading">What would you like to create?</div>
+    <h2 class="section-title" data-i18n="teacher.choose.heading">What would you like to create?</h2>
     <div class="choose-grid">
-      <button type="button" class="choose-card" id="chooseCustom">
-        <span class="choose-icon">✏️</span>
+      <button type="button" class="card card-link choose-card" id="chooseCustom">
+        <svg class="choose-icon" viewBox="0 0 32 32" aria-hidden="true"><path d="M20.5 6.5l5 5L12 25l-6.5 1.5L7 20 20.5 6.5Z" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/><path d="M17.5 9.5l5 5" stroke="currentColor" stroke-width="2.5"/></svg>
         <span class="choose-title" data-i18n="teacher.choose.custom.title">Write your own questions</span>
         <span class="choose-desc" data-i18n="teacher.choose.custom.desc">Any subject, race or buzzer format, with math and science notation.</span>
       </button>
-      <a class="choose-card" href="/games/tug-of-war/">
-        <span class="choose-icon">🪢</span>
+      <a class="card card-link choose-card" href="/games/tug-of-war/">
+        <svg class="choose-icon" viewBox="0 0 32 32" aria-hidden="true"><path d="M3 17c4-3 7 3 11 0s7-3 11 0" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/><path d="M16 9v14" stroke="currentColor" stroke-width="2" stroke-dasharray="2 3"/><circle cx="4" cy="17" r="2.5" fill="currentColor"/><circle cx="28" cy="17" r="2.5" fill="currentColor"/></svg>
         <span class="choose-title" data-i18n="teacher.choose.numberHaul.title">Number Haul</span>
         <span class="choose-desc" data-i18n="teacher.choose.numberHaul.desc">A quick math tug-of-war. Questions are generated automatically, no setup needed.</span>
       </a>
@@ -46,95 +57,114 @@
   </section>
 
   <section id="formView" class="hidden">
-    <div class="panel">
-      <label class="field-label" for="passcodeInput" data-i18n="teacher.passcode.label">Teacher passcode</label>
-      <div class="passcode-row">
-        <input id="passcodeInput" class="text-input" type="password" autocomplete="current-password" placeholder="Enter the teacher passcode" data-i18n-placeholder="teacher.passcode.placeholder">
-        <button type="button" class="btn secondary" id="passcodeGo" data-i18n="teacher.passcode.button">Unlock</button>
-      </div>
-      <p class="hint" id="passcodeStatus">Needed to load, save, edit or delete saved quizzes.</p>
-    </div>
+    <div class="editor">
+      <aside class="editor-side">
+        <div class="card setup-card">
+          <h2 data-i18n="teacher.setup.heading">Game setup</h2>
 
-    <button type="button" class="btn secondary block" id="openLibrary" data-i18n="teacher.library.loadButton">📂 Load a saved quiz</button>
+          <span class="field-label" data-i18n="teacher.field.gameType">Game type</span>
+          <div class="tile-pick" id="mechanicPick">
+            <button type="button" class="theme-btn active" data-mechanic="race"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M8 28V4" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/><path d="M8 5h17l-4 5 4 5H8" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/></svg><span data-i18n="teacher.mechanic.race">Race</span></button>
+            <button type="button" class="theme-btn" data-mechanic="buzzer"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M7 23h18l-2-3v-6a7 7 0 0 0-14 0v6l-2 3Z" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/><path d="M13 27a3 3 0 0 0 6 0" fill="none" stroke="currentColor" stroke-width="2.5"/></svg><span data-i18n="teacher.mechanic.buzzer">Buzzer</span></button>
+            <button type="button" class="theme-btn" data-mechanic="board"><svg viewBox="0 0 32 32" aria-hidden="true"><rect x="4" y="5" width="24" height="22" rx="2" fill="none" stroke="currentColor" stroke-width="2.5"/><path d="M12 5v22M20 5v22M4 12.3h24M4 19.6h24" stroke="currentColor" stroke-width="2"/></svg><span data-i18n="teacher.mechanic.board">Board</span></button>
+          </div>
 
-    <div class="panel hidden" id="libraryPanel">
-      <div class="library-head">
-        <div class="field-label" data-i18n="teacher.library.heading">Saved Quizzes</div>
-        <button type="button" class="btn secondary" id="closeLibrary" data-i18n="teacher.library.close">Close</button>
-      </div>
-      <div id="libraryList"></div>
-    </div>
+          <span class="field-label" data-i18n="teacher.field.theme">Theme</span>
+          <div class="tile-pick" id="themePick"></div>
 
-    <div class="panel">
-      <label class="field-label" for="titleInput" data-i18n="teacher.field.title">Game title</label>
-      <input id="titleInput" class="text-input" placeholder="e.g. Chapter 6 Vocabulary" maxlength="80" data-i18n-placeholder="teacher.field.titlePlaceholder">
+          <div class="board-settings hidden" id="teamCountSetting">
+            <label class="field-label" for="teamCountInput" data-i18n="teacher.board.teams">Number of teams</label>
+            <select id="teamCountInput" class="text-input">
+              <option value="2" selected>2 teams</option>
+              <option value="4">4 teams</option>
+            </select>
+          </div>
 
-      <label class="field-label" data-i18n="teacher.field.gameType">Game type</label>
-      <div class="theme-pick" id="mechanicPick">
-        <button type="button" class="theme-btn active" data-mechanic="race">🏁<span data-i18n="teacher.mechanic.race">Race</span></button>
-        <button type="button" class="theme-btn" data-mechanic="buzzer">🔔<span data-i18n="teacher.mechanic.buzzer">Buzzer</span></button>
-        <button type="button" class="theme-btn" data-mechanic="board">🟦<span data-i18n="teacher.mechanic.board">Board</span></button>
-      </div>
-
-      <label class="field-label" data-i18n="teacher.field.theme">Theme</label>
-      <div class="theme-pick" id="themePick"></div>
-
-      <div class="board-settings hidden" id="boardSettings">
-        <div>
-          <label class="field-label" for="timeLimitInput" data-i18n="teacher.board.timeLimit">Time per question</label>
-          <select id="timeLimitInput" class="text-input">
-            <option value="15">15 s</option>
-            <option value="30" selected>30 s</option>
-            <option value="45">45 s</option>
-            <option value="60">60 s</option>
-            <option value="90">90 s</option>
-            <option value="120">120 s</option>
-          </select>
+          <div class="board-settings hidden" id="boardSettings">
+            <label class="field-label" for="timeLimitInput" data-i18n="teacher.board.timeLimit">Time per question</label>
+            <select id="timeLimitInput" class="text-input">
+              <option value="15">15 s</option>
+              <option value="30" selected>30 s</option>
+              <option value="45">45 s</option>
+              <option value="60">60 s</option>
+              <option value="90">90 s</option>
+              <option value="120">120 s</option>
+            </select>
+            <label class="check-row">
+              <input type="checkbox" id="penaltyInput">
+              <span data-i18n="teacher.board.penalty">Wrong answers lose points</span>
+            </label>
+          </div>
         </div>
-        <label class="check-row">
-          <input type="checkbox" id="penaltyInput">
-          <span data-i18n="teacher.board.penalty">Wrong answers lose points</span>
-        </label>
+
+        <div class="card action-card">
+          <button type="button" class="btn-primary" id="createGo"><span data-i18n="teacher.createRoom">Create Room</span></button>
+          <button type="button" class="btn-secondary" id="saveQuiz" data-i18n="teacher.library.saveButton">Save for later</button>
+          <div class="err" id="createErr" role="alert"></div>
+        </div>
+      </aside>
+
+      <div class="editor-main">
+        <div class="card library-card">
+          <h2 data-i18n="teacher.library.heading">Saved Quizzes</h2>
+          <label class="field-label" for="passcodeInput" data-i18n="teacher.passcode.label">Teacher passcode</label>
+          <div class="passcode-row">
+            <input id="passcodeInput" class="text-input" type="password" autocomplete="current-password" placeholder="Enter the teacher passcode" data-i18n-placeholder="teacher.passcode.placeholder">
+            <button type="button" class="btn-secondary" id="passcodeGo" data-i18n="teacher.passcode.button">Unlock</button>
+          </div>
+          <p class="hint" id="passcodeStatus">Needed to load, save, edit or delete saved quizzes.</p>
+          <button type="button" class="btn-secondary" id="openLibrary" data-i18n="teacher.library.loadButton">Load a saved quiz</button>
+          <div class="library-panel hidden" id="libraryPanel">
+            <div id="libraryList"></div>
+            <button type="button" class="text-btn" id="closeLibrary" data-i18n="teacher.library.close">Close</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <label class="field-label" for="titleInput" data-i18n="teacher.field.title">Game title</label>
+          <input id="titleInput" class="text-input title-input" dir="auto" placeholder="e.g. Chapter 6 Vocabulary" maxlength="80" data-i18n-placeholder="teacher.field.titlePlaceholder">
+        </div>
+
+        <div id="questionList"></div>
+
+        <button type="button" class="add-question" id="addQuestion" data-i18n="teacher.addQuestion">+ Add question</button>
       </div>
-    </div>
-
-    <div id="questionList"></div>
-
-    <button type="button" class="btn secondary block" id="addQuestion" data-i18n="teacher.addQuestion">+ Add question</button>
-
-    <div class="panel">
-      <button type="button" class="btn block" id="createGo" data-i18n="teacher.createRoom">Create Room</button>
-      <button type="button" class="btn secondary block" id="saveQuiz" data-i18n="teacher.library.saveButton">💾 Save for later</button>
-      <div class="err" id="createErr"></div>
     </div>
   </section>
 
   <section id="doneView" class="hidden">
-    <div class="panel done-panel">
-      <div class="field-label" data-i18n="teacher.done.shareLabel">Share this code with your students</div>
-      <div class="code-row">
-        <div class="code-display" id="doneCode"></div>
-        <button type="button" class="btn secondary" id="copyCode" data-i18n="common.copy">Copy code</button>
-      </div>
+    <div class="card done-card">
+      <p class="eyebrow" data-i18n="teacher.done.shareLabel">Share this code with your students</p>
+      <div class="done-code" id="doneCode" dir="ltr"></div>
+      <button type="button" class="btn-secondary" id="copyCode" data-i18n="common.copy">Copy code</button>
       <p class="lede" id="doneLede"></p>
-      <p class="lede buzzer-hint hidden" id="boardHint" data-i18n="teacher.done.boardHint">This is a board game. Open the Big Screen link and project it: the host picks squares and judges open answers there, while teams answer from their own devices.</p>
-      <p class="lede buzzer-hint hidden" id="buzzerHint" data-i18n="teacher.done.buzzerHint">This is a buzzer game — open the Big Screen link and project it for the whole class; teams buzz in from their own devices.</p>
-      <a class="btn block" id="openStudentView" target="_blank" rel="noopener" data-i18n="teacher.done.openStudentView">Open student join page</a>
-      <button type="button" class="btn secondary block" id="createAnother" data-i18n="teacher.done.createAnother">Create another race</button>
+      <p class="lede done-hint hidden" id="boardHint" data-i18n="teacher.done.boardHint">This is a board game. Open the Big Screen link and project it: the host picks squares and judges open answers there, while teams answer from their own devices.</p>
+      <p class="lede done-hint hidden" id="buzzerHint" data-i18n="teacher.done.buzzerHint">This is a buzzer game. Open the Big Screen link and project it for the whole class; teams buzz in from their own devices.</p>
+      <div class="done-actions">
+        <a class="btn-primary" id="openStudentView" target="_blank" rel="noopener"><span data-i18n="teacher.done.openStudentView">Open student join page</span> <span class="arrow" aria-hidden="true">&rarr;</span></a>
+        <button type="button" class="btn-secondary" id="createAnother" data-i18n="teacher.done.createAnother">Create another game</button>
+      </div>
     </div>
   </section>
-</div>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <span data-i18n="hub.footer.left">Educational Games · Made for classroom curiosity.</span>
+    <span data-i18n="hub.footer.right">Learn together. Play kindly.</span>
+  </div>
+</footer>
 
 <template id="questionRowTpl">
-  <div class="q-row panel">
+  <div class="q-row card">
     <div class="q-row-head">
-      <span class="q-num">Question</span>
+      <h3 class="q-num">Question</h3>
       <button type="button" class="remove-q" title="Remove question" data-i18n-title="teacher.q.remove">&times;</button>
     </div>
     <div class="board-fields hidden">
       <div>
         <label class="field-label" data-i18n="teacher.q.category">Category</label>
-        <input class="category-input text-input" maxlength="40" placeholder="e.g. Fractions" data-i18n-placeholder="teacher.q.categoryPlaceholder">
+        <input class="category-input text-input" dir="auto" maxlength="40" placeholder="e.g. Fractions" data-i18n-placeholder="teacher.q.categoryPlaceholder">
       </div>
       <div>
         <label class="field-label" data-i18n="teacher.q.points">Points</label>
@@ -148,8 +178,8 @@
       </div>
     </div>
     <div class="toolbar"></div>
-    <textarea class="prompt-input text-input" rows="2" placeholder="Question text -- use a toolbar button to insert math, or type $...$ yourself" data-i18n-placeholder="teacher.q.promptPlaceholder"></textarea>
-    <div class="preview" data-i18n="teacher.q.previewPlaceholder">Preview will appear here</div>
+    <textarea class="prompt-input text-input" dir="auto" rows="3" placeholder="Question text -- use a toolbar button to insert math, or type $...$ yourself" data-i18n-placeholder="teacher.q.promptPlaceholder"></textarea>
+    <div class="preview" dir="auto" data-i18n="teacher.q.previewPlaceholder">Preview will appear here</div>
     <div class="type-row">
       <label><input type="radio" name="type" value="short-answer" checked> <span data-i18n="teacher.q.shortAnswer">Short answer</span></label>
       <label><input type="radio" name="type" value="multiple-choice"> <span data-i18n="teacher.q.multipleChoice">Multiple choice</span></label>
@@ -157,10 +187,10 @@
     </div>
     <div class="short-answer-fields">
       <label class="field-label answer-label" data-i18n="teacher.q.correctAnswer">Correct answer</label>
-      <input class="answer-input text-input" placeholder="e.g. Paris, or 42" data-i18n-placeholder="teacher.q.correctAnswerPlaceholder">
+      <input class="answer-input text-input" dir="auto" placeholder="e.g. Paris, or 42" data-i18n-placeholder="teacher.q.correctAnswerPlaceholder">
     </div>
     <div class="mc-fields hidden">
-      <label class="field-label" data-i18n="teacher.q.choicesLabel">Choices (mark the correct one)</label>
+      <span class="field-label" data-i18n="teacher.q.choicesLabel">Choices (mark the correct one)</span>
       <div class="choices"></div>
       <button type="button" class="add-choice" data-i18n="teacher.q.addChoice">+ Add choice</button>
     </div>

@@ -3,7 +3,8 @@
 
   var NS = "games.teamBoard.";
   var TEAMS = ["A", "B", "C", "D"];
-  var EMOJI = { A: "🔴", B: "🔵", C: "🟢", D: "🟣" };
+  // Team shapes, so a team never depends on color alone.
+  var SHAPES = { A: "▲", B: "◆", C: "●", D: "■" };
   var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   var socket = io("/team-board");
@@ -27,11 +28,12 @@
   function qsa(sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
   function isTeam() { return TEAMS.indexOf(S.role) !== -1; }
   function teamName(team) { return t(NS + "teams." + team); }
-  function teamLabel(team) { return EMOJI[team] + " " + teamName(team); }
-  function joinedCount(room) { return TEAMS.filter(function (x) { return room.teams[x].joined; }).length; }
+  function teamLabel(team) { return SHAPES[team] + " " + teamName(team); }
+  function joinedCount(room) { return room.teamSlots.filter(function (x) { return room.teams[x].joined; }).length; }
 
   function showView(name) {
     S.view = name;
+    document.body.setAttribute("data-screen", name); // the shared site header shows on the front door only
     qsa("#app > section[data-view]").forEach(function (sec) {
       sec.classList.toggle("hidden", sec.getAttribute("data-view") !== name);
     });
@@ -124,15 +126,16 @@
       applyRoomUpdate(ack.room);
     });
   }
-  // Free seats only. Once a game has started, only its own teams can rejoin.
+  // Only the seats the teacher chose (2 or 4), and free ones only. Once a
+  // game has started, only its own teams can rejoin.
   function renderTeamPick(room) {
     var wrap = $("teamPick");
     wrap.innerHTML = "";
-    TEAMS.forEach(function (team) {
+    room.teamSlots.forEach(function (team) {
       var b = document.createElement("button");
       b.type = "button";
       b.className = "team-btn " + team.toLowerCase();
-      b.textContent = t(NS + "join.joinTeam", { team: teamLabel(team) });
+      b.textContent = SHAPES[team] + " " + t(NS + "join.joinTeam", { team: teamName(team) });
       b.disabled = room.teams[team].joined || (room.status !== "waiting" && room.playing.indexOf(team) === -1);
       b.addEventListener("click", function () { joinAs(S.pendingCode, team); });
       wrap.appendChild(b);
@@ -157,7 +160,7 @@
     $("lobbyRules").textContent = t(NS + "lobby.timeLimit", { n: d.timeLimit }) + " " +
       t(NS + (d.penalty ? "lobby.penaltyOn" : "lobby.penaltyOff"));
     var roster = $("lobbyRoster"); roster.innerHTML = "";
-    TEAMS.forEach(function (team) {
+    d.teamSlots.forEach(function (team) {
       var joined = d.teams[team].joined;
       var row = document.createElement("div");
       row.className = "roster-row" + (joined ? " ready" : "");

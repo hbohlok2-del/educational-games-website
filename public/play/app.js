@@ -37,6 +37,11 @@
     return "/games/team-buzzer/";
   }
 
+  // gameType -> its key under games.* in the dictionaries
+  var GAME_KEYS = { "tug-of-war": "tugOfWar", "team-race": "teamRace", "team-buzzer": "teamBuzzer", "team-board": "teamBoard" };
+  // a saved quiz's mechanic -> the same game names
+  var MECHANIC_KEYS = { race: "teamRace", buzzer: "teamBuzzer", board: "teamBoard" };
+
   function goToRoom(gameType, code, display) {
     location.href = basePathFor(gameType) + "?code=" + code + (display ? "&role=display" : "");
   }
@@ -84,29 +89,43 @@
       info.className = "lobby-info";
       var title = document.createElement("span");
       title.className = "lobby-title";
+      title.setAttribute("dir", "auto");
       title.textContent = room.title || room.code;
+      var meta = document.createElement("span");
+      meta.className = "lobby-meta";
+      var game = document.createElement("span");
+      game.textContent = t("games." + GAME_KEYS[room.gameType] + ".title");
+      var status = document.createElement("span");
+      var playing = room.status === "active";
+      status.className = "status-chip" + (playing ? " playing" : "");
+      status.textContent = t(playing ? "play.lobby.playing" : "play.lobby.waiting");
+      meta.appendChild(game);
+      meta.appendChild(status);
+      info.appendChild(title);
+      info.appendChild(meta);
+
       var code = document.createElement("span");
       code.className = "lobby-code mono";
+      code.setAttribute("dir", "ltr");
       code.textContent = room.code;
-      info.appendChild(title);
-      info.appendChild(code);
 
       var actions = document.createElement("div");
       actions.className = "lobby-actions";
       var joinBtn = document.createElement("button");
       joinBtn.type = "button";
-      joinBtn.className = "btn small";
+      joinBtn.className = "btn-primary";
       joinBtn.textContent = t("play.lobby.join");
       joinBtn.addEventListener("click", function () { goToRoom(room.gameType, room.code, false); });
       var bigBtn = document.createElement("button");
       bigBtn.type = "button";
-      bigBtn.className = "btn small secondary";
+      bigBtn.className = "btn-secondary";
       bigBtn.textContent = t("play.lobby.bigScreen");
       bigBtn.addEventListener("click", function () { goToRoom(room.gameType, room.code, true); });
       actions.appendChild(joinBtn);
       actions.appendChild(bigBtn);
 
       row.appendChild(info);
+      row.appendChild(code);
       row.appendChild(actions);
       list.appendChild(row);
     });
@@ -170,17 +189,18 @@
       info.className = "lobby-info";
       var title = document.createElement("span");
       title.className = "lobby-title";
+      title.setAttribute("dir", "auto");
       title.textContent = set.title;
       var meta = document.createElement("span");
       meta.className = "lobby-meta";
-      meta.textContent = t("play.library." + (set.mechanic === "buzzer" || set.mechanic === "board" ? set.mechanic : "race")) + " · " +
+      meta.textContent = t("games." + (MECHANIC_KEYS[set.mechanic] || "teamRace") + ".title") + " · " +
         t(set.questionCount === 1 ? "play.library.questionSingular" : "play.library.questionPlural", { n: set.questionCount });
       info.appendChild(title);
       info.appendChild(meta);
 
       var playBtn = document.createElement("button");
       playBtn.type = "button";
-      playBtn.className = "btn small";
+      playBtn.className = "btn-primary";
       playBtn.textContent = t("play.library.play");
       playBtn.addEventListener("click", function () { launchSet(set.id, playBtn); });
 
@@ -215,6 +235,7 @@
   }
 
   document.addEventListener("i18nchange", function () {
+    refreshLobby();
     if (libraryLoaded) renderLibrary();
   });
 

@@ -19,6 +19,7 @@ app.set("views", path.join(__dirname, "views"));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
 app.use("/vendor/katex", express.static(path.join(__dirname, "node_modules", "katex", "dist")));
+app.use("/vendor/gsap", express.static(path.join(__dirname, "node_modules", "gsap", "dist")));
 app.use("/lessons", require("./server/routes/lessons"));
 
 initDb().catch((err) => {

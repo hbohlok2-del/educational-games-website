@@ -25,6 +25,7 @@
 
   function showView(name) {
     S.view = name;
+    document.body.setAttribute("data-screen", name); // the shared site header shows on the front door only
     qsa("#app > section[data-view]").forEach(function (sec) {
       sec.classList.toggle("hidden", sec.getAttribute("data-view") !== name);
     });

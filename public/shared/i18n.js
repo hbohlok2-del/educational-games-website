@@ -48,6 +48,9 @@
     });
     var switcher = document.getElementById("langSwitch");
     if (switcher) switcher.value = currentLang();
+    document.querySelectorAll("[data-lang]").forEach(function (btn) {
+      btn.setAttribute("aria-pressed", btn.getAttribute("data-lang") === currentLang() ? "true" : "false");
+    });
   }
 
   function setLang(lang) {
@@ -74,6 +77,12 @@
         setLang(switcher.value);
       });
     }
+    // The site header's language links (EN / FR / PL / العربية).
+    document.querySelectorAll("[data-lang]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        setLang(btn.getAttribute("data-lang"));
+      });
+    });
   }
 
   if (document.readyState === "loading") {

@@ -11,16 +11,27 @@
   var selectedTheme = "rope";
   var loadedSetId = null;
 
+  // Theme tile icons: inline SVG drawn in the current text color.
+  function svgIcon(paths) {
+    return '<svg viewBox="0 0 32 32" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">' + paths + "</svg>";
+  }
+  var ICONS = {
+    rope: svgIcon('<path d="M3 17c4-3 7 3 11 0s7-3 11 0"/><circle cx="4" cy="17" r="2" fill="currentColor"/><circle cx="28" cy="17" r="2" fill="currentColor"/>'),
+    rocket: svgIcon('<path d="M16 3c5 4 6 10 4 17h-8c-2-7-1-13 4-17Z"/><circle cx="16" cy="12" r="2.5"/><path d="M12 20l-4 4 4 1M20 20l4 4-4 1M14 25l2 4 2-4"/>'),
+    spotlight: svgIcon('<path d="M11 4h10l-2 8h-6Z"/><path d="M13 12l-7 15h20l-7-15"/>'),
+    classic: svgIcon('<rect x="4" y="5" width="24" height="22" rx="2"/><path d="M12 5v22M20 5v22M4 12.3h24M4 19.6h24" stroke-width="2"/>'),
+  };
+
   var THEME_IDS_BY_MECHANIC = {
     race: [
-      { id: "rope", icon: "🪢", key: "teacher.themes.rope" },
-      { id: "rocket", icon: "🚀", key: "teacher.themes.rocket" },
+      { id: "rope", icon: ICONS.rope, key: "teacher.themes.rope" },
+      { id: "rocket", icon: ICONS.rocket, key: "teacher.themes.rocket" },
     ],
     buzzer: [
-      { id: "spotlight", icon: "🔔", key: "teacher.themes.spotlight" },
+      { id: "spotlight", icon: ICONS.spotlight, key: "teacher.themes.spotlight" },
     ],
     board: [
-      { id: "classic", icon: "🟦", key: "teacher.themes.classic" },
+      { id: "classic", icon: ICONS.classic, key: "teacher.themes.classic" },
     ],
   };
 
@@ -112,23 +123,36 @@
   });
   if (storedPasscode()) setPasscodeState("ok"); else renderPasscodeStatus();
 
+  // Keeps the current theme when it belongs to the selected game type (a
+  // language switch re-renders the buttons), otherwise picks the first.
   function renderThemePick() {
     var wrap = $("themePick");
+    var themes = THEME_IDS_BY_MECHANIC[selectedMechanic];
+    if (!themes.some(function (theme) { return theme.id === selectedTheme; })) selectedTheme = themes[0].id;
     wrap.innerHTML = "";
-    THEME_IDS_BY_MECHANIC[selectedMechanic].forEach(function (theme, i) {
+    themes.forEach(function (theme) {
       var b = document.createElement("button");
       b.type = "button";
-      b.className = "theme-btn" + (i === 0 ? " active" : "");
+      b.className = "theme-btn" + (theme.id === selectedTheme ? " active" : "");
       b.setAttribute("data-theme-id", theme.id);
       b.innerHTML = theme.icon + "<span>" + t(theme.key) + "</span>";
       b.addEventListener("click", function () {
         Array.prototype.forEach.call(wrap.querySelectorAll(".theme-btn"), function (x) { x.classList.remove("active"); });
         b.classList.add("active");
         selectedTheme = theme.id;
+        applyTeamCount();
       });
       wrap.appendChild(b);
     });
-    selectedTheme = THEME_IDS_BY_MECHANIC[selectedMechanic][0].id;
+  }
+
+  // 2 or 4 teams: Quiz Board and Rocket Race. The rope has two ends and the
+  // buzzer is head-to-head, so those stay at 2.
+  function teamCountApplies() {
+    return selectedMechanic === "board" || (selectedMechanic === "race" && selectedTheme === "rocket");
+  }
+  function applyTeamCount() {
+    $("teamCountSetting").classList.toggle("hidden", !teamCountApplies());
   }
   renderThemePick();
 
@@ -158,6 +182,7 @@
 
   function applyMechanic() {
     $("boardSettings").classList.toggle("hidden", selectedMechanic !== "board");
+    applyTeamCount();
     Array.prototype.forEach.call(questionList.querySelectorAll(".q-row"), applyMechanicToRow);
   }
 
@@ -231,7 +256,7 @@
       wrap.className = "choice-row";
       wrap.innerHTML =
         '<input type="radio" name="correct-' + id + '" class="choice-correct">' +
-        '<input class="choice-text text-input" placeholder="' + t("teacher.q.choiceTextPlaceholder") + '">' +
+        '<input class="choice-text text-input" dir="auto" placeholder="' + t("teacher.q.choiceTextPlaceholder") + '">' +
         '<button type="button" class="remove-choice">&times;</button>';
       wrap.querySelector(".remove-choice").addEventListener("click", function () { wrap.remove(); });
       choicesWrap.appendChild(wrap);
@@ -313,8 +338,17 @@
   }
   renderTimeOptions();
 
+  function renderTeamCountOptions() {
+    Array.prototype.forEach.call($("teamCountInput").options, function (opt) {
+      opt.textContent = t("teacher.board.teamCount", { n: opt.value });
+    });
+  }
+  renderTeamCountOptions();
+
   function currentSettings() {
-    return { penalty: $("penaltyInput").checked, timeLimit: Number($("timeLimitInput").value) };
+    var settings = { penalty: $("penaltyInput").checked, timeLimit: Number($("timeLimitInput").value) };
+    if (teamCountApplies()) settings.teams = Number($("teamCountInput").value);
+    return settings;
   }
 
   wireCopyButton($("copyCode"), function () { return $("doneCode").textContent; });
@@ -364,6 +398,8 @@
     if (themeBtn) themeBtn.click();
     $("penaltyInput").checked = !!(set.settings && set.settings.penalty);
     $("timeLimitInput").value = String((set.settings && set.settings.timeLimit) || 30);
+    // Board quizzes saved before the choice existed had 4 seats.
+    $("teamCountInput").value = String((set.settings && set.settings.teams) || (set.mechanic === "board" ? 4 : 2));
 
     questionList.innerHTML = "";
     (set.questions || []).forEach(function (q) {
@@ -405,7 +441,7 @@
     list.innerHTML = "";
     if (!sets.length) {
       var empty = document.createElement("p");
-      empty.className = "lede";
+      empty.className = "hint";
       empty.textContent = t("teacher.library.empty");
       list.appendChild(empty);
       return;
@@ -418,6 +454,7 @@
       info.className = "library-info";
       var title = document.createElement("span");
       title.className = "library-title";
+      title.setAttribute("dir", "auto");
       title.textContent = set.title;
       var meta = document.createElement("span");
       meta.className = "library-meta";
@@ -429,7 +466,7 @@
       actions.className = "library-actions";
       var loadBtn = document.createElement("button");
       loadBtn.type = "button";
-      loadBtn.className = "btn small";
+      loadBtn.className = "btn-primary";
       loadBtn.textContent = t("teacher.library.load");
       loadBtn.addEventListener("click", function () {
         fetch("/api/question-sets/" + set.id, { headers: teacherHeaders() })
@@ -513,5 +550,7 @@
     updateSaveButtonLabel();
     renderPasscodeStatus();
     renderTimeOptions();
+    renderTeamCountOptions();
+    applyTeamCount();
   });
 })();

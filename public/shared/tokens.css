@@ -15,8 +15,17 @@
   --line:rgba(244,241,232,0.16);
   --rope:#C79A5B;
   --rope-dark:#9C7444;
+  --paper:#F4F1E8;          /* light reading surface (Course Notes, spotlight strip) */
+  --ink:#16213E;            /* text on light surfaces */
+  --radius-sm:8px;          /* inputs, small chips */
+  --radius:12px;            /* buttons, list rows */
+  --radius-lg:18px;         /* cards and panels */
+  --shadow:0 10px 30px rgba(0,0,0,0.25);
+  --page-gutter:56px;       /* side margin on wide screens */
+  --page-max:1328px;        /* content width on wide screens */
   color-scheme: dark;
 }
+@media (max-width:720px){ :root{ --page-gutter:16px; } }
 
 *{box-sizing:border-box;}
 body{
@@ -36,6 +45,10 @@ h1,h2,h3,.display{
   letter-spacing:0.02em;
   margin:0;
 }
+/* Anton and Nunito have no Arabic letters, so Arabic uses Cairo throughout. */
+/* :lang() follows the nearest lang attribute, so English content marked lang="en" inside an Arabic page keeps its own fonts. */
+body:lang(ar){font-family:'Cairo','Nunito',system-ui,sans-serif;}
+h1:lang(ar),h2:lang(ar),h3:lang(ar),.display:lang(ar){font-family:'Cairo',system-ui,sans-serif; font-weight:800; letter-spacing:0;}
 .mono{font-family:'JetBrains Mono',monospace; font-weight:700; font-variant-numeric:tabular-nums;}
 button{font-family:inherit; cursor:pointer;}
 button:focus-visible, input:focus-visible{outline:3px solid var(--gold); outline-offset:2px;}

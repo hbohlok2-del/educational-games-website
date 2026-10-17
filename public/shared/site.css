@@ -1,0 +1,80 @@
+/* Site-wide pieces from the 2026-10-16 style guide: header, navigation,
+   buttons, cards, labels and footer. Load after /shared/tokens.css. */
+
+a{color:inherit;}
+a:focus-visible, select:focus-visible, textarea:focus-visible{outline:3px solid var(--chalk); outline-offset:2px;}
+button:focus-visible, input:focus-visible{outline-color:var(--chalk);}
+
+.wrap{max-width:calc(var(--page-max) + 2 * var(--page-gutter)); margin:0 auto; padding:0 var(--page-gutter);}
+
+/* ---------- Header ---------- */
+.site-header{border-bottom:1px solid var(--line);}
+.site-header .wrap{display:flex; align-items:center; justify-content:space-between; gap:16px; min-height:88px;}
+.brand{display:inline-flex; align-items:center; gap:12px; text-decoration:none; color:var(--chalk);}
+.brand-mark{
+  display:inline-grid; place-items:center; width:42px; height:42px; border-radius:var(--radius-sm);
+  background:var(--gold); color:var(--dusk); font-family:'Anton',system-ui,sans-serif; font-size:24px; line-height:1;
+}
+.brand-name{font-family:'Anton',system-ui,sans-serif; font-size:26px; letter-spacing:0.01em; text-transform:uppercase;}
+[lang="ar"] .brand-name{font-family:'Cairo',system-ui,sans-serif; font-weight:800; text-transform:none;}
+
+.lang-links{display:flex; gap:4px;}
+.lang-links button{
+  background:none; border:0; color:var(--chalk); font-weight:800; font-size:14px;
+  padding:10px 8px; min-height:44px; border-radius:var(--radius-sm);
+}
+.lang-links button[aria-pressed="true"]{color:var(--gold);}
+.lang-links button:hover{color:var(--gold);}
+
+.site-nav{border-bottom:1px solid var(--line);}
+.site-nav .wrap{display:flex; gap:2px; overflow-x:auto; scrollbar-width:none;}
+.site-nav a{
+  flex:none; display:block; padding:18px 22px; font-weight:800; font-size:16px; text-decoration:none;
+  color:var(--chalk); border-bottom:3px solid transparent;
+}
+.site-nav a:hover{color:var(--gold);}
+.site-nav a[aria-current="page"]{background:var(--turf); color:var(--gold); border-bottom-color:var(--gold);}
+
+@media (max-width:720px){
+  .site-header .wrap{min-height:68px;}
+  .brand-mark{width:36px; height:36px; font-size:20px;}
+  .brand-name{font-size:20px;}
+  .lang-links button{padding:10px 5px; font-size:13px;}
+  .site-nav a{padding:14px 14px; font-size:15px;}
+}
+@media (max-width:420px){ .brand-name{display:none;} }
+
+/* ---------- Text ---------- */
+.eyebrow{font-weight:800; font-size:13px; letter-spacing:0.04em; text-transform:uppercase; color:var(--gold); margin:0;}
+[lang="ar"] .eyebrow{letter-spacing:0;}
+
+/* ---------- Buttons ---------- */
+.btn-primary, .btn-secondary{
+  display:inline-flex; align-items:center; justify-content:center; gap:10px; min-height:52px;
+  padding:0 22px; border-radius:var(--radius-sm); font:inherit; font-weight:800; font-size:17px;
+  text-decoration:none; white-space:nowrap; cursor:pointer;
+}
+.btn-primary{background:var(--gold); color:var(--dusk); border:0;}
+.btn-primary:hover{filter:brightness(1.06);}
+.btn-primary:disabled{opacity:0.6; cursor:default;}
+.btn-secondary{background:var(--turf); color:var(--chalk); border:1px solid var(--line);}
+.arrow{display:inline-block;}
+[dir="rtl"] .arrow{transform:scaleX(-1);}
+
+/* ---------- Inputs ---------- */
+.text-input{
+  width:100%; min-height:52px; padding:0 18px; border-radius:var(--radius-sm); font:inherit; font-size:17px;
+  background:var(--dusk); color:var(--chalk); border:1px solid var(--line);
+}
+.text-input::placeholder{color:var(--chalk-dim);}
+
+/* ---------- Cards ---------- */
+.card{background:var(--turf); border-radius:var(--radius-lg); padding:26px;}
+.card-link{display:flex; flex-direction:column; text-decoration:none; color:var(--chalk); transition:transform .15s ease, box-shadow .15s ease;}
+.card-link:hover{transform:translateY(-3px); box-shadow:var(--shadow);}
+.card-link .more{margin-top:auto; padding-top:18px; color:var(--gold); font-weight:800;}
+
+@media (prefers-reduced-motion:reduce){ .card-link, .card-link:hover{transition:none; transform:none;} }
+
+/* ---------- Footer ---------- */
+.site-footer .wrap{display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px 24px; padding-top:28px; padding-bottom:28px; font-size:14px; color:var(--chalk-dim);}

@@ -2,6 +2,10 @@
   "use strict";
 
   var NS = "games.teamRace.";
+  // Team shapes, so a team never depends on color alone.
+  var SHAPES = { A: "▲", B: "◆", C: "●", D: "■" };
+  var COLORS = { A: "#E63946", B: "#2E86FF", C: "#2BB673", D: "#9B59B6" };
+  var FINISH_HOLD_MS = 2500;
   var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   var socket = io("/team-race");
@@ -12,6 +16,7 @@
     role: null,
     pendingRole: null,
     pendingCode: null,
+    peekRoom: null,
     room: null,
     lastSeenRound: null,
     finished: false,
@@ -21,13 +26,24 @@
     lockUntil: 0,
     myPulls: [],
     clockTimer: null,
+    lanesFor: null,
+    leader: null,
+    endTimer: null,
   };
 
   function $(id) { return document.getElementById(id); }
   function qsa(sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
+  function isTeam() { return !!S.role; }
+  function teamName(team) { return t(NS + "teams." + team); }
+  function teamLabel(team) { return SHAPES[team] + " " + teamName(team); }
+  function joinedCount(room) { return room.teamSlots.filter(function (x) { return room.teams[x].joined; }).length; }
+  // Four rockets get their own code-drawn lanes; a two-team race keeps the
+  // painted two-lane artwork.
+  function usesLanes(room) { return room.theme === "rocket" && room.teamSlots.length > 2; }
 
   function showView(name) {
     S.view = name;
+    document.body.setAttribute("data-screen", name); // the shared site header shows on the front door only
     qsa("#app > section[data-view]").forEach(function (sec) {
       sec.classList.toggle("hidden", sec.getAttribute("data-view") !== name);
     });
@@ -54,8 +70,9 @@
     var firstSeen = S.lastSeenRound === null;
     if (!firstSeen && room.round !== S.lastSeenRound) onRoundReset();
     S.lastSeenRound = room.round;
+    var prev = S.room;
     S.room = room;
-    onRoomUpdate(room);
+    onRoomUpdate(room, prev);
   }
 
   function onRoundReset() {
@@ -63,20 +80,41 @@
     S.myPulls = [];
     S.qIndex = 0;
     S.questionReady = false;
+    S.leader = null;
   }
 
-  function onRoomUpdate(room) {
+  function onRoomUpdate(room, prev) {
     if (S.view === "lobby") renderLobby();
     var enteringMatch = room.status === "active" && (S.view === "lobby" || S.view === "end");
     if (S.view === "match" || enteringMatch) {
       if (S.view !== "match") { showView("match"); setupMatchUI(); }
-      renderRope();
+      renderRope(trackEvents(prev, room));
       renderDisplayStats();
     }
     if (room.status === "finished" && !S.finished) {
       S.finished = true;
-      showEnd(room);
+      // A rocket race holds the track for its finish celebration first.
+      if (S.view === "match" && room.theme === "rocket" && RaceFX.enabled) {
+        celebrate(room);
+        S.endTimer = setTimeout(function () { S.endTimer = null; showEnd(room); }, FINISH_HOLD_MS);
+      } else {
+        showEnd(room);
+      }
     }
+  }
+
+  // What happened to each rocket since the last update: a correct answer
+  // (fast or slow, from how far it climbed) or a wrong one.
+  function trackEvents(prev, room) {
+    var ev = {};
+    if (!prev || prev.round !== room.round || room.theme !== "rocket" || !prev.stats) return ev;
+    room.playing.forEach(function (team) {
+      var a = prev.stats[team], b = room.stats[team];
+      if (!a || !b) return;
+      if (b.correct > a.correct) ev[team] = room.progress[team] - prev.progress[team] >= 10 ? "fast" : "slow";
+      else if (b.wrong > a.wrong) ev[team] = "wrong";
+    });
+    return ev;
   }
 
   socket.on("room-update", applyRoomUpdate);
@@ -93,9 +131,12 @@
 
   function leaveRoom() {
     if (S.clockTimer) { clearInterval(S.clockTimer); S.clockTimer = null; }
+    if (S.endTimer) { clearTimeout(S.endTimer); S.endTimer = null; }
+    S.leader = null;
+    document.body.removeAttribute("data-role");
     if (socket.connected) socket.disconnect();
     socket.connect();
-    S.code = null; S.role = null; S.room = null; S.lastSeenRound = null; S.finished = false;
+    S.code = null; S.role = null; S.room = null; S.lastSeenRound = null; S.finished = false; S.lanesFor = null;
   }
 
   $("joinCodeGo").addEventListener("click", function () {
@@ -105,14 +146,14 @@
     socket.emit("peek-room", { code: code }, function (ack) {
       if (!ack.ok) { errorEl.textContent = tError(ack.error); return; }
       S.pendingCode = code;
+      S.peekRoom = ack.room;
       if (S.pendingRole === "display") {
         joinAs(code, null);
         return;
       }
       $("joinRoleCode").textContent = code;
       $("joinRoleTitle").textContent = ack.room.title || t(NS + "defaultTitle");
-      $("joinAsA").disabled = ack.room.teamA.joined;
-      $("joinAsB").disabled = ack.room.teamB.joined;
+      renderTeamPick(ack.room);
       $("joinRoleErr").textContent = "";
       showView("joinRoleSelect");
     });
@@ -128,8 +169,22 @@
       applyRoomUpdate(ack.room);
     });
   }
-  $("joinAsA").addEventListener("click", function () { joinAs(S.pendingCode, "A"); });
-  $("joinAsB").addEventListener("click", function () { joinAs(S.pendingCode, "B"); });
+
+  // Only the room's seats (2 or 4), and free ones only. Once a race has
+  // started, only its own teams can rejoin.
+  function renderTeamPick(room) {
+    var wrap = $("teamPick");
+    wrap.innerHTML = "";
+    room.teamSlots.forEach(function (team) {
+      var b = document.createElement("button");
+      b.type = "button";
+      b.className = "team-btn " + team.toLowerCase();
+      b.textContent = SHAPES[team] + " " + t(NS + "join.joinTeam", { team: teamName(team) });
+      b.disabled = room.teams[team].joined || (room.status !== "waiting" && room.playing.indexOf(team) === -1);
+      b.addEventListener("click", function () { joinAs(S.pendingCode, team); });
+      wrap.appendChild(b);
+    });
+  }
   $("joinAsDisplay").addEventListener("click", function () { joinAs(S.pendingCode, null); });
 
   $("lobbyStart").addEventListener("click", function () {
@@ -146,34 +201,51 @@
     $("lobbyTitle").textContent = (d.title || t(NS + "defaultTitle")) + " · " + questionCountLabel(d.questionCount);
     $("lobbyCode").textContent = d.code;
     var roster = $("lobbyRoster"); roster.innerHTML = "";
-    [["A", t(NS + "lobby.redTeam"), d.teamA], ["B", t(NS + "lobby.blueTeam"), d.teamB]].forEach(function (row3) {
+    d.teamSlots.forEach(function (team) {
+      var joined = d.teams[team].joined;
       var row = document.createElement("div");
-      row.className = "roster-row" + (row3[2] && row3[2].joined ? " ready" : "");
-      row.innerHTML = '<span class="dot ' + row3[0].toLowerCase() + '"></span><span class="name">' + row3[1] + '</span><span class="status">' +
-        (row3[2] && row3[2].joined ? t(NS + "lobby.ready") : t(NS + "lobby.waiting")) + '</span>';
+      row.className = "roster-row" + (joined ? " ready" : "");
+      var dot = document.createElement("span"); dot.className = "dot " + team.toLowerCase();
+      var name = document.createElement("span"); name.className = "name"; name.textContent = teamName(team);
+      var status = document.createElement("span"); status.className = "status";
+      status.textContent = t(NS + (joined ? "lobby.ready" : "lobby.waiting"));
+      row.appendChild(dot); row.appendChild(name); row.appendChild(status);
       roster.appendChild(row);
     });
-    var bothReady = d.teamA && d.teamA.joined && d.teamB && d.teamB.joined;
+    // Two seats: both must be filled. Four lanes: any two can race.
+    var count = joinedCount(d);
+    var four = d.teamSlots.length > 2;
+    var ready = count >= 2;
     var startBtn = $("lobbyStart");
-    startBtn.disabled = !bothReady || d.status === "active";
-    startBtn.textContent = d.status === "active" ? t(NS + "lobby.matchStarting") : (bothReady ? t(NS + "lobby.startRace") : t(NS + "lobby.waitingBothTeams"));
+    startBtn.disabled = !ready || d.status === "active";
+    startBtn.textContent = d.status === "active" ? t(NS + "lobby.matchStarting") :
+      !ready ? t(NS + (four ? "lobby.needTwoTeams" : "lobby.waitingBothTeams")) :
+      four ? t(NS + "lobby.startRaceTeams", { n: count }) : t(NS + "lobby.startRace");
   }
 
   // ---------------- Match ----------------
   function setupMatchUI() {
     $("matchTitleLabel").textContent = (S.room && S.room.title) || "";
-    var isTeam = S.role === "A" || S.role === "B";
-    $("teamPlay").classList.toggle("hidden", !isTeam);
-    $("displayPlay").classList.toggle("hidden", isTeam);
-    if (isTeam) {
+    var team = isTeam();
+    document.body.setAttribute("data-role", team ? "team" : "display");
+    $("teamPlay").classList.toggle("hidden", !team);
+    $("displayPlay").classList.toggle("hidden", team);
+    if (team) {
       var card = $("teamCard");
       card.className = "team-card " + S.role.toLowerCase();
-      $("teamTag").textContent = t(NS + (S.role === "A" ? "match.teamTagRed" : "match.teamTagBlue"));
+      $("teamTag").textContent = teamLabel(S.role);
+      $("teamPill").className = "team-pill " + S.role.toLowerCase();
+      $("teamPill").textContent = teamLabel(S.role);
       startCountdownThenPlay();
     }
     var isRocket = S.room && S.room.theme === "rocket";
+    var lanes = !!S.room && usesLanes(S.room);
     $("ropeWrap").classList.toggle("hidden", isRocket);
-    $("rocketWrap").classList.toggle("hidden", !isRocket);
+    $("rocketWrap").classList.toggle("hidden", !isRocket || lanes);
+    $("laneWrap").classList.toggle("hidden", !lanes);
+    if (lanes) buildLanes(S.room);
+    buildDisplayStats(S.room);
+    if (isRocket) startTrackFx(S.room);
     renderRope();
     if (!S.clockTimer) S.clockTimer = setInterval(renderMatchMeta, 1000);
     renderMatchMeta();
@@ -186,23 +258,132 @@
     $("matchClock").textContent = m + ":" + (s < 10 ? "0" : "") + s;
   }
 
-  function renderRope() {
-    var pos = S.room ? S.room.position : 50;
+  function renderRope(ev) {
+    var room = S.room;
+    var pos = room ? room.position : 50;
     var marker = $("ropeMarker");
     if (marker) marker.style.left = pos + "%";
     var track = $("ropeTrack");
     if (track) track.classList.toggle("tense", (pos < 18 || pos > 82) && !reduceMotion);
-    renderRocketTrack(S.room ? S.room.progressA : 0, S.room ? S.room.progressB : 0);
+    if (!room || room.theme !== "rocket") return;
+    ev = ev || {};
+    if (usesLanes(room)) renderLanes(room, ev);
+    else renderRocketTrack(room, ev);
+    updateLeader(room);
   }
 
-  var ROCKET_PAD_PCT = 6;
+  var ROCKET_PAD_PCT = 20; // a resting rocket stands on its painted pad
   var ROCKET_FINISH_PCT = 80;
-  function renderRocketTrack(progressA, progressB) {
-    var bottomA = ROCKET_PAD_PCT + ((progressA || 0) / 100) * (ROCKET_FINISH_PCT - ROCKET_PAD_PCT);
-    var bottomB = ROCKET_PAD_PCT + ((progressB || 0) / 100) * (ROCKET_FINISH_PCT - ROCKET_PAD_PCT);
-    var rocketA = $("rocketA"), rocketB = $("rocketB");
-    if (rocketA) rocketA.style.bottom = bottomA + "%";
-    if (rocketB) rocketB.style.bottom = bottomB + "%";
+  function rocketBottom(progress, pad) {
+    return pad + ((progress || 0) / 100) * (ROCKET_FINISH_PCT - pad);
+  }
+  function renderRocketTrack(room, ev) {
+    ["A", "B"].forEach(function (team) {
+      var wrap = $("rocket" + team);
+      moveRocket(wrap, null, wrap.querySelector("img"), rocketBottom(room.progress[team], ROCKET_PAD_PCT), ev[team]);
+    });
+  }
+
+  // Plays the answer's animation, then moves the rocket. Unchanged rockets
+  // are left alone so an animation in flight is not cut short.
+  function moveRocket(wrap, beam, dimTarget, pct, event) {
+    if (!wrap) return;
+    if (event === "wrong") RaceFX.wrong(wrap, dimTarget);
+    else if (event) RaceFX.boost(wrap, beam, event === "fast");
+    if (wrap.dataset.pct === String(pct)) return;
+    wrap.dataset.pct = String(pct);
+    RaceFX.place(wrap, pct, event === "fast" || event === "slow" ? event : null);
+  }
+
+  function activeTrack(room) { return usesLanes(room) ? $("laneTrack") : $("rocketTrack"); }
+  function rocketWrap(room, team) { return usesLanes(room) ? $("laneRocket" + team) : $("rocket" + team); }
+
+  // The leader is the single highest rocket; on a tie the crown stays put.
+  function updateLeader(room) {
+    var best = 0;
+    room.playing.forEach(function (team) { best = Math.max(best, room.progress[team] || 0); });
+    var tops = room.playing.filter(function (team) { return best > 0 && room.progress[team] === best; });
+    if (tops.length === 1 && tops[0] !== S.leader) {
+      S.leader = tops[0];
+      RaceFX.lead(activeTrack(room), rocketWrap(room, S.leader));
+    }
+    room.teamSlots.forEach(function (team) {
+      var lane = $("lane" + team);
+      if (lane) lane.classList.toggle("leading", team === S.leader);
+      var card = $("dispCard" + team);
+      if (card) card.classList.toggle("leading", team === S.leader);
+    });
+  }
+
+  // Engine glows, idle bob and stars for this track, plus the 3-2-1-GO
+  // countdown when the race has not started yet.
+  function startTrackFx(room) {
+    var track = activeTrack(room);
+    var wraps = room.teamSlots.map(function (team) { return rocketWrap(room, team); });
+    RaceFX.clear(track);
+    RaceFX.setup(track, wraps, usesLanes(room));
+    if (room.matchStartAt > Date.now()) {
+      var pads = usesLanes(room) ? qsa(".lane-pad", track) : [];
+      RaceFX.countdown(track, room.matchStartAt, pads, wraps);
+    }
+  }
+
+  function celebrate(room) {
+    var track = activeTrack(room);
+    if (room.winner) {
+      var others = room.playing.filter(function (team) { return team !== room.winner; }).map(function (team) {
+        return usesLanes(room) ? $("lane" + team) : $("rocket" + team);
+      });
+      RaceFX.finish(track, rocketWrap(room, room.winner), others, t(NS + "end.teamWins", { team: teamLabel(room.winner) }), COLORS[room.winner]);
+    } else {
+      RaceFX.draw(track, usesLanes(room) ? qsa(".lane-beam", track) : [], t(NS + "end.draw"));
+    }
+  }
+
+  // ---------------- Four-lane rocket track ----------------
+  // Every part (lane, beam, pad, rocket) is its own element so it can be
+  // styled and animated on its own.
+  var LANE_PAD_PCT = 17; // a resting rocket stands on its pad
+  function buildLanes(room) {
+    var key = room.code + ":" + room.round;
+    if (S.lanesFor === key) return;
+    S.lanesFor = key;
+    var labels = $("laneLabels"), lanes = $("laneLanes");
+    labels.innerHTML = ""; lanes.innerHTML = "";
+    room.teamSlots.forEach(function (team) {
+      var id = team.toLowerCase();
+      var label = document.createElement("span");
+      label.className = id;
+      label.setAttribute("data-team", team);
+      label.textContent = teamLabel(team);
+      labels.appendChild(label);
+
+      var lane = document.createElement("div");
+      lane.className = "lane " + id;
+      lane.id = "lane" + team;
+      var beam = document.createElement("div"); beam.className = "lane-beam";
+      var pad = document.createElement("div"); pad.className = "lane-pad";
+      var rocket = document.createElement("div");
+      rocket.className = "lane-rocket";
+      rocket.id = "laneRocket" + team;
+      var img = document.createElement("img");
+      img.src = "themes/rocket/rocket-" + id + ".png";
+      img.alt = "";
+      rocket.appendChild(img);
+      lane.appendChild(beam); lane.appendChild(pad); lane.appendChild(rocket);
+      lanes.appendChild(lane);
+    });
+  }
+
+  function renderLanes(room, ev) {
+    buildLanes(room);
+    room.teamSlots.forEach(function (team) {
+      var playing = room.playing.indexOf(team) !== -1;
+      var lane = $("lane" + team);
+      if (!lane) return;
+      lane.classList.toggle("empty", room.status !== "waiting" && !playing);
+      moveRocket($("laneRocket" + team), lane.querySelector(".lane-beam"), lane, rocketBottom(room.progress[team], LANE_PAD_PCT), ev[team]);
+    });
   }
 
   function startCountdownThenPlay() {
@@ -306,7 +487,7 @@
   }
 
   function renderTeamStatChips() {
-    if (!(S.role === "A" || S.role === "B") || !S.room) return;
+    if (!isTeam() || !S.room) return;
     var streak = 0;
     for (var i = S.myPulls.length - 1; i >= 0; i--) { if (S.myPulls[i].c) streak++; else break; }
     $("chipStreak").textContent = t(NS + "match.streak", { n: streak });
@@ -315,14 +496,43 @@
     $("chipAcc").textContent = t(NS + "match.accuracy", { value: total ? Math.round(100 * stats.correct / total) + "%" : "–" });
   }
 
+  function accuracy(s) {
+    var total = s.correct + s.wrong;
+    return total ? Math.round(100 * s.correct / total) + "%" : "–";
+  }
+
+  // Big Screen: one card per team racing this round, in track order (the
+  // painted two-rocket track has Blue on the left).
+  function buildDisplayStats(room) {
+    var wrap = $("displayStats");
+    wrap.innerHTML = "";
+    if (!room) return;
+    var order = room.theme === "rocket" && !usesLanes(room) ? room.playing.slice().reverse() : room.playing;
+    order.forEach(function (team) {
+      var card = document.createElement("div");
+      card.className = "display-team " + team.toLowerCase() + (team === S.leader ? " leading" : "");
+      card.id = "dispCard" + team;
+      var lab = document.createElement("div"); lab.className = "lab"; lab.textContent = teamLabel(team);
+      var big = document.createElement("div"); big.className = "big"; big.id = "disp" + team + "Correct"; big.textContent = "0";
+      card.appendChild(lab); card.appendChild(big);
+      [["display.wrong", "Wrong"], ["display.accuracy", "Acc"]].forEach(function (row) {
+        var r = document.createElement("div"); r.className = "row";
+        var k = document.createElement("span"); k.textContent = t(NS + row[0]);
+        var v = document.createElement("span"); v.id = "disp" + team + row[1];
+        r.appendChild(k); r.appendChild(v); card.appendChild(r);
+      });
+      wrap.appendChild(card);
+    });
+  }
+
   function renderDisplayStats() {
     if (S.role !== null || !S.room) return;
-    ["A", "B"].forEach(function (team) {
+    S.room.playing.forEach(function (team) {
       var s = S.room.stats[team];
-      var total = s.correct + s.wrong;
+      if (!$("disp" + team + "Correct")) buildDisplayStats(S.room);
       $("disp" + team + "Correct").textContent = s.correct;
       $("disp" + team + "Wrong").textContent = s.wrong;
-      $("disp" + team + "Acc").textContent = total ? Math.round(100 * s.correct / total) + "%" : "–";
+      $("disp" + team + "Acc").textContent = accuracy(s);
     });
   }
 
@@ -330,27 +540,60 @@
   function showEnd(room) {
     showView("end");
     if (S.clockTimer) { clearInterval(S.clockTimer); S.clockTimer = null; }
-    var winner = room.winner;
-    $("endTrophy").textContent = winner ? "🏆" : "🤝";
-    $("endHeadline").textContent = winner === "A" ? t(NS + "end.redWins") :
-      winner === "B" ? t(NS + "end.blueWins") : t(NS + "end.draw");
-    fillEndCard("A", room.stats.A); fillEndCard("B", room.stats.B);
+    refreshEndText(room);
     renderRope();
-    if (!reduceMotion && winner) launchConfetti(winner);
+    if (!reduceMotion && room.winner) launchConfetti(room.winner);
   }
 
-  function fillEndCard(team, stats) {
-    var c = stats.correct || 0, w = stats.wrong || 0, tot = c + w;
-    $("end" + team + "Correct").textContent = c;
-    $("end" + team + "Wrong").textContent = w;
-    $("end" + team + "Acc").textContent = tot ? Math.round(100 * c / tot) + "%" : "–";
+  // How far a team got: rocket height, or for the rope how far the marker
+  // sits on its side.
+  function standing(room, team) {
+    if (room.theme === "rocket") return room.progress[team] || 0;
+    return team === "A" ? 100 - room.position : room.position;
+  }
+
+  function refreshEndText(room) {
+    var winner = room.winner;
+    // The champion panel carries the colored shape, so the headline uses the plain name.
+    $("endHeadline").textContent = winner ? t(NS + "end.teamWins", { team: teamName(winner) }) : t(NS + "end.draw");
+    var champ = $("champion");
+    champ.className = "champion" + (winner ? " " + winner.toLowerCase() : " none");
+    $("championTeam").textContent = winner ? teamLabel(winner) : t(NS + "end.noWinner");
+    $("championScore").classList.toggle("hidden", !winner);
+    if (winner) $("championCorrect").textContent = room.stats[winner].correct || 0;
+
+    var ranked = room.playing.slice().sort(function (x, y) {
+      return standing(room, y) - standing(room, x) || (room.stats[y].correct || 0) - (room.stats[x].correct || 0);
+    });
+    var rows = $("recap");
+    rows.innerHTML = "";
+    var place = 0;
+    ranked.forEach(function (team, i) {
+      var s = room.stats[team];
+      // Teams level on height and correct answers share a place.
+      var prev = ranked[i - 1];
+      if (!prev || standing(room, prev) !== standing(room, team) || (room.stats[prev].correct || 0) !== (s.correct || 0)) place = i + 1;
+      var row = document.createElement("div");
+      row.className = "board-row" + (team === winner ? " win" : "");
+      var rank = document.createElement("span"); rank.className = "rank"; rank.textContent = place;
+      var tile = document.createElement("span"); tile.className = "shape-tile " + team.toLowerCase(); tile.textContent = SHAPES[team];
+      var name = document.createElement("span"); name.className = "row-name"; name.textContent = teamName(team);
+      row.appendChild(rank); row.appendChild(tile); row.appendChild(name);
+      [["display.correct", s.correct || 0], ["display.wrong", s.wrong || 0], ["display.accuracy", accuracy(s)]].forEach(function (cell, j) {
+        var c = document.createElement("span"); c.className = "stat" + (j ? " minor" : "");
+        var v = document.createElement("span"); v.className = "v"; v.textContent = cell[1];
+        var k = document.createElement("span"); k.className = "k"; k.textContent = t(NS + cell[0]);
+        c.appendChild(v); c.appendChild(k); row.appendChild(c);
+      });
+      rows.appendChild(row);
+    });
   }
 
   function launchConfetti(winner) {
     var canvas = $("confetti"); canvas.classList.remove("hidden");
     canvas.width = window.innerWidth; canvas.height = window.innerHeight;
     var ctx = canvas.getContext("2d");
-    var color = winner === "A" ? "#E63946" : "#2E86FF";
+    var color = COLORS[winner];
     var particles = [];
     for (var i = 0; i < 80; i++) {
       particles.push({
@@ -377,6 +620,16 @@
 
   document.addEventListener("i18nchange", function () {
     if (S.view === "lobby") renderLobby();
+    if (S.view === "joinRoleSelect" && S.peekRoom) renderTeamPick(S.peekRoom);
+    if (S.view === "match" && S.room) {
+      if (isTeam()) { $("teamTag").textContent = teamLabel(S.role); $("teamPill").textContent = teamLabel(S.role); }
+      S.lanesFor = null;
+      if (usesLanes(S.room)) buildLanes(S.room);
+      buildDisplayStats(S.room);
+      renderRope();
+      renderDisplayStats();
+    }
+    if (S.view === "end" && S.room) refreshEndText(S.room);
   });
 
   // ---------------- Init ----------------
