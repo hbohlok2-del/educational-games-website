@@ -1,0 +1,147 @@
+/* Match and results screens shared by Team Race and Number Haul (and the
+   Tug of War rope scene), on the 2026-10-16 style guide. Loaded after each
+   game's style.css. app.js marks <body data-role> as "display" (Big Screen)
+   or "team" (phone). */
+
+.match-brand, .team-pill, .clock-label{display:none;}
+.match-brand{align-items:center; gap:12px; color:var(--chalk);}
+.match-brand .brand-mark{display:inline-grid; place-items:center; width:42px; height:42px; border-radius:var(--radius-sm); background:var(--gold); color:var(--dusk); font-family:'Anton',system-ui,sans-serif; font-size:24px;}
+.match-brand-name{font-family:'Anton',system-ui,sans-serif; font-size:24px; text-transform:uppercase;}
+.match-stage{display:flex; flex-direction:column; gap:20px;}
+
+/* Big Screen: the whole screen, track on the left, team cards on the right. */
+body[data-role="display"][data-screen="match"] #app,
+body[data-role="display"][data-screen="end"] #app{max-width:none; padding:24px 40px 40px;}
+body[data-role="display"] .match-meta{display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:24px;}
+body[data-role="display"] .match-brand{display:inline-flex;}
+body[data-role="display"] .match-title{font-size:22px; font-weight:800; text-transform:uppercase; letter-spacing:0.03em; color:var(--chalk-dim); text-align:center;}
+body[data-role="display"] .clock{
+  justify-self:end; width:112px; height:112px; border-radius:50%; border:6px solid var(--gold);
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+}
+body[data-role="display"] #matchClock{font-family:'Anton',system-ui,sans-serif; font-weight:400; font-size:36px; line-height:1; color:var(--gold);}
+body[data-role="display"] .clock-label{display:block; font-size:13px; color:var(--chalk); margin-top:2px;}
+body[data-role="display"] .match-stage{display:grid; grid-template-columns:minmax(0, 1fr) 340px; gap:28px; align-items:start;}
+body[data-role="display"] .match-stage > .rope-wrap,
+body[data-role="display"] .match-stage > .rocket-wrap,
+body[data-role="display"] .match-stage > .lane-wrap{grid-column:1;}
+body[data-role="display"] #displayPlay{grid-column:2; grid-row:1;}
+body[data-role="display"] .rocket-track,
+body[data-role="display"] .lane-track{width:min(100%, calc((100vh - 230px) * 1672 / 941)); margin:0 auto; border-radius:var(--radius-lg);}
+body[data-role="display"] .rocket-labels,
+body[data-role="display"] .lane-labels{font-size:22px; margin:0 auto 10px; width:min(100%, calc((100vh - 230px) * 1672 / 941));}
+body[data-role="display"] .display-stats{display:flex; flex-direction:column; gap:14px;}
+body[data-role="display"] .display-team{
+  display:grid; grid-template-columns:minmax(0, 1fr) auto; column-gap:16px; align-items:center;
+  background:var(--dusk-2); border:1px solid var(--line); border-top:6px solid var(--tc, var(--chalk-dim));
+  border-radius:var(--radius-lg); padding:14px 20px; transition:box-shadow .3s;
+}
+/* Name and stats on the left, the correct count large on the right, so four cards fit beside the track. */
+body[data-role="display"] .display-team .lab{grid-column:1; grid-row:1;}
+body[data-role="display"] .display-team .big{grid-column:2; grid-row:1 / span 3; align-self:center;}
+body[data-role="display"] .display-team .row{grid-column:1;}
+.display-team.a{--tc:var(--team-a);} .display-team.b{--tc:var(--team-b);}
+.display-team.c{--tc:var(--team-c);} .display-team.d{--tc:var(--team-d);}
+body[data-role="display"] .display-team .lab{font-family:'Anton',system-ui,sans-serif; font-weight:400; font-size:24px; letter-spacing:0.02em; color:var(--tc); opacity:1;}
+body[data-role="display"] .display-team .big{font-size:56px; line-height:1.05; color:var(--chalk);}
+body[data-role="display"] .display-team .row{font-size:16px; color:var(--chalk-dim); margin-top:4px;}
+body[data-role="display"] .display-team .row span:last-child{color:var(--chalk);}
+.display-team.leading{box-shadow:0 0 0 3px var(--gold);}
+
+/* Phone: a team pill and the time on top, then the track and the question. */
+body[data-role="team"] .match-meta{display:flex; justify-content:space-between; align-items:center; gap:12px;}
+body[data-role="team"] .match-title{display:none;}
+body[data-role="team"] .team-pill{
+  display:inline-flex; align-items:center; min-height:40px; padding:0 16px; border-radius:999px;
+  font-weight:800; font-size:16px; color:#fff; background:var(--tc, var(--turf));
+}
+.team-pill.a{--tc:var(--team-a);} .team-pill.b{--tc:var(--team-b);}
+.team-pill.c{--tc:var(--team-c);} .team-pill.d{--tc:var(--team-d);}
+body[data-role="team"] .clock{display:inline-flex; align-items:center; min-height:40px; padding:0 14px; border-radius:var(--radius-sm); background:var(--gold);}
+body[data-role="team"] #matchClock{font-size:20px; color:var(--dusk);}
+body[data-role="team"] .team-tag{display:none;}
+body[data-role="team"] .team-card{padding:24px 20px; border-radius:var(--radius-lg); gap:18px;}
+body[data-role="team"] .equation{font-weight:800; font-size:clamp(26px, 7vw, 40px);}
+body[data-role="team"] #shortAnswerArea{max-width:420px;}
+body[data-role="team"] .text-answer-input{min-height:56px; font-family:'Nunito',system-ui,sans-serif; font-size:20px; border-radius:var(--radius);}
+body[data-role="team"] .submit-btn{min-height:56px; padding:0 20px; font-size:17px; border-radius:var(--radius); color:var(--dusk);}
+#mcArea{width:100%; display:flex; justify-content:center;}
+.mc-choices{counter-reset:mc;}
+.mc-choice{counter-increment:mc; display:flex; align-items:center; gap:16px; min-height:60px; font-size:18px; border-radius:var(--radius);}
+.mc-choice::before{content:counter(mc, upper-alpha); font-family:'Anton',system-ui,sans-serif; font-weight:400; font-size:26px; color:var(--gold); flex:none;}
+body[data-role="team"] .chip{min-height:32px; display:inline-flex; align-items:center;}
+
+/* Results: a big headline, the champions panel and a ranked leaderboard. */
+.end-headline{font-size:clamp(36px, 6vw, 88px); line-height:1.05; text-transform:uppercase; margin:24px 0 8px;}
+.end-headline:lang(ar){text-transform:none; line-height:1.3;}
+.end-grid{display:grid; grid-template-columns:minmax(260px, 420px) minmax(0, 1fr); gap:28px; align-items:start;}
+.champion{
+  --tc:var(--chalk-dim);
+  display:flex; flex-direction:column; align-items:center; gap:10px; text-align:center;
+  padding:32px 24px; border-radius:var(--radius-lg); background:var(--dusk-2); border:1px solid var(--line);
+}
+.champion.a{--tc:var(--team-a);} .champion.b{--tc:var(--team-b);}
+.champion.c{--tc:var(--team-c);} .champion.d{--tc:var(--team-d);}
+.champion .eyebrow{font-size:18px;}
+.champion-star{width:92px; height:92px; color:var(--gold);}
+.champion.none .champion-star{color:var(--chalk-dim);}
+.champion-team{font-family:'Anton',system-ui,sans-serif; font-size:clamp(34px, 4.5vw, 60px); line-height:1.1; text-transform:uppercase; color:var(--tc);}
+.champion.none .champion-team{font-family:'Nunito',system-ui,sans-serif; font-weight:800; font-size:22px; text-transform:none; color:var(--chalk);}
+.champion-team:lang(ar){font-family:'Cairo',system-ui,sans-serif; font-weight:800; text-transform:none;}
+.champion-score .num{font-family:'Anton',system-ui,sans-serif; font-size:clamp(56px, 6vw, 84px); line-height:1; color:var(--chalk);}
+.champion-score .unit{font-size:20px; color:var(--chalk-dim);}
+.leaderboard h3{font-family:'Nunito',system-ui,sans-serif; font-weight:800; font-size:20px; letter-spacing:0.03em; text-transform:uppercase; margin:0 0 14px;}
+.leaderboard-rows{display:flex; flex-direction:column; gap:12px;}
+.board-row{
+  display:grid; grid-template-columns:40px 52px minmax(0, 1fr) repeat(3, 96px); align-items:center; gap:16px;
+  padding:14px 22px; border-radius:var(--radius-lg); background:var(--dusk-2); border:1px solid var(--line);
+}
+.board-row.win{background:var(--paper); color:var(--ink); border:3px solid var(--gold);}
+.board-row .rank{font-family:'Anton',system-ui,sans-serif; font-size:34px;}
+.shape-tile{display:grid; place-items:center; width:52px; height:52px; border-radius:var(--radius); color:#fff; font-size:24px; background:var(--chalk-dim);}
+.shape-tile.a{background:var(--team-a);} .shape-tile.b{background:var(--team-b);}
+.shape-tile.c{background:var(--team-c);} .shape-tile.d{background:var(--team-d);}
+.row-name{font-family:'Anton',system-ui,sans-serif; font-size:30px; text-transform:uppercase; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+.row-name:lang(ar){font-family:'Cairo',system-ui,sans-serif; font-weight:800; font-size:24px; text-transform:none;}
+.board-row .stat{display:flex; flex-direction:column; align-items:flex-end;}
+.board-row .stat .v{font-family:'Anton',system-ui,sans-serif; font-size:30px; line-height:1.1; color:var(--gold);}
+.board-row.win .stat .v{color:var(--turf);}
+.board-row .stat .k{font-size:13px; color:var(--chalk-dim);}
+.board-row.win .stat .k{color:#4A5068;}
+.end-actions{display:flex; gap:10px; flex-wrap:wrap; margin-top:28px; justify-content:flex-end;}
+.end-actions .btn{min-height:52px; padding:0 28px; border-radius:var(--radius-sm); font-size:17px; color:var(--dusk);}
+.end-actions .btn.secondary{color:var(--chalk); background:transparent; border:1px solid var(--line);}
+
+@media (max-width:860px){
+  .end-grid{grid-template-columns:1fr;}
+  .end-actions .btn{flex:1;}
+}
+@media (max-width:600px){
+  .board-row{grid-template-columns:28px 40px minmax(0, 1fr) auto; gap:10px; padding:12px 14px;}
+  .board-row .stat.minor{display:none;}
+  .board-row .rank{font-size:26px;}
+  .shape-tile{width:40px; height:40px; font-size:18px;}
+  .row-name{font-size:22px;}
+}
+
+/* ---------- Tug of War rope scene (shared/rope-scene.js) ---------- */
+.rope-scene{
+  position:relative; width:100%; aspect-ratio:16/9; border-radius:var(--radius-lg); overflow:hidden;
+  background:linear-gradient(#22315a 0%, #1d2a4d 62%, #2d5a3f 62%, #1B4332 100%); border:1px solid var(--line);
+}
+.rope-scene svg{position:absolute; inset:0; width:100%; height:100%;}
+.rs-flash{position:absolute; top:0; bottom:0; width:50%; opacity:0; pointer-events:none;}
+.rs-flash.a{left:0; background:radial-gradient(circle at 30% 60%, var(--team-a), transparent 70%);}
+.rs-flash.b{right:0; background:radial-gradient(circle at 70% 60%, var(--team-b), transparent 70%);}
+.rs-overlay{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; pointer-events:none;}
+.rs-countdown{font-family:'Anton',system-ui,sans-serif; font-size:clamp(56px, 14vw, 200px); color:var(--gold); text-shadow:0 6px 0 #0e1730; opacity:0;}
+.rs-banner{
+  max-width:88%; padding:.2em .8em; border-radius:var(--radius-lg); border:5px solid var(--gold);
+  font-family:'Anton',system-ui,sans-serif; font-size:clamp(20px, 4vw, 64px); line-height:1.15; text-align:center;
+  background:var(--turf); color:var(--chalk); opacity:0;
+}
+.rs-banner:lang(ar){font-family:'Cairo',system-ui,sans-serif; font-weight:800;}
+.rs-confetti{position:absolute; top:-20px; width:10px; height:15px; border-radius:2px; pointer-events:none;}
+body[data-role="display"] .rope-scene,
+body[data-role="display"] .rope-labels{width:min(100%, calc((100vh - 230px) * 16 / 9)); margin-left:auto; margin-right:auto;}
+body[data-role="display"] .rope-labels{font-size:22px; margin-bottom:10px;}

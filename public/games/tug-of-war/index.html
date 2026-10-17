@@ -10,6 +10,7 @@
 <link rel="stylesheet" href="style.css">
 <link rel="stylesheet" href="/shared/site.css">
 <link rel="stylesheet" href="/shared/game-shell.css">
+<link rel="stylesheet" href="/shared/match-shell.css">
 </head>
 <body data-screen="landing">
 <header class="site-header">
@@ -129,25 +130,24 @@
   <!-- MATCH -->
   <section data-view="match" class="hidden">
     <div class="match-meta">
-      <span id="matchTierLabel"></span>
-      <span class="mono" id="matchClock">3:00</span>
+      <span class="match-brand"><span class="brand-mark" aria-hidden="true" dir="ltr">eg.</span><span class="match-brand-name" data-i18n="hub.title">Educational Games</span></span>
+      <span class="team-pill" id="teamPill"></span>
+      <span class="match-title" id="matchTierLabel"></span>
+      <span class="clock"><span class="mono" id="matchClock">3:00</span><span class="clock-label" data-i18n="games.tugOfWar.match.timeLeft">Time left</span></span>
     </div>
+    <div class="match-stage">
     <div class="rope-wrap">
-      <div class="rope-labels"><span class="a" data-i18n="games.tugOfWar.match.redTag">▲ RED</span><span class="b" data-i18n="games.tugOfWar.match.blueTag">BLUE ◆</span></div>
-      <div class="rope-track" id="ropeTrack">
-        <div class="rope-strand"></div>
-        <div class="rope-center"></div>
-        <div class="rope-marker" id="ropeMarker" style="left:50%;">🚩</div>
-      </div>
+      <div class="rope-labels" dir="ltr"><span class="a" data-i18n="games.tugOfWar.match.redTag">▲ RED</span><span class="b" data-i18n="games.tugOfWar.match.blueTag">BLUE ◆</span></div>
+      <div id="ropeScene"></div>
     </div>
 
     <div id="teamPlay" class="hidden">
       <div class="team-card" id="teamCard">
         <div class="team-tag" id="teamTag"></div>
-        <div class="equation" id="equationText">&ndash;</div>
+        <div class="equation" id="equationText" dir="ltr">&ndash;</div>
         <div class="pop-layer" id="popLayer"></div>
-        <div class="answer-display mono" id="answerDisplay">&nbsp;</div>
-        <div class="keypad" id="keypad"></div>
+        <div class="answer-display mono" id="answerDisplay" dir="ltr">&nbsp;</div>
+        <div class="keypad" id="keypad" dir="ltr"></div>
         <div class="stat-chips">
           <span class="chip" id="chipStreak">Streak 0</span>
           <span class="chip" id="chipAcc">Accuracy &ndash;</span>
@@ -157,40 +157,36 @@
 
     <div id="displayPlay" class="hidden">
       <div class="display-stats">
-        <div class="display-team a">
-          <div class="lab" data-i18n="games.tugOfWar.lobby.redTeam">Red Team</div>
+        <div class="display-team a" id="dispCardA">
+          <div class="lab">▲ <span data-i18n="games.tugOfWar.lobby.redTeam">Red Team</span></div>
           <div class="big" id="dispACorrect">0</div>
           <div class="row"><span data-i18n="games.tugOfWar.display.wrong">Wrong</span><span id="dispAWrong">0</span></div>
           <div class="row"><span data-i18n="games.tugOfWar.display.accuracy">Accuracy</span><span id="dispAAcc">&ndash;</span></div>
         </div>
-        <div class="display-team b">
-          <div class="lab" data-i18n="games.tugOfWar.lobby.blueTeam">Blue Team</div>
+        <div class="display-team b" id="dispCardB">
+          <div class="lab">◆ <span data-i18n="games.tugOfWar.lobby.blueTeam">Blue Team</span></div>
           <div class="big" id="dispBCorrect">0</div>
           <div class="row"><span data-i18n="games.tugOfWar.display.wrong">Wrong</span><span id="dispBWrong">0</span></div>
           <div class="row"><span data-i18n="games.tugOfWar.display.accuracy">Accuracy</span><span id="dispBAcc">&ndash;</span></div>
         </div>
       </div>
     </div>
+    </div>
   </section>
 
   <!-- END -->
   <section data-view="end" class="hidden">
-    <div class="end-banner">
-      <div class="trophy" id="endTrophy">🏆</div>
-      <h2 id="endHeadline">Red Team wins the haul!</h2>
-    </div>
-    <div class="recap">
-      <div class="card a">
-        <div class="field-label" style="color:#fff; opacity:0.85;" data-i18n="games.tugOfWar.lobby.redTeam">Red Team</div>
-        <div class="k"><span data-i18n="games.tugOfWar.display.correct">Correct</span><span id="endACorrect">0</span></div>
-        <div class="k"><span data-i18n="games.tugOfWar.display.wrong">Wrong</span><span id="endAWrong">0</span></div>
-        <div class="k"><span data-i18n="games.tugOfWar.display.accuracy">Accuracy</span><span id="endAAcc">&ndash;</span></div>
+    <h2 class="end-headline" id="endHeadline"></h2>
+    <div class="end-grid">
+      <div class="champion" id="champion">
+        <p class="eyebrow" data-i18n="games.tugOfWar.end.champions">Today's champions</p>
+        <svg class="champion-star" viewBox="0 0 48 48" aria-hidden="true"><path d="M24 4l5.9 12.6 13.6 1.6-10 9.4 2.6 13.6L24 34.4l-12.1 6.8 2.6-13.6-10-9.4 13.6-1.6Z" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/></svg>
+        <div class="champion-team" id="championTeam"></div>
+        <div class="champion-score" id="championScore"><span class="num" id="championCorrect"></span> <span class="unit" data-i18n="games.tugOfWar.display.correct">Correct</span></div>
       </div>
-      <div class="card b">
-        <div class="field-label" style="color:#fff; opacity:0.85;" data-i18n="games.tugOfWar.lobby.blueTeam">Blue Team</div>
-        <div class="k"><span data-i18n="games.tugOfWar.display.correct">Correct</span><span id="endBCorrect">0</span></div>
-        <div class="k"><span data-i18n="games.tugOfWar.display.wrong">Wrong</span><span id="endBWrong">0</span></div>
-        <div class="k"><span data-i18n="games.tugOfWar.display.accuracy">Accuracy</span><span id="endBAcc">&ndash;</span></div>
+      <div class="leaderboard">
+        <h3 data-i18n="games.tugOfWar.end.leaderboard">Final leaderboard</h3>
+        <div class="leaderboard-rows" id="recap"></div>
       </div>
     </div>
     <div class="end-actions">
@@ -212,6 +208,8 @@
 <script src="/shared/i18n.js"></script>
 <script src="/shared/clipboard.js"></script>
 <script src="/socket.io/socket.io.js"></script>
+<script src="/vendor/gsap/gsap.min.js"></script>
+<script src="/shared/rope-scene.js"></script>
 <script src="tiers.js"></script>
 <script src="app.js"></script>
 </body>

@@ -8,6 +8,9 @@
   function tierBlurb(id) { return t(NS + "tiers." + id + ".blurb") || ""; }
 
   var socket = io("/tug-of-war");
+  var rope = RopeScene.build(document.getElementById("ropeScene"));
+  var SHAPES = { A: "▲", B: "◆" };
+  var FINISH_HOLD_MS = 2500;
 
   var S = {
     view: "landing",
@@ -26,6 +29,7 @@
     lockUntil: 0,
     myPulls: [],
     clockTimer: null,
+    endTimer: null,
   };
 
   function $(id) { return document.getElementById(id); }
@@ -86,8 +90,9 @@
     var firstSeen = S.lastSeenRound === null;
     if (!firstSeen && room.round !== S.lastSeenRound) onRoundReset();
     S.lastSeenRound = room.round;
+    var prev = S.room;
     S.room = room;
-    onRoomUpdate(room);
+    onRoomUpdate(room, prev);
   }
 
   function onRoundReset() {
@@ -97,18 +102,38 @@
     S.questionReady = false;
   }
 
-  function onRoomUpdate(room) {
+  function onRoomUpdate(room, prev) {
     if (S.view === "lobby") renderLobby();
     var enteringMatch = room.status === "active" && (S.view === "lobby" || S.view === "end");
     if (S.view === "match" || enteringMatch) {
       if (S.view !== "match") { showView("match"); setupMatchUI(); }
-      renderRope();
+      renderRope(ropeEvents(prev, room));
       renderDisplayStats();
     }
     if (room.status === "finished" && !S.finished) {
       S.finished = true;
-      showEnd(room);
+      // The rope scene holds for its finish celebration first.
+      if (S.view === "match" && RopeScene.enabled) {
+        if (room.winner) rope.finish(room.winner, t(NS + (room.winner === "A" ? "end.redWins" : "end.blueWins")));
+        else rope.draw(t(NS + "end.draw"));
+        S.endTimer = setTimeout(function () { S.endTimer = null; showEnd(room); }, FINISH_HOLD_MS);
+      } else {
+        showEnd(room);
+      }
     }
+  }
+
+  // A move toward a team is that team's pull (10 fast, 7 medium, 5 slow);
+  // a new wrong answer makes that crew stumble.
+  function ropeEvents(prev, room) {
+    var ev = { wrong: [] };
+    if (!prev || prev.round !== room.round || !prev.stats) return ev;
+    var d = room.position - prev.position;
+    if (d) ev.pull = { team: d < 0 ? "A" : "B", mag: Math.abs(d) >= 9 ? 10 : Math.abs(d) >= 6 ? 7 : 5 };
+    ["A", "B"].forEach(function (team) {
+      if (room.stats[team].wrong > prev.stats[team].wrong) ev.wrong.push(team);
+    });
+    return ev;
   }
 
   socket.on("room-update", applyRoomUpdate);
@@ -126,6 +151,8 @@
 
   function leaveRoom() {
     if (S.clockTimer) { clearInterval(S.clockTimer); S.clockTimer = null; }
+    if (S.endTimer) { clearTimeout(S.endTimer); S.endTimer = null; }
+    document.body.removeAttribute("data-role");
     if (socket.connected) socket.disconnect();
     socket.connect();
     S.code = null; S.role = null; S.room = null; S.lastSeenRound = null; S.finished = false;
@@ -215,15 +242,22 @@
   function setupMatchUI() {
     $("matchTierLabel").textContent = tierLabel(S.room.difficulty);
     var isTeam = S.role === "A" || S.role === "B";
+    document.body.setAttribute("data-role", isTeam ? "team" : "display");
     $("teamPlay").classList.toggle("hidden", !isTeam);
     $("displayPlay").classList.toggle("hidden", isTeam);
     if (isTeam) {
       var card = $("teamCard");
       card.className = "team-card " + S.role.toLowerCase();
       $("teamTag").textContent = t(NS + (S.role === "A" ? "match.teamTagRed" : "match.teamTagBlue"));
+      $("teamPill").className = "team-pill " + S.role.toLowerCase();
+      $("teamPill").textContent = teamLabel(S.role);
       buildKeypad();
       startCountdownThenPlay();
     }
+    // A fresh scene for the round, with the 3-2-1-GO when it has not started.
+    rope.reset(S.room.position);
+    if (S.room.matchStartAt > Date.now()) rope.countdown(S.room.matchStartAt);
+    else rope.start();
     renderRope();
     if (!S.clockTimer) S.clockTimer = setInterval(renderMatchMeta, 1000);
     renderMatchMeta();
@@ -236,12 +270,14 @@
     $("matchClock").textContent = m + ":" + (s < 10 ? "0" : "") + s;
   }
 
-  function renderRope() {
-    var pos = S.room ? S.room.position : 50;
-    var marker = $("ropeMarker");
-    if (marker) marker.style.left = pos + "%";
-    var track = $("ropeTrack");
-    if (track) track.classList.toggle("tense", (pos < 18 || pos > 82) && !reduceMotion);
+  function teamName(team) { return t(NS + (team === "A" ? "lobby.redTeam" : "lobby.blueTeam")); }
+  function teamLabel(team) { return SHAPES[team] + " " + teamName(team); }
+
+  function renderRope(ev) {
+    if (!S.room) return;
+    ev = ev || {};
+    (ev.wrong || []).forEach(function (team) { rope.wrong(team); });
+    if (ev.pull || S.room.position !== rope.pos) rope.setPos(S.room.position, ev.pull);
   }
 
   function startCountdownThenPlay() {
@@ -352,6 +388,10 @@
 
   function renderDisplayStats() {
     if (S.role !== null || !S.room) return;
+    // The team the rope leans toward has its card outlined.
+    var pos = S.room.position;
+    $("dispCardA").classList.toggle("leading", pos < 50);
+    $("dispCardB").classList.toggle("leading", pos > 50);
     ["A", "B"].forEach(function (team) {
       var s = S.room.stats[team];
       var total = s.correct + s.wrong;
@@ -365,20 +405,47 @@
   function showEnd(room) {
     showView("end");
     if (S.clockTimer) { clearInterval(S.clockTimer); S.clockTimer = null; }
-    var winner = room.winner;
-    $("endTrophy").textContent = winner ? "🏆" : "🤝";
-    $("endHeadline").textContent = winner === "A" ? t(NS + "end.redWins") :
-      winner === "B" ? t(NS + "end.blueWins") : t(NS + "end.draw");
-    fillEndCard("A", room.stats.A); fillEndCard("B", room.stats.B);
-    renderRope();
-    if (!reduceMotion && winner) launchConfetti(winner);
+    refreshEndText(room);
+    if (!reduceMotion && room.winner) launchConfetti(room.winner);
   }
 
-  function fillEndCard(team, stats) {
-    var c = stats.correct || 0, w = stats.wrong || 0, tot = c + w;
-    $("end" + team + "Correct").textContent = c;
-    $("end" + team + "Wrong").textContent = w;
-    $("end" + team + "Acc").textContent = tot ? Math.round(100 * c / tot) + "%" : "–";
+  function accuracy(s) {
+    var total = (s.correct || 0) + (s.wrong || 0);
+    return total ? Math.round(100 * s.correct / total) + "%" : "–";
+  }
+
+  // Champions panel plus both teams ranked by how far the rope leans their way.
+  function refreshEndText(room) {
+    var winner = room.winner;
+    $("endHeadline").textContent = winner === "A" ? t(NS + "end.redWins") : winner === "B" ? t(NS + "end.blueWins") : t(NS + "end.draw");
+    $("champion").className = "champion" + (winner ? " " + winner.toLowerCase() : " none");
+    $("championTeam").textContent = winner ? teamLabel(winner) : t(NS + "end.noWinner");
+    $("championScore").classList.toggle("hidden", !winner);
+    if (winner) $("championCorrect").textContent = room.stats[winner].correct || 0;
+
+    var standing = { A: 100 - room.position, B: room.position };
+    var ranked = ["A", "B"].sort(function (x, y) {
+      return standing[y] - standing[x] || (room.stats[y].correct || 0) - (room.stats[x].correct || 0);
+    });
+    var level = standing.A === standing.B && (room.stats.A.correct || 0) === (room.stats.B.correct || 0);
+    var rows = $("recap");
+    rows.innerHTML = "";
+    ranked.forEach(function (team, i) {
+      var s = room.stats[team];
+      var row = document.createElement("div");
+      row.className = "board-row" + (team === winner ? " win" : "");
+      var rank = document.createElement("span"); rank.className = "rank"; rank.textContent = level ? 1 : i + 1;
+      var tile = document.createElement("span"); tile.className = "shape-tile " + team.toLowerCase(); tile.textContent = SHAPES[team];
+      var name = document.createElement("span"); name.className = "row-name"; name.textContent = teamName(team);
+      row.appendChild(rank); row.appendChild(tile); row.appendChild(name);
+      [["display.correct", s.correct || 0], ["display.wrong", s.wrong || 0], ["display.accuracy", accuracy(s)]].forEach(function (cell, j) {
+        var c = document.createElement("span"); c.className = "stat" + (j ? " minor" : "");
+        var v = document.createElement("span"); v.className = "v"; v.textContent = cell[1];
+        var k = document.createElement("span"); k.className = "k"; k.textContent = t(NS + cell[0]);
+        c.appendChild(v); c.appendChild(k); row.appendChild(c);
+      });
+      rows.appendChild(row);
+    });
   }
 
   function launchConfetti(winner) {
@@ -413,7 +480,8 @@
   document.addEventListener("i18nchange", function () {
     renderTierPicker();
     if (S.view === "lobby") renderLobby();
-    if (S.view === "match" && !(S.role === "A" || S.role === "B")) { /* display view has no static labels left to refresh beyond markup, which applyStaticI18n already covers */ }
+    if (S.view === "match" && (S.role === "A" || S.role === "B")) $("teamPill").textContent = teamLabel(S.role);
+    if (S.view === "end" && S.room) refreshEndText(S.room);
   });
 
   // ---------------- Init ----------------

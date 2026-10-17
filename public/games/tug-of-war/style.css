@@ -96,25 +96,6 @@
 .rope-wrap{padding:6px 2px 2px;}
 .rope-labels{display:flex; justify-content:space-between; font-family:'Anton'; font-size:13px; letter-spacing:0.06em; margin-bottom:6px;}
 .rope-labels .a{color:var(--team-a);} .rope-labels .b{color:var(--team-b);}
-.rope-track{
-  position:relative; height:34px; border-radius:17px; overflow:hidden;
-  background:linear-gradient(90deg, var(--team-a-dim), rgba(0,0,0,0.2) 46%, rgba(0,0,0,0.2) 54%, var(--team-b-dim));
-  border:1px solid var(--line);
-}
-.rope-strand{
-  position:absolute; inset:9px 0; border-radius:8px;
-  background:repeating-linear-gradient(115deg, var(--rope) 0 7px, var(--rope-dark) 7px 14px);
-  opacity:0.9;
-}
-.rope-center{position:absolute; left:50%; top:0; bottom:0; width:2px; background:var(--chalk); opacity:0.5;}
-.rope-marker{
-  position:absolute; top:-5px; width:44px; height:44px; margin-left:-22px;
-  display:flex; align-items:center; justify-content:center; font-size:20px;
-  transition:left 0.45s cubic-bezier(.2,.8,.2,1);
-  filter:drop-shadow(0 2px 4px rgba(0,0,0,0.5));
-}
-.rope-track.tense .rope-marker{animation:pulse 0.6s ease-in-out infinite;}
-@keyframes pulse{0%,100%{transform:scale(1);} 50%{transform:scale(1.15);}}
 
 .match-meta{display:flex; justify-content:space-between; align-items:center; font-size:13px; color:var(--chalk-dim); font-weight:700;}
 .team-card{
@@ -158,16 +139,6 @@
 .display-team .lab{font-size:12px; text-transform:uppercase; letter-spacing:0.08em; opacity:0.85; font-weight:800;}
 .display-team .row{display:flex; justify-content:space-between; font-size:14px; font-weight:700; margin-top:8px;}
 
-.end-banner{text-align:center; padding:10px 0;}
-.end-banner .trophy{font-size:56px;}
-.end-banner h2{font-size:clamp(30px,7vw,44px); margin-top:6px;}
-.recap{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
-.recap .card{border-radius:14px; padding:16px; color:#fff;}
-.recap .card.a{background:linear-gradient(180deg, var(--team-a), #A32330);}
-.recap .card.b{background:linear-gradient(180deg, var(--team-b), #1656B8);}
-.recap .card .k{display:flex; justify-content:space-between; font-size:13px; font-weight:700; padding:3px 0; opacity:0.92;}
-.end-actions{display:flex; gap:10px; flex-wrap:wrap;}
-.end-actions .btn{flex:1;}
 
 canvas#confetti{position:fixed; inset:0; pointer-events:none; z-index:5;}
 
@@ -175,3 +146,10 @@ canvas#confetti{position:fixed; inset:0; pointer-events:none; z-index:5;}
   display:none; background:rgba(230,57,70,0.15); border:1px solid var(--team-a);
   color:var(--chalk); border-radius:10px; padding:10px 14px; font-size:13.5px;
 }
+
+/* Phone keypad, sized for thumbs (2026-10-17 style guide). */
+body[data-role="team"] .keypad{max-width:340px; gap:10px;}
+body[data-role="team"] .key{min-height:56px; font-size:26px; border-radius:var(--radius);}
+body[data-role="team"] .key.submit{font-family:'Nunito',system-ui,sans-serif; font-weight:800; font-size:20px; color:var(--dusk);}
+body[data-role="team"] .answer-display{min-height:60px; min-width:180px; font-size:34px; border-radius:var(--radius);}
+body[data-role="team"] .team-card .equation{font-size:clamp(40px, 12vw, 64px);}

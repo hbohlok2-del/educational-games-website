@@ -9,6 +9,7 @@
   var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   var socket = io("/team-race");
+  var rope = RopeScene.build(document.getElementById("ropeScene"));
 
   var S = {
     view: "landing",
@@ -93,8 +94,9 @@
     }
     if (room.status === "finished" && !S.finished) {
       S.finished = true;
-      // A rocket race holds the track for its finish celebration first.
-      if (S.view === "match" && room.theme === "rocket" && RaceFX.enabled) {
+      // A rocket or rope race holds the scene for its finish celebration first.
+      var fxOn = room.theme === "rocket" ? RaceFX.enabled : RopeScene.enabled;
+      if (S.view === "match" && fxOn) {
         celebrate(room);
         S.endTimer = setTimeout(function () { S.endTimer = null; showEnd(room); }, FINISH_HOLD_MS);
       } else {
@@ -107,12 +109,25 @@
   // (fast or slow, from how far it climbed) or a wrong one.
   function trackEvents(prev, room) {
     var ev = {};
-    if (!prev || prev.round !== room.round || room.theme !== "rocket" || !prev.stats) return ev;
+    if (!prev || prev.round !== room.round || !prev.stats) return ev;
+    if (room.theme !== "rocket") return ropeEvents(prev, room);
     room.playing.forEach(function (team) {
       var a = prev.stats[team], b = room.stats[team];
       if (!a || !b) return;
       if (b.correct > a.correct) ev[team] = room.progress[team] - prev.progress[team] >= 10 ? "fast" : "slow";
       else if (b.wrong > a.wrong) ev[team] = "wrong";
+    });
+    return ev;
+  }
+
+  // The rope: a move toward a team is that team's pull (10 fast, 7 medium,
+  // 5 slow); a new wrong answer makes that crew stumble.
+  function ropeEvents(prev, room) {
+    var ev = { wrong: [] };
+    var d = room.position - prev.position;
+    if (d) ev.pull = { team: d < 0 ? "A" : "B", mag: Math.abs(d) >= 9 ? 10 : Math.abs(d) >= 6 ? 7 : 5 };
+    ["A", "B"].forEach(function (team) {
+      if (prev.stats[team] && room.stats[team] && room.stats[team].wrong > prev.stats[team].wrong) ev.wrong.push(team);
     });
     return ev;
   }
@@ -246,6 +261,7 @@
     if (lanes) buildLanes(S.room);
     buildDisplayStats(S.room);
     if (isRocket) startTrackFx(S.room);
+    else startRopeFx(S.room);
     renderRope();
     if (!S.clockTimer) S.clockTimer = setInterval(renderMatchMeta, 1000);
     renderMatchMeta();
@@ -260,13 +276,13 @@
 
   function renderRope(ev) {
     var room = S.room;
-    var pos = room ? room.position : 50;
-    var marker = $("ropeMarker");
-    if (marker) marker.style.left = pos + "%";
-    var track = $("ropeTrack");
-    if (track) track.classList.toggle("tense", (pos < 18 || pos > 82) && !reduceMotion);
-    if (!room || room.theme !== "rocket") return;
     ev = ev || {};
+    if (room && room.theme !== "rocket") {
+      (ev.wrong || []).forEach(function (team) { rope.wrong(team); });
+      if (ev.pull || room.position !== rope.pos) rope.setPos(room.position, ev.pull);
+      return;
+    }
+    if (!room) return;
     if (usesLanes(room)) renderLanes(room, ev);
     else renderRocketTrack(room, ev);
     updateLeader(room);
@@ -328,7 +344,19 @@
     }
   }
 
+  // A fresh scene for the round, with the 3-2-1-GO when it has not started.
+  function startRopeFx(room) {
+    rope.reset(room.position);
+    if (room.matchStartAt > Date.now()) rope.countdown(room.matchStartAt);
+    else rope.start();
+  }
+
   function celebrate(room) {
+    if (room.theme !== "rocket") {
+      if (room.winner) rope.finish(room.winner, t(NS + "end.teamWins", { team: teamName(room.winner) }));
+      else rope.draw(t(NS + "end.draw"));
+      return;
+    }
     var track = activeTrack(room);
     if (room.winner) {
       var others = room.playing.filter(function (team) { return team !== room.winner; }).map(function (team) {

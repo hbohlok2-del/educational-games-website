@@ -11,6 +11,7 @@
 <link rel="stylesheet" href="style.css">
 <link rel="stylesheet" href="/shared/site.css">
 <link rel="stylesheet" href="/shared/game-shell.css">
+<link rel="stylesheet" href="/shared/match-shell.css">
 </head>
 <body data-screen="landing">
 <header class="site-header">
@@ -108,17 +109,13 @@
     </div>
     <div class="match-stage">
     <div class="rope-wrap" id="ropeWrap">
-      <div class="rope-labels"><span class="a" data-i18n="games.teamRace.match.redTag">▲ RED</span><span class="b" data-i18n="games.teamRace.match.blueTag">BLUE ◆</span></div>
-      <div class="rope-track" id="ropeTrack">
-        <div class="rope-strand"></div>
-        <div class="rope-center"></div>
-        <div class="rope-marker" id="ropeMarker" style="left:50%;">🚩</div>
-      </div>
+      <div class="rope-labels" dir="ltr"><span class="a" data-i18n="games.teamRace.match.redTag">▲ RED</span><span class="b" data-i18n="games.teamRace.match.blueTag">BLUE ◆</span></div>
+      <div id="ropeScene"></div>
     </div>
 
     <div class="rocket-wrap hidden" id="rocketWrap">
       <!-- The painted pads are blue (left) and red (right), so Blue races on the left. -->
-      <div class="rocket-labels"><span class="b" data-i18n="games.teamRace.match.blueTag">BLUE ◆</span><span class="a" data-i18n="games.teamRace.match.redTag">▲ RED</span></div>
+      <div class="rocket-labels" dir="ltr"><span class="b" data-i18n="games.teamRace.match.blueTag">BLUE ◆</span><span class="a" data-i18n="games.teamRace.match.redTag">▲ RED</span></div>
       <div class="rocket-track" id="rocketTrack">
         <div class="rocket-sprite b" id="rocketB"><img src="themes/rocket/rocket-b.png" alt=""></div>
         <div class="rocket-sprite a" id="rocketA"><img src="themes/rocket/rocket-a.png" alt=""></div>
@@ -137,7 +134,7 @@
     <div id="teamPlay" class="hidden">
       <div class="team-card" id="teamCard">
         <div class="team-tag" id="teamTag"></div>
-        <div class="equation" id="equationText">&ndash;</div>
+        <div class="equation" id="equationText" dir="auto">&ndash;</div>
         <div class="pop-layer" id="popLayer"></div>
 
         <div id="shortAnswerArea">
@@ -201,6 +198,7 @@
 <script src="/shared/mathRender.js"></script>
 <script src="/socket.io/socket.io.js"></script>
 <script src="/vendor/gsap/gsap.min.js"></script>
+<script src="/shared/rope-scene.js"></script>
 <script src="fx.js"></script>
 <script src="app.js"></script>
 </body>
