@@ -295,6 +295,7 @@ window.I18N_DICTIONARIES = {
           penaltyOff: "In this game, wrong answers cost nothing."
         },
         match: {
+          points: "{{n}} pts",
           teamPicks: "{{team}} picks",
           teamWins: "{{team}} wins {{points}} points!",
           typeYourAnswer: "Type your answer",
@@ -325,6 +326,7 @@ window.I18N_DICTIONARIES = {
           wrong: "Wrong"
         },
         end: {
+          champions: "Today's champions", leaderboard: "Final leaderboard", noWinner: "No winner this time.",
           teamWins: "{{team}} wins the board!",
           draw: "It's a draw!",
           rematch: "Rematch",
@@ -660,6 +662,7 @@ window.I18N_DICTIONARIES = {
           penaltyOff: "Dans cette partie, une mauvaise réponse ne coûte rien."
         },
         match: {
+          points: "{{n}} pts",
           teamPicks: "{{team}} choisit",
           teamWins: "{{team}} gagne {{points}} points !",
           typeYourAnswer: "Tapez votre réponse",
@@ -690,6 +693,7 @@ window.I18N_DICTIONARIES = {
           wrong: "Fausses"
         },
         end: {
+          champions: "Les champions du jour", leaderboard: "Classement final", noWinner: "Pas de gagnant cette fois.",
           teamWins: "{{team}} remporte le tableau !",
           draw: "Égalité !",
           rematch: "Revanche",
@@ -1025,6 +1029,7 @@ window.I18N_DICTIONARIES = {
           penaltyOff: "في هذه اللعبة، الإجابة الخاطئة لا تكلف شيئًا."
         },
         match: {
+          points: "{{n}} نقطة",
           teamPicks: "دور {{team}}",
           teamWins: "{{team}} يربح {{points}} نقطة!",
           typeYourAnswer: "اكتب إجابتك",
@@ -1055,6 +1060,7 @@ window.I18N_DICTIONARIES = {
           wrong: "خطأ"
         },
         end: {
+          champions: "أبطال اليوم", leaderboard: "الترتيب النهائي", noWinner: "لا فائز هذه المرة.",
           teamWins: "{{team}} يفوز باللوحة!",
           draw: "تعادل!",
           rematch: "إعادة المباراة",
@@ -1390,6 +1396,7 @@ window.I18N_DICTIONARIES = {
           penaltyOff: "W tej grze błędna odpowiedź nic nie kosztuje."
         },
         match: {
+          points: "{{n}} pkt",
           teamPicks: "Wybiera: {{team}}",
           teamWins: "{{team}} zdobywa {{points}} punktów!",
           typeYourAnswer: "Wpisz odpowiedź",
@@ -1420,6 +1427,7 @@ window.I18N_DICTIONARIES = {
           wrong: "Źle"
         },
         end: {
+          champions: "Dzisiejsi mistrzowie", leaderboard: "Ranking końcowy", noWinner: "Tym razem bez zwycięzcy.",
           teamWins: "{{team}} wygrywa planszę!",
           draw: "Remis!",
           rematch: "Rewanż",

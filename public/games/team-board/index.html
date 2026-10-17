@@ -11,6 +11,7 @@
 <link rel="stylesheet" href="style.css">
 <link rel="stylesheet" href="/shared/site.css">
 <link rel="stylesheet" href="/shared/game-shell.css">
+<link rel="stylesheet" href="/shared/match-shell.css">
 </head>
 <body data-screen="landing">
 <header class="site-header">
@@ -102,8 +103,11 @@
   <!-- MATCH -->
   <section data-view="match" class="hidden">
     <div class="match-meta">
-      <span id="matchTitleLabel"></span>
+      <span class="match-brand"><span class="brand-mark" aria-hidden="true" dir="ltr">eg.</span><span class="match-brand-name" data-i18n="hub.title">Educational Games</span></span>
+      <span class="team-pill" id="teamPill"></span>
+      <span class="match-title" id="matchTitleLabel"></span>
       <span id="controlLabel" class="control-label"></span>
+      <span class="score-pill" id="myScore"></span>
     </div>
 
     <div class="scoreboard" id="scoreboard"></div>
@@ -116,12 +120,17 @@
 
     <!-- Question: open, judging, or revealing -->
     <div id="questionView" class="hidden">
-      <div class="question-screen">
-        <div class="q-meta" id="questionMeta"></div>
-        <div class="equation" id="questionText"></div>
-        <div class="timer-track"><div class="timer-bar" id="timerBar"></div></div>
-        <div class="attempts" id="attempts"></div>
+      <div class="question-screen" id="questionScreen">
+        <div class="q-main">
+          <div class="q-meta" id="questionMeta"></div>
+          <div class="equation" id="questionText" dir="auto"></div>
+        </div>
+        <div class="q-timer" id="qTimer">
+          <svg viewBox="0 0 120 120" aria-hidden="true"><circle class="ring-bg" cx="60" cy="60" r="52"/><circle class="ring" id="timerRing" cx="60" cy="60" r="52"/></svg>
+          <span class="q-timer-num" id="timerNum"></span>
+        </div>
       </div>
+      <div class="attempts" id="attempts"></div>
       <div class="result-banner hidden" id="resultBanner"></div>
 
       <div id="teamPlay" class="hidden">
@@ -152,11 +161,19 @@
 
   <!-- END -->
   <section data-view="end" class="hidden">
-    <div class="end-banner">
-      <div class="trophy" id="endTrophy">🏆</div>
-      <h2 id="endHeadline"></h2>
+    <h2 class="end-headline" id="endHeadline"></h2>
+    <div class="end-grid">
+      <div class="champion" id="champion">
+        <p class="eyebrow" data-i18n="games.teamBoard.end.champions">Today's champions</p>
+        <svg class="champion-star" viewBox="0 0 48 48" aria-hidden="true"><path d="M24 4l5.9 12.6 13.6 1.6-10 9.4 2.6 13.6L24 34.4l-12.1 6.8 2.6-13.6-10-9.4 13.6-1.6Z" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/></svg>
+        <div class="champion-team" id="championTeam"></div>
+        <div class="champion-score" id="championScore"><span class="num" id="championPoints"></span> <span class="unit" data-i18n="games.teamBoard.end.points">Points</span></div>
+      </div>
+      <div class="leaderboard">
+        <h3 data-i18n="games.teamBoard.end.leaderboard">Final leaderboard</h3>
+        <div class="leaderboard-rows" id="recap"></div>
+      </div>
     </div>
-    <div class="recap" id="recap"></div>
     <div class="end-actions">
       <button class="btn" id="endRematch" data-i18n="games.teamBoard.end.rematch">Rematch</button>
       <button class="btn secondary" data-action="go-landing" data-i18n="games.teamBoard.end.newGame">New Game</button>
@@ -180,6 +197,8 @@
 <script src="/vendor/katex/contrib/mhchem.min.js"></script>
 <script src="/shared/mathRender.js"></script>
 <script src="/socket.io/socket.io.js"></script>
+<script src="/vendor/gsap/gsap.min.js"></script>
+<script src="board-fx.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

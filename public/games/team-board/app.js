@@ -22,7 +22,9 @@
     lastOpenedAt: undefined,
     timer: null,
     countdown: null,
+    revealedRound: null,
   };
+  var RING = 2 * Math.PI * 52; // timer ring circumference (r = 52 in the SVG)
 
   function $(id) { return document.getElementById(id); }
   function qsa(sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
@@ -56,12 +58,13 @@
     var firstSeen = S.lastSeenRound === null;
     if (!firstSeen && room.round !== S.lastSeenRound) { S.finished = false; S.lastOpenedAt = undefined; }
     S.lastSeenRound = room.round;
+    var prev = S.room;
     S.room = room;
     if (S.view === "lobby") renderLobby();
     var enteringMatch = room.status === "active" && (S.view === "lobby" || S.view === "end");
     if (S.view === "match" || enteringMatch) {
       if (S.view !== "match") showView("match");
-      renderMatch();
+      renderMatch(prev && prev.round === room.round ? prev : null);
     }
     if (room.status === "finished" && !S.finished) {
       S.finished = true;
@@ -94,7 +97,8 @@
     stopTimers();
     if (socket.connected) socket.disconnect();
     socket.connect();
-    S.code = null; S.role = null; S.room = null; S.judge = null; S.lastSeenRound = null; S.finished = false;
+    S.code = null; S.role = null; S.room = null; S.judge = null; S.lastSeenRound = null; S.finished = false; S.revealedRound = null;
+    document.body.removeAttribute("data-role");
   }
 
   $("joinCodeGo").addEventListener("click", function () {
@@ -179,31 +183,64 @@
   }
 
   // ---------------- Match ----------------
-  function renderMatch() {
+  // prev is the previous update of the same round (null on entry), used to
+  // spot what just happened for the animations.
+  function renderMatch(prev) {
     var room = S.room;
+    document.body.setAttribute("data-role", isTeam() ? "team" : "display");
     $("matchTitleLabel").textContent = room.title || "";
-    renderScoreboard(room);
     $("controlLabel").textContent = t(NS + "match.teamPicks", { team: teamLabel(room.control) });
     $("controlLabel").className = "control-label " + room.control.toLowerCase();
+    if (isTeam()) {
+      $("teamPill").className = "team-pill " + S.role.toLowerCase();
+      $("teamPill").textContent = teamLabel(S.role);
+      $("myScore").textContent = t(NS + "match.points", { n: room.scores[S.role] });
+    }
 
+    // Where the picked square was, before the board is hidden.
+    var picked = null;
+    if (prev && prev.phase === "board" && room.phase === "question") {
+      var cellEl = document.querySelector('.board-cell[data-cell="' + room.currentCell + '"]');
+      if (cellEl) picked = cellEl.getBoundingClientRect();
+    }
+
+    renderScoreboard(room, prev);
     var onBoard = room.phase === "board";
     $("boardView").classList.toggle("hidden", !onBoard);
     $("questionView").classList.toggle("hidden", onBoard);
     if (onBoard) renderBoard(room); else renderQuestion(room);
     renderJudge();
+    if (prev) playEvents(prev, room, picked);
   }
 
-  function renderScoreboard(room) {
+  function playEvents(prev, room, picked) {
+    if (picked) BoardFX.zoom(picked, room.cells[room.currentCell].points, $("questionScreen"));
+    var onQuestion = room.phase !== "board";
+    room.playing.forEach(function (team) {
+      var was = prev.attempts && prev.attempts[team], now = room.attempts[team];
+      if (onQuestion && was && now) {
+        if (!was.answered && now.answered) BoardFX.pop($("attempt" + team));
+        if (was.result !== false && now.result === false) BoardFX.shake($("attempt" + team));
+      }
+      var delta = room.scores[team] - prev.scores[team];
+      if (delta) BoardFX.fly(onQuestion ? $("questionScreen") : $("chip" + team), $("chip" + team), delta);
+    });
+    if (prev.control !== room.control) BoardFX.control($("chip" + room.control));
+  }
+
+  function renderScoreboard(room, prev) {
     var board = $("scoreboard");
     board.innerHTML = "";
     board.style.gridTemplateColumns = "repeat(" + room.playing.length + ", minmax(0, 1fr))";
     room.playing.forEach(function (team) {
       var chip = document.createElement("div");
       chip.className = "score-chip " + team.toLowerCase() + (room.control === team ? " in-control" : "");
+      chip.id = "chip" + team;
       var lab = document.createElement("span"); lab.className = "lab"; lab.textContent = teamLabel(team);
-      var val = document.createElement("span"); val.className = "val"; val.textContent = room.scores[team];
+      var val = document.createElement("span"); val.className = "val"; val.setAttribute("dir", "ltr");
       chip.appendChild(lab); chip.appendChild(val);
       board.appendChild(chip);
+      BoardFX.count(val, prev ? prev.scores[team] : room.scores[team], room.scores[team]);
     });
   }
 
@@ -245,7 +282,9 @@
         var b = document.createElement("button");
         b.type = "button";
         b.className = "board-cell" + (cell.used ? " used" : "") + (cell.wonBy ? " won-" + cell.wonBy.toLowerCase() : "");
-        b.textContent = cell.used ? "" : cell.points;
+        b.setAttribute("data-cell", cell.id);
+        // A won square shows its winner's shape; one nobody won stays empty.
+        b.textContent = cell.used ? (cell.wonBy ? SHAPES[cell.wonBy] : "") : cell.points;
         b.disabled = cell.used || !clickable;
         b.setAttribute("aria-label", name + " " + cell.points);
         b.addEventListener("click", function () { socket.emit("pick-cell", { cell: cell.id }); });
@@ -253,6 +292,10 @@
       });
       board.appendChild(col);
     });
+    if (S.revealedRound !== room.round) {
+      S.revealedRound = room.round;
+      BoardFX.reveal(board);
+    }
   }
 
   function attemptLabel(a) {
@@ -278,29 +321,37 @@
 
     var attempts = $("attempts");
     attempts.innerHTML = "";
-    attempts.style.gridTemplateColumns = "repeat(" + Math.min(room.playing.length, 2) + ", minmax(0, 1fr))";
     room.playing.forEach(function (team) {
       var a = room.attempts[team];
       var box = document.createElement("div");
-      box.className = "attempt " + team.toLowerCase();
-      var name = document.createElement("span"); name.textContent = teamName(team);
+      box.className = "attempt " + team.toLowerCase() +
+        (a.result === true ? " ok" : a.result === false ? " bad" : a.answered ? " done" : "");
+      box.id = "attempt" + team;
+      var name = document.createElement("span"); name.textContent = teamLabel(team);
       var status = document.createElement("span");
       status.textContent = attemptLabel(a) + (room.phase === "reveal" && a.input ? " (" + a.input + ")" : "");
       box.appendChild(name); box.appendChild(status);
       attempts.appendChild(box);
     });
 
-    // Timer bar runs only while answers are open.
+    // The timer ring runs only while answers are open; it turns red for the
+    // last 5 seconds.
     if (S.timer) { clearInterval(S.timer); S.timer = null; }
+    var ring = $("timerRing");
+    ring.style.strokeDasharray = RING;
     if (room.phase === "question") {
       var tick = function () {
-        var pct = Math.max(0, 100 - ((Date.now() - room.openedAt) / room.windowMs) * 100);
-        $("timerBar").style.width = pct + "%";
+        var left = Math.max(0, room.windowMs - (Date.now() - room.openedAt));
+        ring.style.strokeDashoffset = RING * (1 - left / room.windowMs);
+        $("timerNum").textContent = Math.ceil(left / 1000);
+        $("qTimer").classList.toggle("low", left <= 5000);
       };
       tick();
       S.timer = setInterval(tick, 100);
     } else {
-      $("timerBar").style.width = "0%";
+      ring.style.strokeDashoffset = RING;
+      $("timerNum").textContent = "";
+      $("qTimer").classList.remove("low");
     }
 
     var banner = $("resultBanner");
@@ -390,27 +441,39 @@
     if (!reduceMotion && room.winner) launchConfetti(room.winner);
   }
 
+  // Champions panel plus a leaderboard ranked by points, then correct
+  // answers; teams level on both share a place.
   function refreshEndText(room) {
     var winner = room.winner;
-    $("endTrophy").textContent = winner ? "🏆" : "🤝";
-    $("endHeadline").textContent = winner ? t(NS + "end.teamWins", { team: teamLabel(winner) }) : t(NS + "end.draw");
-    var recap = $("recap");
-    recap.innerHTML = "";
-    recap.style.gridTemplateColumns = "repeat(" + Math.min(room.playing.length, 2) + ", minmax(0, 1fr))";
-    room.playing.forEach(function (team) {
-      var card = document.createElement("div");
-      card.className = "card " + team.toLowerCase();
-      var title = document.createElement("div");
-      title.className = "field-label recap-title";
-      title.textContent = teamName(team);
-      card.appendChild(title);
-      [["end.points", room.scores[team]], ["display.correct", room.stats[team].correct], ["display.wrong", room.stats[team].wrong]].forEach(function (row) {
-        var k = document.createElement("div"); k.className = "k";
-        var label = document.createElement("span"); label.textContent = t(NS + row[0]);
-        var value = document.createElement("span"); value.textContent = row[1];
-        k.appendChild(label); k.appendChild(value); card.appendChild(k);
+    $("endHeadline").textContent = winner ? t(NS + "end.teamWins", { team: teamName(winner) }) : t(NS + "end.draw");
+    $("champion").className = "champion" + (winner ? " " + winner.toLowerCase() : " none");
+    $("championTeam").textContent = winner ? teamLabel(winner) : t(NS + "end.noWinner");
+    $("championScore").classList.toggle("hidden", !winner);
+    if (winner) $("championPoints").textContent = room.scores[winner];
+
+    var key = function (team) { return [room.scores[team], room.stats[team].correct || 0]; };
+    var ranked = room.playing.slice().sort(function (x, y) {
+      return room.scores[y] - room.scores[x] || (room.stats[y].correct || 0) - (room.stats[x].correct || 0);
+    });
+    var rows = $("recap");
+    rows.innerHTML = "";
+    var place = 0;
+    ranked.forEach(function (team, i) {
+      var prevTeam = ranked[i - 1];
+      if (!prevTeam || key(prevTeam).join() !== key(team).join()) place = i + 1;
+      var row = document.createElement("div");
+      row.className = "board-row" + (team === winner ? " win" : "");
+      var rank = document.createElement("span"); rank.className = "rank"; rank.textContent = place;
+      var tile = document.createElement("span"); tile.className = "shape-tile " + team.toLowerCase(); tile.textContent = SHAPES[team];
+      var name = document.createElement("span"); name.className = "row-name"; name.textContent = teamName(team);
+      row.appendChild(rank); row.appendChild(tile); row.appendChild(name);
+      [["end.points", room.scores[team]], ["display.correct", room.stats[team].correct || 0], ["display.wrong", room.stats[team].wrong || 0]].forEach(function (cell, j) {
+        var c = document.createElement("span"); c.className = "stat" + (j ? " minor" : "");
+        var v = document.createElement("span"); v.className = "v"; v.setAttribute("dir", "ltr"); v.textContent = cell[1];
+        var k = document.createElement("span"); k.className = "k"; k.textContent = t(NS + cell[0]);
+        c.appendChild(v); c.appendChild(k); row.appendChild(c);
       });
-      recap.appendChild(card);
+      rows.appendChild(row);
     });
   }
 
