@@ -32,13 +32,15 @@ select.text-input{padding:0 14px;}
 .editor{display:grid; grid-template-columns:minmax(0, 1fr) 380px; gap:24px; align-items:start;}
 .editor-main{display:flex; flex-direction:column; gap:20px; min-width:0;}
 .editor-side{grid-column:2; grid-row:1; display:flex; flex-direction:column; gap:20px;}
-@media (min-height:900px){ .editor-side{position:sticky; top:20px;} }
+/* The setup column stays in view; if it is taller than the screen it scrolls on its own, so Create Room is always reachable. */
+@media (min-height:900px){ .editor-side{position:sticky; top:20px; max-height:calc(100vh - 40px); overflow-y:auto; overscroll-behavior:contain;} }
 .editor .card h2{font-size:28px; text-transform:uppercase; margin:0 0 18px;}
 .editor .card h2:lang(ar){text-transform:none;}
 
 .setup-card{display:flex; flex-direction:column;}
 .tile-pick{display:grid; grid-template-columns:repeat(3, 1fr); gap:10px; margin-bottom:20px;}
 #themePick{grid-template-columns:repeat(2, 1fr);}
+#mechanicPick{grid-template-columns:repeat(2, 1fr);}
 .theme-btn{
   display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; min-height:88px;
   padding:12px 6px; border-radius:var(--radius); border:1px solid var(--line); background:var(--dusk);
@@ -89,6 +91,15 @@ select.text-input{padding:0 14px;}
 }
 .remove-q:hover{color:#FF8A8A; border-color:#FF8A8A;}
 .board-fields{display:grid; grid-template-columns:2fr 1fr; gap:12px;}
+.rally-fields{display:grid; grid-template-columns:1fr 2fr; gap:12px;}
+.rally-fields.hidden{display:none;}
+.rally-word{text-transform:uppercase; letter-spacing:0.15em; font-family:'Anton',system-ui,sans-serif; font-size:22px;}
+.rally-clues-label{margin-top:16px;}
+.rally-clues{display:flex; flex-direction:column; gap:8px;}
+.rally-clue{display:flex; align-items:center; gap:10px;}
+.rally-clue b{flex:none; display:grid; place-items:center; width:36px; height:40px; border-radius:var(--radius-sm); background:var(--paper); color:var(--ink); font-family:'Anton',system-ui,sans-serif; font-size:20px;}
+.rally-clue .text-input{min-height:44px; font-size:15px;}
+#rallyInfo{margin:8px 0 16px;}
 
 .toolbar{display:flex; flex-wrap:wrap; gap:8px;}
 .tb-btn{
@@ -157,5 +168,6 @@ select.text-input{padding:0 14px;}
   .choose-title{font-size:26px;}
   .passcode-row{flex-direction:column;}
   .board-fields{grid-template-columns:1fr;}
+  .rally-fields{grid-template-columns:1fr;}
   .done-actions > *{width:100%;}
 }

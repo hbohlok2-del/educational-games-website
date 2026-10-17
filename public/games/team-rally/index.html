@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title data-i18n="games.teamRally.title">Rally</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Cairo:wght@400;600;700;800&family=Nunito:wght@400;600;700;800;900&family=JetBrains+Mono:wght@600;700&display=swap">
+<link rel="stylesheet" href="/vendor/katex/katex.min.css">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="/shared/site.css">
+<link rel="stylesheet" href="/shared/game-shell.css">
+<link rel="stylesheet" href="/shared/match-shell.css">
+</head>
+<body data-screen="landing">
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="/"><span class="brand-mark" aria-hidden="true" dir="ltr">eg.</span><span class="brand-name" data-i18n="hub.title">Educational Games</span></a>
+    <div class="lang-links" role="group" aria-label="Language">
+      <button type="button" data-lang="en" lang="en">EN</button>
+      <button type="button" data-lang="fr" lang="fr">FR</button>
+      <button type="button" data-lang="pl" lang="pl">PL</button>
+      <button type="button" data-lang="ar" lang="ar">العربية</button>
+    </div>
+  </div>
+</header>
+<nav class="site-nav">
+  <div class="wrap">
+    <a href="/" data-i18n="hub.nav.home">Home</a>
+    <a href="/play/" aria-current="page" data-i18n="hub.nav.play">Play</a>
+    <a href="/teacher/" data-i18n="hub.nav.create">Create</a>
+    <a href="/lessons/" data-i18n="hub.nav.notes">Course Notes</a>
+  </div>
+</nav>
+
+<div id="app">
+  <div id="notice"></div>
+
+  <!-- LANDING -->
+  <section data-view="landing">
+    <div class="hero">
+      <div class="eyebrow" data-i18n="games.teamRally.eyebrow">an online rally paper</div>
+      <h1 data-i18n="games.teamRally.heroTitle">Rally</h1>
+      <p class="lede" data-i18n="games.teamRally.lede">Teams race across a treasure island, station by station. Clear a station's questions to win a letter, then unscramble the secret word.</p>
+    </div>
+    <div class="role-grid">
+      <div class="role-card">
+        <div class="icon"><svg viewBox="0 0 32 32" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 6h11a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H13"/><path d="M4 16h14M13 11l5 5-5 5"/></svg></div>
+        <h3 data-i18n="games.teamRally.role.join.title">Join a Rally</h3>
+        <p data-i18n="games.teamRally.role.join.desc">Got a room code from your teacher? Enter it here and pick your team.</p>
+        <button class="go" data-action="go-join" data-i18n="games.teamRally.role.join.button">Join a Rally</button>
+      </div>
+      <div class="role-card">
+        <div class="icon"><svg viewBox="0 0 32 32" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="24" height="16" rx="2"/><path d="M16 21v4M10 28l6-3 6 3"/></svg></div>
+        <h3 data-i18n="games.teamRally.role.bigScreen.title">Big Screen</h3>
+        <p data-i18n="games.teamRally.role.bigScreen.desc">Put the map up on a projector. The teacher can skip a stuck team from here.</p>
+        <button class="go" data-action="go-display" data-i18n="games.teamRally.role.bigScreen.button">Big Screen</button>
+      </div>
+    </div>
+    <div class="howto" data-i18n-html="games.teamRally.howto">
+      <b>How it works:</b> each station has up to 5 questions; answer them all to clear it and win a letter. A wrong answer means a 5-second wait. A hint costs 30 seconds, and a teacher skip costs 2 minutes. After the last station, unscramble the secret word. The first team to solve it wins.
+    </div>
+  </section>
+
+  <!-- JOIN: enter code -->
+  <section data-view="joinEntry" class="hidden">
+    <button class="back-link" data-action="go-landing" data-i18n="common.back">&larr; Back</button>
+    <div class="panel">
+      <div class="field-label" data-i18n="games.teamRally.join.label">Enter the 4-letter room code</div>
+      <input class="code-input" id="joinCodeInput" maxlength="4" placeholder="----" autocomplete="off">
+      <button class="btn block" id="joinCodeGo" data-i18n="games.teamRally.join.findRoom">Find Room</button>
+      <div class="err" id="joinErr"></div>
+    </div>
+  </section>
+
+  <!-- JOIN: choose role in room -->
+  <section data-view="joinRoleSelect" class="hidden">
+    <button class="back-link" data-action="go-landing" data-i18n="common.back">&larr; Back</button>
+    <div class="panel">
+      <div class="field-label"><span data-i18n="games.teamRally.join.roomLabel">Room</span> <span class="mono" id="joinRoleCode"></span> &middot; <span id="joinRoleTitle"></span></div>
+      <div class="team-pick" id="teamPick"></div>
+      <button class="btn secondary block" id="joinAsDisplay" data-i18n="games.teamRally.join.watchBigScreen">Watch on the Big Screen</button>
+      <div class="err" id="joinRoleErr"></div>
+    </div>
+  </section>
+
+  <!-- LOBBY -->
+  <section data-view="lobby" class="hidden">
+    <div class="panel">
+      <div class="field-label" id="lobbyTitle"></div>
+      <div class="code-row">
+        <div class="code-display" id="lobbyCode"></div>
+        <button type="button" class="btn secondary" id="copyLobbyCode" data-i18n="common.copy">Copy code</button>
+      </div>
+      <p class="lede" id="lobbyRules"></p>
+      <div class="roster" id="lobbyRoster"></div>
+      <button class="btn block" id="lobbyStart" disabled data-i18n="games.teamRally.lobby.needTwoTeams">Waiting for at least 2 teams&hellip;</button>
+      <button class="btn secondary block" data-action="go-landing" data-i18n="games.teamRally.lobby.leaveRoom">Leave Room</button>
+    </div>
+  </section>
+
+  <!-- MATCH -->
+  <section data-view="match" class="hidden">
+    <div class="match-meta">
+      <span class="match-brand"><span class="brand-mark" aria-hidden="true" dir="ltr">eg.</span><span class="match-brand-name" data-i18n="hub.title">Educational Games</span></span>
+      <span class="team-pill" id="teamPill"></span>
+      <span class="match-title" id="matchTitleLabel"></span>
+      <span class="clock" id="clockRing"><span class="mono" id="matchClock" dir="ltr">20:00</span><span class="clock-label" data-i18n="games.teamRally.match.timeLeft">Time left</span></span>
+    </div>
+
+    <!-- Big Screen: the map, with one card per team beside it. -->
+    <div class="rally-stage" id="displayPlay">
+      <div class="map-wrap" id="mapWrap"><svg class="rally-map" id="rallyMap" role="img" aria-label="Treasure map"></svg><div class="map-overlay"><div class="map-count" id="mapCountdown"></div></div></div>
+      <div class="rally-cards" id="teamCards"></div>
+    </div>
+
+    <!-- Phone: the team's current step. -->
+    <div class="rally-phone hidden" id="teamPlay">
+      <div class="phone-step" id="stepLine"></div>
+      <div class="phone-pips" id="phonePips"></div>
+
+      <div class="team-card" id="questionCard">
+        <div class="equation" id="questionText" dir="auto"></div>
+        <div id="textArea" class="answer-row">
+          <input class="text-answer-input" id="textAnswerInput" autocomplete="off" dir="auto" placeholder="Type your answer" data-i18n-placeholder="games.teamRally.match.typeYourAnswer">
+          <button class="submit-btn" id="textAnswerGo" data-i18n="games.teamRally.match.submit">Submit</button>
+        </div>
+        <div id="mcArea" class="hidden"><div class="mc-choices" id="mcChoices"></div></div>
+        <div class="lock-ring hidden" id="lockRing"><span id="lockNum">5</span></div>
+        <button class="hint-btn" id="hintBtn" data-i18n="games.teamRally.match.useHint">Use hint (+30 s)</button>
+        <div class="hint-card hidden" id="hintCard" dir="auto"></div>
+      </div>
+
+      <div class="team-card hidden" id="clearedCard">
+        <p class="eyebrow" data-i18n="games.teamRally.match.stationComplete">Station complete</p>
+        <h2 data-i18n="games.teamRally.match.stationCleared">Station cleared!</h2>
+        <p class="clue" id="clueText" dir="auto"></p>
+        <div class="letter-tiles big" id="newLetter" dir="ltr"></div>
+        <button class="submit-btn" id="continueBtn" data-i18n="games.teamRally.match.continue">Continue</button>
+      </div>
+
+      <div class="team-card hidden" id="finaleCard">
+        <p class="eyebrow" data-i18n="games.teamRally.match.finalChallenge">Final challenge</p>
+        <h2 data-i18n="games.teamRally.match.unscramble">Unscramble your letters</h2>
+        <p data-i18n="games.teamRally.match.unscrambleHelp">Put the letters in the right order to find the secret word.</p>
+        <div class="letter-tiles big" id="finaleLetters" dir="ltr"></div>
+        <div class="answer-row">
+          <input class="text-answer-input secret-input" id="secretInput" autocomplete="off" dir="auto">
+          <button class="submit-btn" id="solveBtn" data-i18n="games.teamRally.match.unlock">Unlock</button>
+        </div>
+        <div class="lock-ring hidden" id="finaleLock"><span id="finaleLockNum">5</span></div>
+      </div>
+
+      <div class="team-card hidden" id="doneCard">
+        <div class="finish-stamp" data-i18n="games.teamRally.match.finished">Finished!</div>
+      </div>
+
+      <div class="collected">
+        <p class="eyebrow" data-i18n="games.teamRally.match.lettersCollected">Letters collected</p>
+        <div class="letter-tiles" id="myLetters" dir="ltr"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- END -->
+  <section data-view="end" class="hidden">
+    <h2 class="end-headline" id="endHeadline"></h2>
+    <div class="end-grid">
+      <div class="champion" id="champion">
+        <p class="eyebrow" data-i18n="games.teamRally.end.champions">Today's champions</p>
+        <svg class="champion-star" viewBox="0 0 48 48" aria-hidden="true"><path d="M24 4l5.9 12.6 13.6 1.6-10 9.4 2.6 13.6L24 34.4l-12.1 6.8 2.6-13.6-10-9.4 13.6-1.6Z" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/></svg>
+        <div class="champion-team" id="championTeam"></div>
+        <div class="champion-score" id="championScore"><span class="num" id="championTime" dir="ltr"></span> <span class="unit" data-i18n="games.teamRally.end.time">Time</span></div>
+      </div>
+      <div class="leaderboard">
+        <h3 data-i18n="games.teamRally.end.leaderboard">Final leaderboard</h3>
+        <div class="leaderboard-rows" id="recap"></div>
+      </div>
+    </div>
+    <div class="end-actions">
+      <button class="btn" id="endRematch" data-i18n="games.teamRally.end.rematch">Rematch</button>
+      <button class="btn secondary" data-action="go-landing" data-i18n="games.teamRally.end.newRally">New rally</button>
+    </div>
+  </section>
+</div>
+
+<canvas id="confetti" class="hidden"></canvas>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <span data-i18n="hub.footer.left">Educational Games · Made for classroom curiosity.</span>
+    <span data-i18n="hub.footer.right">Learn together. Play kindly.</span>
+  </div>
+</footer>
+<script src="/shared/i18n/dictionaries.js"></script>
+<script src="/shared/i18n.js"></script>
+<script src="/shared/clipboard.js"></script>
+<script src="/vendor/katex/katex.min.js"></script>
+<script src="/vendor/katex/contrib/auto-render.min.js"></script>
+<script src="/vendor/katex/contrib/mhchem.min.js"></script>
+<script src="/shared/mathRender.js"></script>
+<script src="/socket.io/socket.io.js"></script>
+<script src="/vendor/gsap/gsap.min.js"></script>
+<script src="map.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

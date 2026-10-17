@@ -67,6 +67,7 @@
             <button type="button" class="theme-btn active" data-mechanic="race"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M8 28V4" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/><path d="M8 5h17l-4 5 4 5H8" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/></svg><span data-i18n="teacher.mechanic.race">Race</span></button>
             <button type="button" class="theme-btn" data-mechanic="buzzer"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M7 23h18l-2-3v-6a7 7 0 0 0-14 0v6l-2 3Z" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/><path d="M13 27a3 3 0 0 0 6 0" fill="none" stroke="currentColor" stroke-width="2.5"/></svg><span data-i18n="teacher.mechanic.buzzer">Buzzer</span></button>
             <button type="button" class="theme-btn" data-mechanic="board"><svg viewBox="0 0 32 32" aria-hidden="true"><rect x="4" y="5" width="24" height="22" rx="2" fill="none" stroke="currentColor" stroke-width="2.5"/><path d="M12 5v22M20 5v22M4 12.3h24M4 19.6h24" stroke="currentColor" stroke-width="2"/></svg><span data-i18n="teacher.mechanic.board">Board</span></button>
+            <button type="button" class="theme-btn" data-mechanic="rally"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M4 8l7-3 10 3 7-3v19l-7 3-10-3-7 3Z" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/><path d="M11 5v19M21 8v19" stroke="currentColor" stroke-width="2"/><path d="M14 13l3 3M17 13l-3 3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span data-i18n="teacher.mechanic.rally">Rally</span></button>
           </div>
 
           <span class="field-label" data-i18n="teacher.field.theme">Theme</span>
@@ -78,6 +79,21 @@
               <option value="2" selected>2 teams</option>
               <option value="4">4 teams</option>
             </select>
+          </div>
+
+          <div class="board-settings hidden" id="rallySettings">
+            <label class="field-label" for="rallyWord" data-i18n="teacher.rally.word">Secret word</label>
+            <input id="rallyWord" class="text-input rally-word" maxlength="24" autocomplete="off" dir="auto">
+            <p class="hint" id="rallyInfo" data-i18n="teacher.rally.wordHelp">3 to 12 letters. Each letter is one station.</p>
+            <label class="field-label" for="rallyMinutes" data-i18n="teacher.rally.minutes">Time limit</label>
+            <select id="rallyMinutes" class="text-input">
+              <option value="10">10</option>
+              <option value="15">15</option>
+              <option value="20" selected>20</option>
+              <option value="30">30</option>
+            </select>
+            <span class="field-label rally-clues-label" data-i18n="teacher.rally.clues">Clue shown when a station is cleared (optional)</span>
+            <div class="rally-clues" id="rallyClues"></div>
           </div>
 
           <div class="board-settings hidden" id="boardSettings">
@@ -139,6 +155,7 @@
       <button type="button" class="btn-secondary" id="copyCode" data-i18n="common.copy">Copy code</button>
       <p class="lede" id="doneLede"></p>
       <p class="lede done-hint hidden" id="boardHint" data-i18n="teacher.done.boardHint">This is a board game. Open the Big Screen link and project it: the host picks squares and judges open answers there, while teams answer from their own devices.</p>
+      <p class="lede done-hint hidden" id="rallyHint" data-i18n="teacher.done.rallyHint">This is a rally. Open the Big Screen link and project the map; teams play on their own devices, and you can skip a stuck team from the Big Screen.</p>
       <p class="lede done-hint hidden" id="buzzerHint" data-i18n="teacher.done.buzzerHint">This is a buzzer game. Open the Big Screen link and project it for the whole class; teams buzz in from their own devices.</p>
       <div class="done-actions">
         <a class="btn-primary" id="openStudentView" target="_blank" rel="noopener"><span data-i18n="teacher.done.openStudentView">Open student join page</span> <span class="arrow" aria-hidden="true">&rarr;</span></a>
@@ -175,6 +192,16 @@
           <option value="400">400</option>
           <option value="500">500</option>
         </select>
+      </div>
+    </div>
+    <div class="rally-fields hidden">
+      <div>
+        <label class="field-label" data-i18n="teacher.q.station">Station</label>
+        <select class="station-input text-input"></select>
+      </div>
+      <div>
+        <label class="field-label" data-i18n="teacher.q.hint">Hint (optional, costs 30 s)</label>
+        <input class="hint-input text-input" maxlength="200" dir="auto" placeholder="e.g. Divide both by 2" data-i18n-placeholder="teacher.q.hintPlaceholder">
       </div>
     </div>
     <div class="toolbar"></div>

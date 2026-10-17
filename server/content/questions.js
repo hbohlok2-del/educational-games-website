@@ -2,6 +2,12 @@ const BOARD_POINTS = [100, 200, 300, 400, 500];
 const BOARD_TIME_LIMITS = [15, 30, 45, 60, 90, 120]; // seconds per question
 const DEFAULT_TIME_LIMIT = 30;
 const TEAM_COUNTS = [2, 4];
+// Rally: the secret word sets the number of stations, one letter each.
+const RALLY_MIN_STATIONS = 3;
+const RALLY_MAX_STATIONS = 12;
+const RALLY_MAX_PER_STATION = 5;
+const RALLY_MINUTES = [10, 15, 20, 30];
+const RALLY_DEFAULT_MINUTES = 20;
 
 // Game settings, shared by live rooms and saved quizzes. Unknown keys are
 // dropped; an unlisted time falls back to the default. The team count is
@@ -14,6 +20,19 @@ function cleanBoardSettings(settings) {
     penalty: !!(settings && settings.penalty),
     timeLimit: BOARD_TIME_LIMITS.includes(timeLimit) ? timeLimit : DEFAULT_TIME_LIMIT,
   };
+  if (TEAM_COUNTS.includes(teams)) cleaned.teams = teams;
+  return cleaned;
+}
+
+// Rally settings: team count, time limit, the secret word and an optional
+// clue per station. The word keeps letters only (any alphabet), upper-cased.
+function cleanRallySettings(settings) {
+  const s = settings || {};
+  const teams = Number(s.teams);
+  const minutes = Number(s.minutes);
+  const word = Array.from(String(s.word || "").toLocaleUpperCase()).filter((ch) => /\p{L}/u.test(ch)).slice(0, RALLY_MAX_STATIONS).join("");
+  const clues = Array.isArray(s.clues) ? s.clues.slice(0, RALLY_MAX_STATIONS).map((c) => String(c == null ? "" : c).trim().slice(0, 140)) : [];
+  const cleaned = { minutes: RALLY_MINUTES.includes(minutes) ? minutes : RALLY_DEFAULT_MINUTES, word, clues };
   if (TEAM_COUNTS.includes(teams)) cleaned.teams = teams;
   return cleaned;
 }
@@ -64,6 +83,12 @@ function buildQuestion(raw, opts = {}) {
     };
   }
 
+  if (opts.rally) {
+    const station = Number(raw.station);
+    question.station = Number.isInteger(station) && station >= 0 && station < RALLY_MAX_STATIONS ? station : 0;
+    question.hint = String(raw.hint || "").trim().slice(0, 200);
+  }
+
   if (opts.board) {
     question.category = String(raw.category || "").trim().slice(0, 40) || "General";
     const points = Number(raw.points);
@@ -77,4 +102,8 @@ function buildQuestions(rawList, opts) {
   return rawList.map((raw) => buildQuestion(raw, opts)).filter(Boolean);
 }
 
-module.exports = { buildQuestion, buildQuestions, cleanBoardSettings, BOARD_POINTS, BOARD_TIME_LIMITS, DEFAULT_TIME_LIMIT, TEAM_COUNTS };
+module.exports = {
+  buildQuestion, buildQuestions, cleanBoardSettings, cleanRallySettings,
+  BOARD_POINTS, BOARD_TIME_LIMITS, DEFAULT_TIME_LIMIT, TEAM_COUNTS,
+  RALLY_MIN_STATIONS, RALLY_MAX_STATIONS, RALLY_MAX_PER_STATION, RALLY_MINUTES, RALLY_DEFAULT_MINUTES,
+};

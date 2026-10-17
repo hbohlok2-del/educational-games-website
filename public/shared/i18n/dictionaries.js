@@ -8,6 +8,7 @@ window.I18N_DICTIONARIES = {
       back: "← Back"
     },
     errors: {
+      rallyIncomplete: "Every station needs at least one question.",
       roomNotFound: "No match found with that code.",
       invalidTeam: "Invalid team.",
       teamTaken: "That team is already taken.",
@@ -117,8 +118,9 @@ window.I18N_DICTIONARIES = {
       lede: "Write your own questions for any subject, with math and science notation, and get a room code your students join from any device.",
       eyebrow: "Teacher workspace",
       setup: { heading: "Game setup" },
+      rally: { word: "Secret word", wordHelp: "3 to 12 letters. Each letter is one station.", stationsInfo: "{{n}} stations, up to 5 questions each.", minutes: "Time limit", minutesOption: "{{n}} min", clues: "Clue shown when a station is cleared (optional)", cluePlaceholder: "Station {{n}} clue" },
       field: { title: "Game title", titlePlaceholder: "e.g. Chapter 6 Vocabulary", gameType: "Game type", theme: "Theme" },
-      mechanic: { race: "Race", buzzer: "Buzzer", board: "Board" },
+      mechanic: { race: "Race", buzzer: "Buzzer", board: "Board", rally: "Rally" },
       addQuestion: "+ Add question",
       createRoom: "Create Room",
       done: {
@@ -127,6 +129,7 @@ window.I18N_DICTIONARIES = {
         openStudentView: "Open student join page",
         createAnother: "Create another game",
         buzzerHint: "This is a buzzer game. Open the Big Screen link and project it for the whole class; teams buzz in from their own devices.",
+        rallyHint: "This is a rally. Open the Big Screen link and project the map; teams play on their own devices, and you can skip a stuck team from the Big Screen.",
         boardHint: "This is a board game. Open the Big Screen link and project it: the host picks squares and judges open answers there, while teams answer from their own devices."
       },
       q: {
@@ -145,9 +148,13 @@ window.I18N_DICTIONARIES = {
         categoryPlaceholder: "e.g. Fractions",
         points: "Points",
         openAnswer: "Open answer (teacher judges)",
+        station: "Station",
+        stationOption: "Station {{n}} ({{letter}})",
+        hint: "Hint (optional, costs 30 s)",
+        hintPlaceholder: "e.g. Divide both by 2",
         expectedAnswer: "Expected answer"
       },
-      themes: { rope: "Tug of War", rocket: "Rocket Race", spotlight: "Spotlight Showdown", classic: "Quiz Board" },
+      themes: { rope: "Tug of War", rocket: "Rocket Race", spotlight: "Spotlight Showdown", classic: "Quiz Board", island: "Treasure Island" },
       templates: { fraction: "Fraction", exponent: "Exponent", squareRoot: "Square root", chemistry: "Chemistry" },
       err: {
         questionNeedsText: "Question {{n}} needs text.",
@@ -156,6 +163,9 @@ window.I18N_DICTIONARIES = {
         questionNeedsAnswer: "Question {{n}} needs a correct answer.",
         questionNeedsCategory: "Question {{n}} needs a category.",
         needOneQuestion: "Add at least one complete question.",
+        rallyWord: "The secret word needs 3 to 12 letters.",
+        stationEmpty: "Station {{n}} ({{letter}}) has no questions yet.",
+        stationFull: "Station {{n}} ({{letter}}) has more than 5 questions.",
         createFailed: "Couldn't create the room."
       },
       board: { penalty: "Wrong answers lose points", timeLimit: "Time per question", seconds: "{{n}} s", teams: "Number of teams", teamCount: "{{n}} teams" },
@@ -340,6 +350,91 @@ window.I18N_DICTIONARIES = {
           enterCode: "Enter the 4-letter code."
         }
       },
+      teamRally: {
+        title: "Rally",
+        eyebrow: "an online rally paper",
+        heroTitle: "Rally",
+        defaultTitle: "Class Rally",
+        lede: "Teams race across a treasure island, station by station. Clear a station's questions to win a letter, then unscramble the secret word.",
+        role: {
+          join: {
+            title: "Join a Rally",
+            desc: "Got a room code from your teacher? Enter it here and pick your team.",
+            button: "Join a Rally"
+          },
+          bigScreen: {
+            title: "Big Screen",
+            desc: "Put the map up on a projector. The teacher can skip a stuck team from here.",
+            button: "Big Screen"
+          }
+        },
+        howto: "<b>How it works:</b> each station has up to 5 questions; answer them all to clear it and win a letter. A wrong answer means a 5-second wait. A hint costs 30 seconds, and a teacher skip costs 2 minutes. After the last station, unscramble the secret word. The first team to solve it wins.",
+        join: {
+          label: "Enter the 4-letter room code",
+          findRoom: "Find Room",
+          roomLabel: "Room",
+          joinTeam: "Join {{team}}",
+          watchBigScreen: "Watch on the Big Screen"
+        },
+        lobby: {
+          needTwoTeams: "Waiting for at least 2 teams…",
+          startGame: "Start the rally ({{n}} teams)",
+          matchStarting: "Rally starting…",
+          leaveRoom: "Leave Room",
+          ready: "Ready",
+          open: "Open seat",
+          rules: "{{stations}} stations · {{questions}} questions · {{minutes}} minutes"
+        },
+        teams: {
+          A: "Red Team",
+          B: "Blue Team",
+          C: "Green Team",
+          D: "Purple Team"
+        },
+        match: {
+          timeLeft: "Time left",
+          typeYourAnswer: "Type your answer",
+          submit: "Submit",
+          useHint: "Use hint (+30 s)",
+          stationComplete: "Station complete",
+          stationCleared: "Station cleared!",
+          continue: "Continue",
+          finalChallenge: "Final challenge",
+          unscramble: "Unscramble your letters",
+          unscrambleHelp: "Put the letters in the right order to find the secret word.",
+          unlock: "Unlock",
+          finished: "Finished!",
+          lettersCollected: "Letters collected",
+          step: "Station {{station}} of {{n}} · Question {{q}} of {{k}}",
+          time: "Time {{t}}",
+          penalty: "Penalty +{{t}}",
+          skip: "Skip station (+2 min)",
+          atFinale: "Solving the word…",
+          getReady: "Get ready…",
+          noClue: "On to the next station!"
+        },
+        end: {
+          teamWins: "{{team}} wins the rally!",
+          draw: "It's a draw!",
+          champions: "Today's champions",
+          leaderboard: "Final leaderboard",
+          noWinner: "No winner this time.",
+          time: "Time",
+          stations: "Stations",
+          penalty: "Penalty",
+          rematch: "Rematch",
+          newRally: "New rally"
+        },
+        notice: {
+          connectError: "Can't reach the game server. Check your connection."
+        },
+        err: {
+          enterCode: "Enter the 4-letter code."
+        },
+        map: {
+          labels: ["Camp", "Library", "Observatory", "Cave", "Waterfall Ruins", "Lighthouse", "Windmill", "Volcano", "Shipwreck", "Giant Tree", "Market", "Treasure"]
+        }
+      },
       teamBuzzer: {
         title: "Spotlight Showdown",
         eyebrow: "a classroom buzzer quiz",
@@ -375,6 +470,7 @@ window.I18N_DICTIONARIES = {
       back: "← Retour"
     },
     errors: {
+      rallyIncomplete: "Chaque station doit avoir au moins une question.",
       roomNotFound: "Aucune partie trouvée avec ce code.",
       invalidTeam: "Équipe invalide.",
       teamTaken: "Cette équipe est déjà prise.",
@@ -484,8 +580,9 @@ window.I18N_DICTIONARIES = {
       lede: "Rédigez vos propres questions pour n'importe quelle matière, avec la notation mathématique et scientifique, et obtenez un code que vos élèves utilisent depuis n'importe quel appareil.",
       eyebrow: "Espace enseignant",
       setup: { heading: "Réglages du jeu" },
+      rally: { word: "Mot secret", wordHelp: "3 à 12 lettres. Chaque lettre est une station.", stationsInfo: "{{n}} stations, jusqu'à 5 questions chacune.", minutes: "Durée", minutesOption: "{{n}} min", clues: "Indice affiché quand une station est validée (facultatif)", cluePlaceholder: "Indice de la station {{n}}" },
       field: { title: "Titre du jeu", titlePlaceholder: "ex. Chapitre 6 Vocabulaire", gameType: "Type de jeu", theme: "Thème" },
-      mechanic: { race: "Course", buzzer: "Buzzer", board: "Tableau" },
+      mechanic: { race: "Course", buzzer: "Buzzer", board: "Tableau", rally: "Rallye" },
       addQuestion: "+ Ajouter une question",
       createRoom: "Créer la salle",
       done: {
@@ -494,6 +591,7 @@ window.I18N_DICTIONARIES = {
         openStudentView: "Ouvrir la page de connexion élève",
         createAnother: "Créer un autre jeu",
         buzzerHint: "Ceci est un jeu de buzzer. Ouvrez le lien du grand écran et projetez-le pour toute la classe ; les équipes buzzent depuis leurs propres appareils.",
+        rallyHint: "Ceci est un rallye. Ouvrez le lien du grand écran et projetez la carte ; les équipes jouent sur leurs propres appareils, et vous pouvez faire avancer une équipe bloquée depuis le grand écran.",
         boardHint: "Ceci est un jeu de tableau. Ouvrez le lien du grand écran et projetez-le : l'animateur y choisit les cases et juge les réponses libres, tandis que les équipes répondent depuis leurs propres appareils."
       },
       q: {
@@ -512,9 +610,13 @@ window.I18N_DICTIONARIES = {
         categoryPlaceholder: "ex. Fractions",
         points: "Points",
         openAnswer: "Réponse libre (jugée par l'enseignant)",
+        station: "Station",
+        stationOption: "Station {{n}} ({{letter}})",
+        hint: "Indice (facultatif, coûte 30 s)",
+        hintPlaceholder: "ex. Divisez les deux par 2",
         expectedAnswer: "Réponse attendue"
       },
-      themes: { rope: "Tir à la corde", rocket: "Course de fusées", spotlight: "Duel sous les projecteurs", classic: "Tableau de quiz" },
+      themes: { rope: "Tir à la corde", rocket: "Course de fusées", spotlight: "Duel sous les projecteurs", classic: "Tableau de quiz", island: "Île au trésor" },
       templates: { fraction: "Fraction", exponent: "Exposant", squareRoot: "Racine carrée", chemistry: "Chimie" },
       err: {
         questionNeedsText: "La question {{n}} a besoin d'un texte.",
@@ -523,6 +625,9 @@ window.I18N_DICTIONARIES = {
         questionNeedsAnswer: "La question {{n}} a besoin d'une réponse correcte.",
         questionNeedsCategory: "La question {{n}} a besoin d'une catégorie.",
         needOneQuestion: "Ajoutez au moins une question complète.",
+        rallyWord: "Le mot secret doit compter de 3 à 12 lettres.",
+        stationEmpty: "La station {{n}} ({{letter}}) n'a pas encore de question.",
+        stationFull: "La station {{n}} ({{letter}}) a plus de 5 questions.",
         createFailed: "Impossible de créer la salle."
       },
       board: { penalty: "Les mauvaises réponses font perdre des points", timeLimit: "Temps par question", seconds: "{{n}} s", teams: "Nombre d'équipes", teamCount: "{{n}} équipes" },
@@ -707,6 +812,91 @@ window.I18N_DICTIONARIES = {
           enterCode: "Entrez le code à 4 lettres."
         }
       },
+      teamRally: {
+        title: "Rallye",
+        eyebrow: "un rallye papier en ligne",
+        heroTitle: "Rallye",
+        defaultTitle: "Rallye de la classe",
+        lede: "Les équipes traversent une île au trésor, station par station. Réussissez les questions d'une station pour gagner une lettre, puis remettez le mot secret dans l'ordre.",
+        role: {
+          join: {
+            title: "Rejoindre un rallye",
+            desc: "Vous avez un code de votre enseignant ? Saisissez-le ici et choisissez votre équipe.",
+            button: "Rejoindre un rallye"
+          },
+          bigScreen: {
+            title: "Grand écran",
+            desc: "Projetez la carte. L'enseignant peut faire avancer une équipe bloquée d'ici.",
+            button: "Grand écran"
+          }
+        },
+        howto: "<b>Comment ça marche :</b> chaque station compte jusqu'à 5 questions ; répondez à toutes pour la valider et gagner une lettre. Une mauvaise réponse impose 5 secondes d'attente. Un indice coûte 30 secondes, et un passage accordé par l'enseignant coûte 2 minutes. Après la dernière station, remettez le mot secret dans l'ordre. La première équipe qui le trouve gagne.",
+        join: {
+          label: "Entrez le code de la salle à 4 lettres",
+          findRoom: "Trouver la salle",
+          roomLabel: "Salle",
+          joinTeam: "Rejoindre {{team}}",
+          watchBigScreen: "Regarder sur le grand écran"
+        },
+        lobby: {
+          needTwoTeams: "En attente d'au moins 2 équipes…",
+          startGame: "Lancer le rallye ({{n}} équipes)",
+          matchStarting: "Le rallye commence…",
+          leaveRoom: "Quitter la salle",
+          ready: "Prête",
+          open: "Place libre",
+          rules: "{{stations}} stations · {{questions}} questions · {{minutes}} minutes"
+        },
+        teams: {
+          A: "Équipe Rouge",
+          B: "Équipe Bleue",
+          C: "Équipe Verte",
+          D: "Équipe Violette"
+        },
+        match: {
+          timeLeft: "Temps restant",
+          typeYourAnswer: "Tapez votre réponse",
+          submit: "Valider",
+          useHint: "Indice (+30 s)",
+          stationComplete: "Station terminée",
+          stationCleared: "Station validée !",
+          continue: "Continuer",
+          finalChallenge: "Défi final",
+          unscramble: "Remettez vos lettres dans l'ordre",
+          unscrambleHelp: "Placez les lettres dans le bon ordre pour trouver le mot secret.",
+          unlock: "Déverrouiller",
+          finished: "Terminé !",
+          lettersCollected: "Lettres gagnées",
+          step: "Station {{station}} sur {{n}} · Question {{q}} sur {{k}}",
+          time: "Temps {{t}}",
+          penalty: "Pénalité +{{t}}",
+          skip: "Passer la station (+2 min)",
+          atFinale: "Recherche du mot…",
+          getReady: "Préparez-vous…",
+          noClue: "En route vers la station suivante !"
+        },
+        end: {
+          teamWins: "{{team}} gagne le rallye !",
+          draw: "Match nul !",
+          champions: "Les champions du jour",
+          leaderboard: "Classement final",
+          noWinner: "Pas de gagnant cette fois.",
+          time: "Temps",
+          stations: "Stations",
+          penalty: "Pénalité",
+          rematch: "Revanche",
+          newRally: "Nouveau rallye"
+        },
+        notice: {
+          connectError: "Impossible de joindre le serveur du jeu. Vérifiez votre connexion."
+        },
+        err: {
+          enterCode: "Entrez le code à 4 lettres."
+        },
+        map: {
+          labels: ["Camp", "Bibliothèque", "Observatoire", "Grotte", "Ruines", "Phare", "Moulin", "Volcan", "Épave", "Arbre géant", "Marché", "Trésor"]
+        }
+      },
       teamBuzzer: {
         title: "Duel sous les projecteurs",
         eyebrow: "un quiz à buzzer pour la classe",
@@ -742,6 +932,7 @@ window.I18N_DICTIONARIES = {
       back: "→ رجوع"
     },
     errors: {
+      rallyIncomplete: "يجب أن تحتوي كل محطة على سؤال واحد على الأقل.",
       roomNotFound: "لم يتم العثور على مباراة بهذا الرمز.",
       invalidTeam: "فريق غير صالح.",
       teamTaken: "هذا الفريق مأخوذ بالفعل.",
@@ -851,8 +1042,9 @@ window.I18N_DICTIONARIES = {
       lede: "اكتب أسئلتك الخاصة لأي مادة، مع دعم الرموز الرياضية والعلمية، واحصل على رمز ينضم به طلابك من أي جهاز.",
       eyebrow: "مساحة المعلّم",
       setup: { heading: "إعدادات اللعبة" },
+      rally: { word: "الكلمة السرية", wordHelp: "من 3 إلى 12 حرفًا. كل حرف محطة.", stationsInfo: "{{n}} محطات، حتى 5 أسئلة لكل محطة.", minutes: "المدة", minutesOption: "{{n}} د", clues: "تلميح يظهر عند اجتياز المحطة (اختياري)", cluePlaceholder: "تلميح المحطة {{n}}" },
       field: { title: "عنوان اللعبة", titlePlaceholder: "مثال: مفردات الفصل 6", gameType: "نوع اللعبة", theme: "السمة" },
-      mechanic: { race: "سباق", buzzer: "جرس", board: "لوحة" },
+      mechanic: { race: "سباق", buzzer: "جرس", board: "لوحة", rally: "رالي" },
       addQuestion: "+ إضافة سؤال",
       createRoom: "إنشاء الغرفة",
       done: {
@@ -861,6 +1053,7 @@ window.I18N_DICTIONARIES = {
         openStudentView: "فتح صفحة انضمام الطالب",
         createAnother: "إنشاء لعبة أخرى",
         buzzerHint: "هذه لعبة جرس. افتح رابط الشاشة الكبيرة واعرضه لكامل الصف؛ تضغط الفرق الجرس من أجهزتها الخاصة.",
+        rallyHint: "هذه لعبة رالي. افتح رابط الشاشة الكبيرة واعرض الخريطة؛ تلعب الفرق من أجهزتها الخاصة، ويمكنك من الشاشة الكبيرة تجاوز محطة لفريق متعثر.",
         boardHint: "هذه لعبة لوحة. افتح رابط الشاشة الكبيرة واعرضه: يختار المقدّم المربعات ويحكم على الإجابات المفتوحة من هناك، بينما تجيب الفرق من أجهزتها الخاصة."
       },
       q: {
@@ -879,9 +1072,13 @@ window.I18N_DICTIONARIES = {
         categoryPlaceholder: "مثال: الكسور",
         points: "النقاط",
         openAnswer: "إجابة مفتوحة (يحكم عليها المعلم)",
+        station: "المحطة",
+        stationOption: "المحطة {{n}} ({{letter}})",
+        hint: "تلميح (اختياري، يكلّف 30 ث)",
+        hintPlaceholder: "مثال: اقسم الاثنين على 2",
         expectedAnswer: "الإجابة المتوقعة"
       },
-      themes: { rope: "شد الحبل", rocket: "سباق الصواريخ", spotlight: "مواجهة الأضواء", classic: "لوحة الأسئلة" },
+      themes: { rope: "شد الحبل", rocket: "سباق الصواريخ", spotlight: "مواجهة الأضواء", classic: "لوحة الأسئلة", island: "جزيرة الكنز" },
       templates: { fraction: "كسر", exponent: "أس", squareRoot: "جذر تربيعي", chemistry: "كيمياء" },
       err: {
         questionNeedsText: "السؤال {{n}} يحتاج إلى نص.",
@@ -890,6 +1087,9 @@ window.I18N_DICTIONARIES = {
         questionNeedsAnswer: "السؤال {{n}} يحتاج إلى إجابة صحيحة.",
         questionNeedsCategory: "السؤال {{n}} يحتاج إلى فئة.",
         needOneQuestion: "أضف سؤالاً واحداً كاملاً على الأقل.",
+        rallyWord: "يجب أن تتكوّن الكلمة السرية من 3 إلى 12 حرفًا.",
+        stationEmpty: "المحطة {{n}} ({{letter}}) ليس فيها أسئلة بعد.",
+        stationFull: "المحطة {{n}} ({{letter}}) فيها أكثر من 5 أسئلة.",
         createFailed: "تعذّر إنشاء الغرفة."
       },
       board: { penalty: "الإجابات الخاطئة تخسر النقاط", timeLimit: "الوقت لكل سؤال", seconds: "{{n}} ث", teams: "عدد الفرق", teamCount: "{{n}} فرق" },
@@ -1074,6 +1274,91 @@ window.I18N_DICTIONARIES = {
           enterCode: "أدخل الرمز المكوّن من 4 أحرف."
         }
       },
+      teamRally: {
+        title: "الرالي",
+        eyebrow: "رالي ورقي على الإنترنت",
+        heroTitle: "الرالي",
+        defaultTitle: "رالي الصف",
+        lede: "تتسابق الفرق عبر جزيرة الكنز محطةً بعد محطة. أجب عن أسئلة المحطة لتربح حرفًا، ثم رتّب الحروف لتكتشف الكلمة السرية.",
+        role: {
+          join: {
+            title: "الانضمام إلى رالي",
+            desc: "هل لديك رمز غرفة من معلمك؟ أدخله هنا واختر فريقك.",
+            button: "الانضمام إلى رالي"
+          },
+          bigScreen: {
+            title: "الشاشة الكبيرة",
+            desc: "اعرض الخريطة على جهاز العرض. يستطيع المعلم من هنا تجاوز محطة لفريق متعثر.",
+            button: "الشاشة الكبيرة"
+          }
+        },
+        howto: "<b>طريقة اللعب:</b> في كل محطة ما يصل إلى 5 أسئلة؛ أجب عنها كلها لتجتاز المحطة وتربح حرفًا. الإجابة الخاطئة تعني الانتظار 5 ثوانٍ. التلميح يكلّف 30 ثانية، وتجاوز المعلم للمحطة يكلّف دقيقتين. بعد المحطة الأخيرة، رتّب حروف الكلمة السرية. يفوز أول فريق يكتشفها.",
+        join: {
+          label: "أدخل رمز الغرفة المكوّن من 4 أحرف",
+          findRoom: "البحث عن الغرفة",
+          roomLabel: "الغرفة",
+          joinTeam: "انضم إلى {{team}}",
+          watchBigScreen: "المشاهدة على الشاشة الكبيرة"
+        },
+        lobby: {
+          needTwoTeams: "بانتظار فريقين على الأقل…",
+          startGame: "ابدأ الرالي ({{n}} فرق)",
+          matchStarting: "الرالي يبدأ…",
+          leaveRoom: "مغادرة الغرفة",
+          ready: "جاهز",
+          open: "مقعد شاغر",
+          rules: "{{stations}} محطات · {{questions}} سؤالًا · {{minutes}} دقيقة"
+        },
+        teams: {
+          A: "الفريق الأحمر",
+          B: "الفريق الأزرق",
+          C: "الفريق الأخضر",
+          D: "الفريق البنفسجي"
+        },
+        match: {
+          timeLeft: "الوقت المتبقي",
+          typeYourAnswer: "اكتب إجابتك",
+          submit: "إرسال",
+          useHint: "تلميح (+30 ث)",
+          stationComplete: "اكتملت المحطة",
+          stationCleared: "اجتزت المحطة!",
+          continue: "متابعة",
+          finalChallenge: "التحدي الأخير",
+          unscramble: "رتّب حروفك",
+          unscrambleHelp: "ضع الحروف بالترتيب الصحيح لتكتشف الكلمة السرية.",
+          unlock: "افتح الكنز",
+          finished: "انتهيت!",
+          lettersCollected: "الحروف التي جمعتها",
+          step: "المحطة {{station}} من {{n}} · السؤال {{q}} من {{k}}",
+          time: "الوقت {{t}}",
+          penalty: "جزاء +{{t}}",
+          skip: "تجاوز المحطة (+2 د)",
+          atFinale: "يحل الكلمة…",
+          getReady: "استعد…",
+          noClue: "إلى المحطة التالية!"
+        },
+        end: {
+          teamWins: "{{team}} يفوز بالرالي!",
+          draw: "تعادل!",
+          champions: "أبطال اليوم",
+          leaderboard: "الترتيب النهائي",
+          noWinner: "لا فائز هذه المرة.",
+          time: "الوقت",
+          stations: "المحطات",
+          penalty: "الجزاء",
+          rematch: "مباراة أخرى",
+          newRally: "رالي جديد"
+        },
+        notice: {
+          connectError: "تعذّر الوصول إلى خادم اللعبة. تحقق من اتصالك."
+        },
+        err: {
+          enterCode: "أدخل الرمز المكوّن من 4 أحرف."
+        },
+        map: {
+          labels: ["المخيم", "المكتبة", "المرصد", "الكهف", "الأطلال", "المنارة", "الطاحونة", "البركان", "الحطام", "الشجرة العملاقة", "السوق", "الكنز"]
+        }
+      },
       teamBuzzer: {
         title: "مواجهة الأضواء",
         eyebrow: "مسابقة جرس للصف",
@@ -1109,6 +1394,7 @@ window.I18N_DICTIONARIES = {
       back: "← Wstecz"
     },
     errors: {
+      rallyIncomplete: "Każda stacja musi mieć co najmniej jedno pytanie.",
       roomNotFound: "Nie znaleziono gry z tym kodem.",
       invalidTeam: "Nieprawidłowa drużyna.",
       teamTaken: "Ta drużyna jest już zajęta.",
@@ -1218,8 +1504,9 @@ window.I18N_DICTIONARIES = {
       lede: "Napisz własne pytania na dowolny temat, z notacją matematyczną i naukową, i otrzymaj kod, którym uczniowie dołączą z dowolnego urządzenia.",
       eyebrow: "Przestrzeń nauczyciela",
       setup: { heading: "Ustawienia gry" },
+      rally: { word: "Tajne słowo", wordHelp: "Od 3 do 12 liter. Każda litera to jedna stacja.", stationsInfo: "Stacje: {{n}}, do 5 pytań na każdej.", minutes: "Limit czasu", minutesOption: "{{n}} min", clues: "Wskazówka po zaliczeniu stacji (opcjonalnie)", cluePlaceholder: "Wskazówka stacji {{n}}" },
       field: { title: "Tytuł gry", titlePlaceholder: "np. Rozdział 6 - słownictwo", gameType: "Typ gry", theme: "Motyw" },
-      mechanic: { race: "Wyścig", buzzer: "Brzęczyk", board: "Plansza" },
+      mechanic: { race: "Wyścig", buzzer: "Brzęczyk", board: "Plansza", rally: "Rajd" },
       addQuestion: "+ Dodaj pytanie",
       createRoom: "Utwórz pokój",
       done: {
@@ -1228,6 +1515,7 @@ window.I18N_DICTIONARIES = {
         openStudentView: "Otwórz stronę dołączania dla ucznia",
         createAnother: "Stwórz kolejną grę",
         buzzerHint: "To gra z brzęczykiem. Otwórz link do dużego ekranu i wyświetl go dla całej klasy; drużyny naciskają brzęczyk na własnych urządzeniach.",
+        rallyHint: "To rajd. Otwórz link do dużego ekranu i wyświetl mapę; drużyny grają na własnych urządzeniach, a z dużego ekranu możesz przepuścić drużynę, która utknęła.",
         boardHint: "To gra planszowa. Otwórz link do dużego ekranu i wyświetl go: prowadzący wybiera tam pola i ocenia odpowiedzi otwarte, a drużyny odpowiadają na własnych urządzeniach."
       },
       q: {
@@ -1246,9 +1534,13 @@ window.I18N_DICTIONARIES = {
         categoryPlaceholder: "np. Ułamki",
         points: "Punkty",
         openAnswer: "Odpowiedź otwarta (ocenia nauczyciel)",
+        station: "Stacja",
+        stationOption: "Stacja {{n}} ({{letter}})",
+        hint: "Podpowiedź (opcjonalnie, kosztuje 30 s)",
+        hintPlaceholder: "np. Podziel obie przez 2",
         expectedAnswer: "Oczekiwana odpowiedź"
       },
-      themes: { rope: "Przeciąganie liny", rocket: "Wyścig rakiet", spotlight: "Pojedynek na scenie", classic: "Plansza quizowa" },
+      themes: { rope: "Przeciąganie liny", rocket: "Wyścig rakiet", spotlight: "Pojedynek na scenie", classic: "Plansza quizowa", island: "Wyspa skarbów" },
       templates: { fraction: "Ułamek", exponent: "Wykładnik", squareRoot: "Pierwiastek kwadratowy", chemistry: "Chemia" },
       err: {
         questionNeedsText: "Pytanie {{n}} wymaga treści.",
@@ -1257,6 +1549,9 @@ window.I18N_DICTIONARIES = {
         questionNeedsAnswer: "Pytanie {{n}} wymaga poprawnej odpowiedzi.",
         questionNeedsCategory: "Pytanie {{n}} wymaga kategorii.",
         needOneQuestion: "Dodaj co najmniej jedno pełne pytanie.",
+        rallyWord: "Tajne słowo musi mieć od 3 do 12 liter.",
+        stationEmpty: "Stacja {{n}} ({{letter}}) nie ma jeszcze pytań.",
+        stationFull: "Stacja {{n}} ({{letter}}) ma więcej niż 5 pytań.",
         createFailed: "Nie udało się utworzyć pokoju."
       },
       board: { penalty: "Błędne odpowiedzi odejmują punkty", timeLimit: "Czas na pytanie", seconds: "{{n}} s", teams: "Liczba drużyn", teamCount: "Drużyny: {{n}}" },
@@ -1439,6 +1734,91 @@ window.I18N_DICTIONARIES = {
         },
         err: {
           enterCode: "Wpisz 4-literowy kod."
+        }
+      },
+      teamRally: {
+        title: "Rajd",
+        eyebrow: "internetowy rajd z zagadkami",
+        heroTitle: "Rajd",
+        defaultTitle: "Rajd klasowy",
+        lede: "Drużyny przemierzają wyspę skarbów, stacja po stacji. Rozwiąż pytania na stacji, aby zdobyć literę, a potem ułóż tajne słowo.",
+        role: {
+          join: {
+            title: "Dołącz do rajdu",
+            desc: "Masz kod pokoju od nauczyciela? Wpisz go tutaj i wybierz drużynę.",
+            button: "Dołącz do rajdu"
+          },
+          bigScreen: {
+            title: "Duży ekran",
+            desc: "Wyświetl mapę na projektorze. Nauczyciel może stąd przepuścić drużynę, która utknęła.",
+            button: "Duży ekran"
+          }
+        },
+        howto: "<b>Jak to działa:</b> każda stacja ma do 5 pytań; odpowiedz na wszystkie, aby ją zaliczyć i zdobyć literę. Błędna odpowiedź oznacza 5 sekund czekania. Podpowiedź kosztuje 30 sekund, a przepuszczenie przez nauczyciela 2 minuty. Po ostatniej stacji ułóż tajne słowo. Wygrywa drużyna, która pierwsza je odgadnie.",
+        join: {
+          label: "Wpisz 4-literowy kod pokoju",
+          findRoom: "Znajdź pokój",
+          roomLabel: "Pokój",
+          joinTeam: "Dołącz: {{team}}",
+          watchBigScreen: "Oglądaj na dużym ekranie"
+        },
+        lobby: {
+          needTwoTeams: "Czekamy na co najmniej 2 drużyny…",
+          startGame: "Rozpocznij rajd (drużyny: {{n}})",
+          matchStarting: "Rajd się zaczyna…",
+          leaveRoom: "Opuść pokój",
+          ready: "Gotowa",
+          open: "Wolne miejsce",
+          rules: "Stacje: {{stations}} · pytania: {{questions}} · minuty: {{minutes}}"
+        },
+        teams: {
+          A: "Czerwona drużyna",
+          B: "Niebieska drużyna",
+          C: "Zielona drużyna",
+          D: "Fioletowa drużyna"
+        },
+        match: {
+          timeLeft: "Pozostały czas",
+          typeYourAnswer: "Wpisz odpowiedź",
+          submit: "Wyślij",
+          useHint: "Podpowiedź (+30 s)",
+          stationComplete: "Stacja ukończona",
+          stationCleared: "Stacja zaliczona!",
+          continue: "Dalej",
+          finalChallenge: "Ostatnie wyzwanie",
+          unscramble: "Ułóż swoje litery",
+          unscrambleHelp: "Ułóż litery we właściwej kolejności, aby odgadnąć tajne słowo.",
+          unlock: "Otwórz skarb",
+          finished: "Koniec!",
+          lettersCollected: "Zdobyte litery",
+          step: "Stacja {{station}} z {{n}} · Pytanie {{q}} z {{k}}",
+          time: "Czas {{t}}",
+          penalty: "Kara +{{t}}",
+          skip: "Pomiń stację (+2 min)",
+          atFinale: "Układa słowo…",
+          getReady: "Przygotuj się…",
+          noClue: "Do następnej stacji!"
+        },
+        end: {
+          teamWins: "{{team}} wygrywa rajd!",
+          draw: "Remis!",
+          champions: "Dzisiejsi mistrzowie",
+          leaderboard: "Ranking końcowy",
+          noWinner: "Tym razem bez zwycięzcy.",
+          time: "Czas",
+          stations: "Stacje",
+          penalty: "Kara",
+          rematch: "Rewanż",
+          newRally: "Nowy rajd"
+        },
+        notice: {
+          connectError: "Nie można połączyć się z serwerem gry. Sprawdź połączenie."
+        },
+        err: {
+          enterCode: "Wpisz 4-literowy kod."
+        },
+        map: {
+          labels: ["Obóz", "Biblioteka", "Obserwatorium", "Jaskinia", "Ruiny", "Latarnia", "Wiatrak", "Wulkan", "Wrak", "Wielkie drzewo", "Targ", "Skarb"]
         }
       },
       teamBuzzer: {

@@ -9,6 +9,7 @@
     if (gameType === "tug-of-war") return "/games/tug-of-war/";
     if (gameType === "team-race") return "/games/team-race/";
     if (gameType === "team-board") return "/games/team-board/";
+    if (gameType === "team-rally") return "/games/team-rally/";
     return "/games/team-buzzer/";
   }
 

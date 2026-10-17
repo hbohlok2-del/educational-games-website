@@ -6,6 +6,7 @@ const tugOfWar = require("./server/games/tugOfWar");
 const teamRace = require("./server/games/teamRace");
 const teamBuzzer = require("./server/games/teamBuzzer");
 const teamBoard = require("./server/games/teamBoard");
+const teamRally = require("./server/games/teamRally");
 const { initDb } = require("./server/db");
 const { createQuestionSetsRouter } = require("./server/routes/questionSets");
 
@@ -30,9 +31,10 @@ const { rooms: tugRooms } = tugOfWar.attach(io);
 const { rooms: raceRooms, createRoom: createRaceRoom } = teamRace.attach(io);
 const { rooms: buzzerRooms, createRoom: createBuzzerRoom } = teamBuzzer.attach(io);
 const { rooms: boardRooms, createRoom: createBoardRoom } = teamBoard.attach(io);
+const { rooms: rallyRooms, createRoom: createRallyRoom } = teamRally.attach(io);
 
 app.use("/api/question-sets", createQuestionSetsRouter({
-  launchers: { race: createRaceRoom, buzzer: createBuzzerRoom, board: createBoardRoom },
+  launchers: { race: createRaceRoom, buzzer: createBuzzerRoom, board: createBoardRoom, rally: createRallyRoom },
 }));
 
 function capitalize(word) {
@@ -61,6 +63,7 @@ app.get("/api/rooms", (req, res) => {
     ...lobbyEntries("team-race", raceRooms, "Class Race"),
     ...lobbyEntries("team-buzzer", buzzerRooms, "Class Buzzer"),
     ...lobbyEntries("team-board", boardRooms, "Class Board"),
+    ...lobbyEntries("team-rally", rallyRooms, "Class Rally"),
   ];
   res.json({ rooms });
 });
@@ -70,6 +73,7 @@ app.get("/api/rooms/:code", (req, res) => {
   if (raceRooms.has(code)) return res.json({ ok: true, gameType: "team-race" });
   if (buzzerRooms.has(code)) return res.json({ ok: true, gameType: "team-buzzer" });
   if (boardRooms.has(code)) return res.json({ ok: true, gameType: "team-board" });
+  if (rallyRooms.has(code)) return res.json({ ok: true, gameType: "team-rally" });
   if (tugRooms.has(code)) return res.json({ ok: true, gameType: "tug-of-war" });
   res.json({ ok: false });
 });

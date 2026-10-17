@@ -1,20 +1,30 @@
 const crypto = require("crypto");
 const { client } = require("../db");
-const { buildQuestions, cleanBoardSettings } = require("./questions");
+const { buildQuestions, cleanBoardSettings, cleanRallySettings } = require("./questions");
 
 function requireClient() {
   if (!client) throw new Error("database unavailable");
   return client;
 }
 
-const MECHANICS = ["race", "buzzer", "board"];
+const MECHANICS = ["race", "buzzer", "board", "rally"];
 
 function cleanMechanic(mechanic) {
   return MECHANICS.includes(mechanic) ? mechanic : "race";
 }
 
-function parseSettings(text) {
-  try { return cleanBoardSettings(JSON.parse(text || "{}")); } catch (e) { return cleanBoardSettings(null); }
+// A rally keeps its word, clues and minutes; the other games their board
+// settings (time per question, penalty, teams).
+function cleanSettings(mechanic, settings) {
+  return mechanic === "rally" ? cleanRallySettings(settings) : cleanBoardSettings(settings);
+}
+
+function parseSettings(text, mechanic) {
+  try { return cleanSettings(mechanic, JSON.parse(text || "{}")); } catch (e) { return cleanSettings(mechanic, null); }
+}
+
+function questionOpts(mech) {
+  return { board: mech === "board", rally: mech === "rally" };
 }
 
 async function listQuestionSets() {
@@ -44,7 +54,7 @@ async function getQuestionSet(id) {
     mechanic: row.mechanic,
     theme: row.theme,
     questions: JSON.parse(row.questions),
-    settings: parseSettings(row.settings),
+    settings: parseSettings(row.settings, row.mechanic),
     createdAt: row.created_at,
   };
 }
@@ -53,9 +63,9 @@ async function saveQuestionSet({ title, mechanic, theme, questions, settings }) 
   const cleanTitle = String(title || "").trim().slice(0, 80) || "Untitled quiz";
   const mech = cleanMechanic(mechanic);
   const cleanTheme = String(theme || "").trim() || "rope";
-  const validated = buildQuestions(questions, { board: mech === "board" });
+  const validated = buildQuestions(questions, questionOpts(mech));
   if (validated.length < 1) return null;
-  const cleaned = cleanBoardSettings(settings);
+  const cleaned = cleanSettings(mech, settings);
 
   const id = crypto.randomUUID();
   const createdAt = new Date().toISOString();
@@ -70,9 +80,9 @@ async function updateQuestionSet(id, { title, mechanic, theme, questions, settin
   const cleanTitle = String(title || "").trim().slice(0, 80) || "Untitled quiz";
   const mech = cleanMechanic(mechanic);
   const cleanTheme = String(theme || "").trim() || "rope";
-  const validated = buildQuestions(questions, { board: mech === "board" });
+  const validated = buildQuestions(questions, questionOpts(mech));
   if (validated.length < 1) return null;
-  const cleaned = cleanBoardSettings(settings);
+  const cleaned = cleanSettings(mech, settings);
 
   const result = await requireClient().execute({
     sql: "UPDATE question_sets SET title = ?, mechanic = ?, theme = ?, questions = ?, settings = ? WHERE id = ?",

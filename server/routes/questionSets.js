@@ -10,7 +10,7 @@ function handleDbError(res, err) {
 // launchers: { race, buzzer, board } createRoom functions from the game modules,
 // so a saved quiz can become a live room without its answers ever leaving
 // the server.
-const GAME_TYPES = { race: "team-race", buzzer: "team-buzzer", board: "team-board" };
+const GAME_TYPES = { race: "team-race", buzzer: "team-buzzer", board: "team-board", rally: "team-rally" };
 
 function createQuestionSetsRouter({ launchers }) {
   const router = express.Router();
@@ -38,7 +38,7 @@ function createQuestionSetsRouter({ launchers }) {
       if (!set) return res.status(404).json({ ok: false, error: "not-found" });
       const mechanic = launchers[set.mechanic] ? set.mechanic : "race";
       const room = launchers[mechanic]({ title: set.title, theme: set.theme, questions: set.questions, settings: set.settings });
-      if (!room) return res.status(400).json({ ok: false, error: "no-questions" });
+      if (!room) return res.status(400).json({ ok: false, error: mechanic === "rally" ? "rally-incomplete" : "no-questions" });
       res.json({ ok: true, gameType: GAME_TYPES[mechanic], code: room.code });
     } catch (err) {
       handleDbError(res, err);

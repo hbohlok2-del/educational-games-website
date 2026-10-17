@@ -1,0 +1,173 @@
+@import url("/shared/tokens.css");
+
+#app{max-width:720px; margin:0 auto; padding:28px 20px 60px; display:flex; flex-direction:column; gap:20px;}
+
+.eyebrow{
+  font-family:'Nunito'; font-weight:800; font-size:12px; letter-spacing:0.14em;
+  text-transform:uppercase; color:var(--gold);
+}
+.lede{color:var(--chalk-dim); font-size:16px; line-height:1.5; max-width:60ch;}
+
+.hero{text-align:center; padding:18px 0 4px;}
+.hero h1{font-size:clamp(40px,10vw,68px); line-height:0.95; color:var(--chalk);}
+.hero h1 span{color:var(--gold);}
+.hero .lede{margin:14px auto 0;}
+
+.role-grid{display:grid; grid-template-columns:1fr; gap:14px;}
+@media(min-width:560px){ .role-grid{grid-template-columns:repeat(2,1fr);} }
+
+.role-card{
+  background:linear-gradient(180deg, var(--turf), var(--turf-2));
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:20px 18px;
+  display:flex; flex-direction:column; gap:8px; align-items:flex-start;
+  text-align:left;
+  color:var(--chalk);
+}
+.role-card .icon{font-size:26px;}
+.role-card h3{font-size:20px;}
+.role-card p{margin:0; color:var(--chalk-dim); font-size:14px; line-height:1.45;}
+.role-card .go{
+  margin-top:auto; align-self:stretch; text-align:center;
+  background:var(--gold); color:#2A1B00; border:none; border-radius:9px;
+  font-weight:800; padding:10px 12px; font-size:14px;
+}
+
+.howto{
+  border-top:1px dashed var(--line); padding-top:16px; margin-top:6px;
+  color:var(--chalk-dim); font-size:14px; line-height:1.6;
+}
+.howto b{color:var(--chalk);}
+
+.panel{
+  background:linear-gradient(180deg, var(--turf), var(--turf-2));
+  border:1px solid var(--line); border-radius:16px; padding:22px;
+  display:flex; flex-direction:column; gap:16px;
+}
+.field-label{font-weight:800; font-size:13px; text-transform:uppercase; letter-spacing:0.08em; color:var(--chalk-dim);}
+.btn{
+  border:none; border-radius:10px; padding:13px 18px; font-weight:800; font-size:15px;
+  background:var(--gold); color:#2A1B00;
+}
+.btn.secondary{background:transparent; border:2px solid var(--line); color:var(--chalk);}
+.btn.block{width:100%;}
+.btn:disabled{opacity:0.45; cursor:not-allowed;}
+.back-link{background:none;border:none;color:var(--chalk-dim);font-weight:700;font-size:14px;padding:4px 0;text-align:left;}
+.back-link:hover{color:var(--chalk);}
+
+.team-pick{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+.team-btn{border-radius:12px; border:2px solid transparent; padding:16px; font-weight:800; font-size:16px; color:#fff;}
+.team-btn.a{background:var(--team-a);}
+.team-btn.b{background:var(--team-b);}
+.team-btn.active{border-color:var(--gold); box-shadow:0 0 0 3px rgba(255,193,69,0.35) inset;}
+.team-btn:disabled{opacity:0.35; cursor:not-allowed;}
+
+.code-input{
+  font-family:'JetBrains Mono'; font-weight:700; font-size:32px; letter-spacing:0.28em;
+  text-align:center; text-transform:uppercase; background:rgba(0,0,0,0.25); color:var(--chalk);
+  border:2px solid var(--line); border-radius:12px; padding:14px 8px; width:100%;
+}
+.code-display{
+  font-family:'JetBrains Mono'; font-weight:700; font-size:44px; letter-spacing:0.3em;
+  text-align:center; color:var(--gold); background:rgba(0,0,0,0.25);
+  border:2px dashed var(--gold); border-radius:14px; padding:16px 8px;
+}
+.err{color:var(--team-a); font-size:14px; font-weight:700; min-height:18px;}
+
+.roster{display:flex; flex-direction:column; gap:10px;}
+.roster-row{display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:10px; background:rgba(0,0,0,0.18);}
+.dot{width:12px;height:12px;border-radius:50%;flex:none;}
+.dot.a{background:var(--team-a);} .dot.b{background:var(--team-b);}
+.roster-row .name{font-weight:800; flex:1;}
+.roster-row .status{font-size:13px; color:var(--chalk-dim);}
+.roster-row.ready .status{color:#8FE3A6; font-weight:800;}
+
+/* Teams 3 and 4 (green, purple), alongside red and blue. */
+.team-btn.c{background:var(--team-c);}
+.team-btn.d{background:var(--team-d);}
+.dot.c{background:var(--team-c);} .dot.d{background:var(--team-d);}
+canvas#confetti{position:fixed; inset:0; pointer-events:none; z-index:5;}
+#notice{
+  display:none; background:rgba(230,57,70,0.15); border:1px solid var(--team-a);
+  color:var(--chalk); border-radius:10px; padding:10px 14px; font-size:13.5px;
+}
+
+/* ---------- Rally match (2026-10-17 style guide) ----------
+   Shared pieces (top bar, team pill, results) are in /shared/match-shell.css. */
+.a{--tc:var(--team-a);} .b{--tc:var(--team-b);} .c{--tc:var(--team-c);} .d{--tc:var(--team-d);}
+#app > [data-view="match"]{display:flex; flex-direction:column; gap:16px;}
+#app > [data-view="match"].hidden{display:none;}
+.clock.low{border-color:var(--team-a) !important;}
+.clock.low #matchClock{color:#FF8A8A !important;}
+
+/* Big Screen: the map with the team cards beside it. */
+.rally-stage{display:grid; grid-template-columns:minmax(0, 1fr) 320px; gap:24px; align-items:start;}
+.rally-stage.hidden{display:none;}
+.map-wrap{position:relative; width:min(100%, calc((100vh - 200px) * 1000 / 700)); margin:0 auto;}
+.rally-map{display:block; width:100%; height:auto; border-radius:var(--radius-lg);}
+.rm-route{fill:none; stroke:#F4F1E8; stroke-width:4; stroke-dasharray:4 12; stroke-linecap:round; opacity:.9;}
+.map-overlay{position:absolute; inset:0; display:grid; place-items:center; pointer-events:none;}
+.map-count{font-family:'Anton',system-ui,sans-serif; font-size:clamp(64px, 12vw, 180px); color:#fff; opacity:0; text-shadow:0 6px 0 rgba(0,0,0,0.4);}
+.map-count.go{color:var(--gold);}
+.rally-cards{display:flex; flex-direction:column; gap:10px;}
+.rally-card{
+  position:relative; padding:10px 16px 12px; border-radius:var(--radius-lg); background:var(--dusk-2);
+  border:1px solid var(--line); border-top:6px solid var(--tc); transition:box-shadow .3s;
+}
+.rally-card.leading{box-shadow:0 0 0 3px var(--gold);}
+.rc-head{font-family:'Anton',system-ui,sans-serif; font-size:22px; text-transform:uppercase; color:var(--tc);}
+.rc-head:lang(ar){font-family:'Cairo',system-ui,sans-serif; font-weight:800; text-transform:none;}
+.rc-score{font-family:'Anton',system-ui,sans-serif; font-size:30px; line-height:1.1; text-align:start;}
+.rc-meta{display:flex; justify-content:space-between; gap:8px; font-size:13px; color:var(--chalk-dim); margin-top:2px;}
+.rc-skip{margin-top:6px; width:100%; min-height:34px; border:1px solid var(--line); border-radius:var(--radius-sm); background:var(--turf); color:var(--chalk); font-weight:800; font-size:14px;}
+.rc-skip:hover{border-color:var(--gold);}
+.rc-status{margin-top:10px; font-weight:800; color:var(--gold);}
+.rc-penalty{position:absolute; top:10px; inset-inline-end:16px; font-family:'Anton',system-ui,sans-serif; font-size:24px; color:var(--gold); pointer-events:none;}
+
+/* Letter tiles for the secret word. */
+.letter-tiles{display:flex; flex-wrap:wrap; gap:6px; margin:8px 0;}
+.letter-tile{display:grid; place-items:center; min-width:34px; height:40px; padding:0 4px; border-radius:8px; background:var(--paper); color:var(--ink); font-family:'Anton',system-ui,sans-serif; font-size:22px;}
+.letter-tile.empty{background:rgba(255,255,255,0.10);}
+.letter-tile.compact{min-width:20px; height:24px; font-size:14px; border-radius:5px;}
+.rally-card .letter-tiles{gap:4px; margin:4px 0;}
+.letter-tiles.big{justify-content:center;}
+.letter-tiles.big .letter-tile{min-width:48px; height:58px; font-size:32px;}
+
+/* Phone. */
+.rally-phone{display:flex; flex-direction:column; gap:14px;}
+.rally-phone.hidden{display:none;}
+.phone-step{font-weight:800; color:var(--chalk-dim); font-size:15px;}
+.phone-pips{display:flex; gap:8px;}
+.phone-pips .pip{flex:1; height:8px; border-radius:999px; background:rgba(255,255,255,0.14);}
+.phone-pips .pip.done{background:var(--gold);}
+.phone-pips .pip.now{background:rgba(255,193,69,0.4);}
+.team-card{position:relative; display:flex; flex-direction:column; gap:16px; align-items:stretch; padding:22px 18px; border-radius:var(--radius-lg); background:var(--turf); text-align:start;}
+.team-card.hidden{display:none;}
+.team-card h2{font-size:30px; text-transform:uppercase; margin:0;}
+.team-card h2:lang(ar){text-transform:none;}
+.team-card .equation{font-weight:800; font-size:clamp(24px, 7vw, 40px); line-height:1.25; color:var(--chalk);}
+.team-card .equation .katex{color:var(--chalk);}
+.answer-row{display:flex; gap:10px;}
+.answer-row.hidden{display:none;}
+.text-answer-input{flex:1; min-width:0; min-height:56px; padding:0 16px; border:1px solid var(--line); border-radius:var(--radius); background:var(--dusk); color:var(--chalk); font:inherit; font-size:20px; font-weight:700;}
+.secret-input{text-transform:uppercase; letter-spacing:0.2em; text-align:center; font-family:'Anton',system-ui,sans-serif; font-weight:400;}
+.submit-btn{min-height:56px; padding:0 20px; border:0; border-radius:var(--radius); background:var(--gold); color:var(--dusk); font-weight:800; font-size:17px;}
+.submit-btn:disabled, .text-answer-input:disabled, .mc-choice:disabled{opacity:0.45;}
+.mc-choices{display:flex; flex-direction:column; gap:10px; width:100%;}
+.mc-choice{background:rgba(255,255,255,0.10); border:0; color:#fff; font-weight:800; padding:14px 16px; text-align:start;}
+.hint-btn{min-height:48px; border:1px dashed rgba(255,255,255,0.4); border-radius:var(--radius); background:none; color:var(--gold); font-weight:800; font-size:16px;}
+.hint-btn.hidden{display:none;}
+.hint-card{padding:14px 16px; border-radius:var(--radius); background:var(--paper); color:var(--ink); font-weight:700; line-height:1.5;}
+.hint-card.hidden{display:none;}
+.hint-card .katex{color:var(--ink);}
+.lock-ring{position:absolute; inset:0; display:grid; place-items:center; border-radius:var(--radius-lg); background:rgba(14,23,48,0.55); pointer-events:none;}
+.lock-ring.hidden{display:none;}
+.lock-ring span{display:grid; place-items:center; width:84px; height:84px; border-radius:50%; border:6px solid var(--team-a); background:var(--dusk); color:#FF8A8A; font-family:'Anton',system-ui,sans-serif; font-size:40px;}
+.clue{margin:0; font-size:20px; font-weight:700; line-height:1.5;}
+.finish-stamp{align-self:center; margin:20px 0; padding:10px 24px; border:5px solid var(--gold); border-radius:var(--radius); transform:rotate(-8deg); font-family:'Anton',system-ui,sans-serif; font-size:44px; color:var(--gold);}
+.collected .eyebrow{font-size:13px;}
+.rally-confetti{position:absolute; width:8px; height:12px; border-radius:2px; pointer-events:none;}
+
+@media (max-width:980px){ .rally-stage{grid-template-columns:1fr;} .rally-cards{display:grid; grid-template-columns:repeat(2, minmax(0, 1fr));} }
+@media (max-width:600px){ .rally-cards{grid-template-columns:1fr;} }

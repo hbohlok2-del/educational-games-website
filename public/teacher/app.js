@@ -4,8 +4,10 @@
   var socketRace = io("/team-race");
   var socketBuzzer = io("/team-buzzer");
   var socketBoard = io("/team-board");
-  var SOCKETS = { race: socketRace, buzzer: socketBuzzer, board: socketBoard };
-  var GAME_PATHS = { race: "team-race", buzzer: "team-buzzer", board: "team-board" };
+  var socketRally = io("/team-rally");
+  var SOCKETS = { race: socketRace, buzzer: socketBuzzer, board: socketBoard, rally: socketRally };
+  var GAME_PATHS = { race: "team-race", buzzer: "team-buzzer", board: "team-board", rally: "team-rally" };
+  var RALLY_MAX_PER_STATION = 5;
   var qId = 0;
   var selectedMechanic = "race";
   var selectedTheme = "rope";
@@ -20,6 +22,7 @@
     rocket: svgIcon('<path d="M16 3c5 4 6 10 4 17h-8c-2-7-1-13 4-17Z"/><circle cx="16" cy="12" r="2.5"/><path d="M12 20l-4 4 4 1M20 20l4 4-4 1M14 25l2 4 2-4"/>'),
     spotlight: svgIcon('<path d="M11 4h10l-2 8h-6Z"/><path d="M13 12l-7 15h20l-7-15"/>'),
     classic: svgIcon('<rect x="4" y="5" width="24" height="22" rx="2"/><path d="M12 5v22M20 5v22M4 12.3h24M4 19.6h24" stroke-width="2"/>'),
+    island: svgIcon('<path d="M3 24c4-2 8-2 13 0s9 2 13 0"/><path d="M8 21c1-5 4-8 8-8s7 3 8 8"/><path d="M16 13V5l6 3-6 3"/>'),
   };
 
   var THEME_IDS_BY_MECHANIC = {
@@ -32,6 +35,9 @@
     ],
     board: [
       { id: "classic", icon: ICONS.classic, key: "teacher.themes.classic" },
+    ],
+    rally: [
+      { id: "island", icon: ICONS.island, key: "teacher.themes.island" },
     ],
   };
 
@@ -149,7 +155,7 @@
   // 2 or 4 teams: Quiz Board and Rocket Race. The rope has two ends and the
   // buzzer is head-to-head, so those stay at 2.
   function teamCountApplies() {
-    return selectedMechanic === "board" || (selectedMechanic === "race" && selectedTheme === "rocket");
+    return selectedMechanic === "board" || selectedMechanic === "rally" || (selectedMechanic === "race" && selectedTheme === "rocket");
   }
   function applyTeamCount() {
     $("teamCountSetting").classList.toggle("hidden", !teamCountApplies());
@@ -171,6 +177,8 @@
   function applyMechanicToRow(rowEl) {
     var board = selectedMechanic === "board";
     rowEl.querySelector(".board-fields").classList.toggle("hidden", !board);
+    rowEl.querySelector(".rally-fields").classList.toggle("hidden", selectedMechanic !== "rally");
+    fillStationOptions(rowEl);
     rowEl.querySelector(".open-type").classList.toggle("hidden", !board);
     var openRadio = rowEl.querySelector('.type-row input[value="open"]');
     if (!board && openRadio.checked) {
@@ -182,6 +190,7 @@
 
   function applyMechanic() {
     $("boardSettings").classList.toggle("hidden", selectedMechanic !== "board");
+    $("rallySettings").classList.toggle("hidden", selectedMechanic !== "rally");
     applyTeamCount();
     Array.prototype.forEach.call(questionList.querySelectorAll(".q-row"), applyMechanicToRow);
   }
@@ -305,6 +314,9 @@
         if (!category) { errors.push(t("teacher.err.questionNeedsCategory", { n: n })); return; }
         extra = { category: category, points: Number(row.querySelector(".points-input").value) };
       }
+      if (selectedMechanic === "rally") {
+        extra = { station: Number(row.querySelector(".station-input").value), hint: row.querySelector(".hint-input").value.trim() };
+      }
       if (type === "multiple-choice") {
         var choices = [];
         var correctIdx = -1;
@@ -323,11 +335,67 @@
         out.push(Object.assign({ prompt: prompt, type: type === "open" ? "open" : "short-answer", answer: answer }, extra));
       }
     });
+    if (selectedMechanic === "rally") errors = errors.concat(rallyErrors(out));
     return { out: out, errors: errors };
   }
 
+  // ---------------- Rally: secret word and stations ----------------
+  // Letters only (any alphabet), upper-cased, as the server keeps them.
+  function rallyWord() {
+    return Array.from($("rallyWord").value.toLocaleUpperCase()).filter(function (ch) { return /\p{L}/u.test(ch); }).join("").slice(0, 12);
+  }
+
+  function rallyErrors(questions) {
+    var word = Array.from(rallyWord());
+    if (word.length < 3) return [t("teacher.err.rallyWord")];
+    var counts = word.map(function () { return 0; });
+    questions.forEach(function (q) { if (q.station < counts.length) counts[q.station] += 1; });
+    for (var i = 0; i < counts.length; i++) {
+      if (counts[i] === 0) return [t("teacher.err.stationEmpty", { n: i + 1, letter: word[i] })];
+      if (counts[i] > RALLY_MAX_PER_STATION) return [t("teacher.err.stationFull", { n: i + 1, letter: word[i] })];
+    }
+    return [];
+  }
+
+  // One station per letter: the station pickers and clue boxes follow the word.
+  function fillStationOptions(rowEl) {
+    var select = rowEl.querySelector(".station-input");
+    var word = Array.from(rallyWord());
+    var keep = select.value;
+    select.innerHTML = "";
+    word.forEach(function (letter, i) {
+      var opt = document.createElement("option");
+      opt.value = String(i);
+      opt.textContent = t("teacher.q.stationOption", { n: i + 1, letter: letter });
+      select.appendChild(opt);
+    });
+    if (keep && Number(keep) < word.length) select.value = keep;
+  }
+
+  function renderRallyStations() {
+    var word = Array.from(rallyWord());
+    $("rallyInfo").textContent = word.length >= 3 ? t("teacher.rally.stationsInfo", { n: word.length }) : t("teacher.rally.wordHelp");
+    var wrap = $("rallyClues");
+    var old = Array.prototype.map.call(wrap.querySelectorAll(".clue-input"), function (el) { return el.value; });
+    wrap.innerHTML = "";
+    word.forEach(function (letter, i) {
+      var row = document.createElement("div");
+      row.className = "rally-clue";
+      var tile = document.createElement("b"); tile.textContent = letter;
+      var input = document.createElement("input");
+      input.className = "clue-input text-input"; input.maxLength = 140; input.dir = "auto";
+      input.placeholder = t("teacher.rally.cluePlaceholder", { n: i + 1 });
+      input.value = old[i] || "";
+      row.appendChild(tile); row.appendChild(input);
+      wrap.appendChild(row);
+    });
+    Array.prototype.forEach.call(questionList.querySelectorAll(".q-row"), fillStationOptions);
+  }
+  $("rallyWord").addEventListener("input", renderRallyStations);
+
   function updateBuzzerHint() {
     $("buzzerHint").classList.toggle("hidden", selectedMechanic !== "buzzer");
+    $("rallyHint").classList.toggle("hidden", selectedMechanic !== "rally");
     $("boardHint").classList.toggle("hidden", selectedMechanic !== "board");
   }
 
@@ -345,7 +413,19 @@
   }
   renderTeamCountOptions();
 
+  function renderMinuteOptions() {
+    Array.prototype.forEach.call($("rallyMinutes").options, function (opt) {
+      opt.textContent = t("teacher.rally.minutesOption", { n: opt.value });
+    });
+  }
+  renderMinuteOptions();
+
   function currentSettings() {
+    if (selectedMechanic === "rally") {
+      var rally = { word: rallyWord(), minutes: Number($("rallyMinutes").value), teams: Number($("teamCountInput").value) };
+      rally.clues = Array.prototype.map.call($("rallyClues").querySelectorAll(".clue-input"), function (el) { return el.value.trim(); });
+      return rally;
+    }
     var settings = { penalty: $("penaltyInput").checked, timeLimit: Number($("timeLimitInput").value) };
     if (teamCountApplies()) settings.teams = Number($("teamCountInput").value);
     return settings;
@@ -400,6 +480,12 @@
     $("timeLimitInput").value = String((set.settings && set.settings.timeLimit) || 30);
     // Board quizzes saved before the choice existed had 4 seats.
     $("teamCountInput").value = String((set.settings && set.settings.teams) || (set.mechanic === "board" ? 4 : 2));
+    if (set.mechanic === "rally") {
+      $("rallyWord").value = (set.settings && set.settings.word) || "";
+      $("rallyMinutes").value = String((set.settings && set.settings.minutes) || 20);
+      renderRallyStations();
+      Array.prototype.forEach.call($("rallyClues").querySelectorAll(".clue-input"), function (el, i) { el.value = (set.settings.clues || [])[i] || ""; });
+    }
 
     questionList.innerHTML = "";
     (set.questions || []).forEach(function (q) {
@@ -414,6 +500,10 @@
         typeRadio.dispatchEvent(new Event("change", { bubbles: true }));
       }
       if (q.category) rowEl.querySelector(".category-input").value = q.category;
+      if (set.mechanic === "rally") {
+        rowEl.querySelector(".station-input").value = String(q.station || 0);
+        rowEl.querySelector(".hint-input").value = q.hint || "";
+      }
       if (q.points) rowEl.querySelector(".points-input").value = String(q.points);
 
       if (q.type === "multiple-choice") {
@@ -551,6 +641,8 @@
     renderPasscodeStatus();
     renderTimeOptions();
     renderTeamCountOptions();
+    renderMinuteOptions();
     applyTeamCount();
+    renderRallyStations();
   });
 })();

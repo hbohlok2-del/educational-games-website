@@ -34,13 +34,14 @@
     if (gameType === "tug-of-war") return "/games/tug-of-war/";
     if (gameType === "team-race") return "/games/team-race/";
     if (gameType === "team-board") return "/games/team-board/";
+    if (gameType === "team-rally") return "/games/team-rally/";
     return "/games/team-buzzer/";
   }
 
   // gameType -> its key under games.* in the dictionaries
-  var GAME_KEYS = { "tug-of-war": "tugOfWar", "team-race": "teamRace", "team-buzzer": "teamBuzzer", "team-board": "teamBoard" };
+  var GAME_KEYS = { "tug-of-war": "tugOfWar", "team-race": "teamRace", "team-buzzer": "teamBuzzer", "team-board": "teamBoard", "team-rally": "teamRally" };
   // a saved quiz's mechanic -> the same game names
-  var MECHANIC_KEYS = { race: "teamRace", buzzer: "teamBuzzer", board: "teamBoard" };
+  var MECHANIC_KEYS = { race: "teamRace", buzzer: "teamBuzzer", board: "teamBoard", rally: "teamRally" };
 
   function goToRoom(gameType, code, display) {
     location.href = basePathFor(gameType) + "?code=" + code + (display ? "&role=display" : "");
