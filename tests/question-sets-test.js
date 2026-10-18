@@ -130,7 +130,7 @@ async function main() {
 
   // --- Board quizzes: settings persist, launch routes to the board game ---
   const boardQuiz = {
-    title: "Board", mechanic: "board", theme: "classic", settings: { penalty: true, timeLimit: 90, teams: 2 },
+    title: "Board", mechanic: "board", theme: "classic", settings: { penalty: true, timeLimit: 90, teams: 3 },
     questions: [{ category: "Science", points: 300, prompt: "What is H2O?", type: "open", answer: "SecretWater" }],
   };
   const savedBoard = await call("POST", api, { headers: GOOD, body: boardQuiz });
@@ -138,12 +138,12 @@ async function main() {
   const boardFull = await call("GET", `${api}/${savedBoard.json.set.id}`, { headers: GOOD });
   check("board settings and category survive the round trip",
     boardFull.json.set.settings.penalty === true && boardFull.json.set.settings.timeLimit === 90 && boardFull.json.set.questions[0].category === "Science");
-  check("the team count survives the round trip", boardFull.json.set.settings.teams === 2);
+  check("the team count survives the round trip", boardFull.json.set.settings.teams === 3);
   const launchBoard = await call("POST", `${api}/${savedBoard.json.set.id}/launch`);
   check("launching a board quiz routes to the board game", launchBoard.json.ok && launchBoard.json.gameType === "team-board" && !launchBoard.text.includes("Secret"));
   const boardPeek = io(`${base}/team-board`);
   const peeked = await emit(boardPeek, "peek-room", { code: launchBoard.json.code });
-  check("a launched 2-team board quiz offers 2 seats", peeked.ok && peeked.room.teamSlots.join("") === "AB");
+  check("a launched 3-team board quiz offers 3 seats", peeked.ok && peeked.room.teamSlots.join("") === "ABC");
   boardPeek.close();
   const raceWithOpen = await call("POST", api, { headers: GOOD, body: { ...boardQuiz, mechanic: "race" } });
   check("open questions are refused outside board quizzes", raceWithOpen.status === 400);

@@ -152,7 +152,7 @@
     });
   }
 
-  // 2 or 4 teams: Quiz Board and Rocket Race. The rope has two ends and the
+  // 2 to 4 teams: Quiz Board, Rally and Rocket Race. The rope has two ends and the
   // buzzer is head-to-head, so those stay at 2.
   function teamCountApplies() {
     return selectedMechanic === "board" || selectedMechanic === "rally" || (selectedMechanic === "race" && selectedTheme === "rocket");

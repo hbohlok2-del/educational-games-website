@@ -1,7 +1,7 @@
 const BOARD_POINTS = [100, 200, 300, 400, 500];
 const BOARD_TIME_LIMITS = [15, 30, 45, 60, 90, 120]; // seconds per question
 const DEFAULT_TIME_LIMIT = 30;
-const TEAM_COUNTS = [2, 4];
+const TEAM_COUNTS = [2, 3, 4];
 // Rally: the secret word sets the number of stations, one letter each.
 const RALLY_MIN_STATIONS = 3;
 const RALLY_MAX_STATIONS = 12;
@@ -11,7 +11,7 @@ const RALLY_DEFAULT_MINUTES = 20;
 
 // Game settings, shared by live rooms and saved quizzes. Unknown keys are
 // dropped; an unlisted time falls back to the default. The team count is
-// kept only when it is 2 or 4, so a quiz saved before the choice existed
+// kept only when it is 2, 3 or 4, so a quiz saved before the choice existed
 // leaves it out and each game applies its own default.
 function cleanBoardSettings(settings) {
   const timeLimit = Number(settings && settings.timeLimit);

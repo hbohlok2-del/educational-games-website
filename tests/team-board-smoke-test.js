@@ -191,6 +191,10 @@ async function main() {
   check("a 2-team board refuses Green", greenIn2.ok === false && greenIn2.error === "invalid-team");
   const fourSeat = await emit(host, "create-room", { title: "Four", questions: [QUESTIONS[1]], settings: { teams: 4 } });
   check("a 4-team board offers all four seats", fourSeat.room.teamSlots.join("") === "ABCD");
+  const threeSeat = await emit(host, "create-room", { title: "Three", questions: [QUESTIONS[1]], settings: { teams: 3 } });
+  check("a 3-team board offers Red, Blue and Green", threeSeat.room.teamSlots.join("") === "ABC");
+  const purpleIn3 = await emit(lateBlue, "join-room", { code: threeSeat.room.code, team: "D" });
+  check("a 3-team board refuses Purple", purpleIn3.ok === false && purpleIn3.error === "invalid-team");
 
   red.emit("start-match");
   const started3 = await nextUpdate(red, (r) => r.status === "active");

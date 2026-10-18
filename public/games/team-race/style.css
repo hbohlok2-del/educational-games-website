@@ -104,10 +104,10 @@
 .rocket-sprite img, .lane-rocket img{display:block; height:100%; position:relative; z-index:1; filter:drop-shadow(0 3px 5px rgba(0,0,0,0.45));}
 .rocket-sprite.b{left:33.5%;}
 
-/* Four-lane rocket track, drawn in code: a launch pad, a light beam and a
+/* Multi-lane (3 or 4) rocket track, drawn in code: a launch pad, a light beam and a
    rocket per team under one checkered finish line. */
 .lane-wrap{padding:6px 2px 2px;}
-.lane-labels{display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); font-family:'Anton'; font-size:13px; letter-spacing:0.04em; margin-bottom:6px; text-align:center;}
+.lane-labels{display:grid; grid-template-columns:repeat(var(--lanes, 4), minmax(0, 1fr)); font-family:'Anton'; font-size:13px; letter-spacing:0.04em; margin-bottom:6px; text-align:center;}
 .lane-labels span{padding:0 2px; line-height:1.15;}
 .lane-labels .a{color:var(--team-a);} .lane-labels .b{color:var(--team-b);}
 .lane-labels .c{color:var(--team-c);} .lane-labels .d{color:#C08AD6;}
@@ -129,7 +129,7 @@
   background:repeating-conic-gradient(#111 0 25%, #F4F1E8 0 50%) 0 0 / 14px 14px;
   box-shadow:0 2px 6px rgba(0,0,0,0.45);
 }
-.lane-lanes{position:absolute; inset:0; display:grid; grid-template-columns:repeat(4, minmax(0, 1fr));}
+.lane-lanes{position:absolute; inset:0; display:grid; grid-template-columns:repeat(var(--lanes, 4), minmax(0, 1fr));}
 .lane{position:relative; --c:var(--team-a);}
 .lane.b{--c:var(--team-b);} .lane.c{--c:var(--team-c);} .lane.d{--c:var(--team-d);}
 .lane-beam{

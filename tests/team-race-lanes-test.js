@@ -45,7 +45,9 @@ async function main() {
   check("rocket race defaults to 2 seats", unset.room.teamSlots.join("") === "AB");
   const rope = await emit(host, "create-room", { title: "Rope", theme: "rope", questions: QUESTIONS, settings: { teams: 4 } });
   check("the rope race stays at 2 seats even if 4 is asked", rope.room.teamSlots.join("") === "AB");
-  const odd = await emit(host, "create-room", { title: "Odd", theme: "rocket", questions: QUESTIONS, settings: { teams: 3 } });
+  const three = await emit(host, "create-room", { title: "Three", theme: "rocket", questions: QUESTIONS, settings: { teams: 3 } });
+  check("rocket race with 3 teams offers 3 seats", three.ok && three.room.teamSlots.join("") === "ABC");
+  const odd = await emit(host, "create-room", { title: "Odd", theme: "rocket", questions: QUESTIONS, settings: { teams: 5 } });
   check("an unlisted team count falls back to 2", odd.room.teamSlots.join("") === "AB");
 
   // --- A 2-seat room refuses Green, and needs both teams ---

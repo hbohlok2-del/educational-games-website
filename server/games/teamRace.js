@@ -27,9 +27,9 @@ function joinedTeams(room) {
 }
 
 // A rope has two ends, so the rope race is always 2 teams. Rocket races run
-// 2 or 4 lanes, as the teacher chose (2 when unset).
+// 2 to 4 lanes, as the teacher chose (2 when unset).
 function teamSlots(theme, settings) {
-  return TEAMS.slice(0, theme === "rocket" && settings.teams === 4 ? 4 : 2);
+  return TEAMS.slice(0, theme === "rocket" && settings.teams ? settings.teams : 2);
 }
 
 function publicRoom(room) {

@@ -227,7 +227,7 @@
       row.appendChild(dot); row.appendChild(name); row.appendChild(status);
       roster.appendChild(row);
     });
-    // Two seats: both must be filled. Four lanes: any two can race.
+    // Two seats: both must be filled. Three or four lanes: any two can race.
     var count = joinedCount(d);
     var four = d.teamSlots.length > 2;
     var ready = count >= 2;
@@ -378,6 +378,7 @@
     S.lanesFor = key;
     var labels = $("laneLabels"), lanes = $("laneLanes");
     labels.innerHTML = ""; lanes.innerHTML = "";
+    $("laneWrap").style.setProperty("--lanes", room.teamSlots.length);
     room.teamSlots.forEach(function (team) {
       var id = team.toLowerCase();
       var label = document.createElement("span");

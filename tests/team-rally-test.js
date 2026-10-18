@@ -27,7 +27,7 @@ const SETTINGS = { word: "cat", teams: 2, minutes: 10, clues: ["Look under the m
 
 async function main() {
   // --- Rules without a server ---
-  const s = cleanRallySettings({ word: "Ma-trix 9", minutes: 7, teams: 3 });
+  const s = cleanRallySettings({ word: "Ma-trix 9", minutes: 7, teams: 5 });
   check("the word keeps letters only, upper-cased", s.word === "MATRIX");
   check("an unlisted time falls back to 20 minutes and odd team counts are dropped", s.minutes === 20 && s.teams === undefined);
   const qs = buildQuestions(QUESTIONS, { rally: true });
@@ -38,6 +38,8 @@ async function main() {
   const six = Array.from({ length: 7 }, () => ({ station: 0, prompt: "x", answer: "1" }))
     .concat([1, 2].map((st) => ({ station: st, prompt: "y", answer: "1" })));
   check("a station keeps at most 5 questions", buildStations(buildQuestions(six, { rally: true }), cleanRallySettings({ word: "abc" }))[0].questions.length === 5);
+  check("three teams are kept", cleanRallySettings({ word: "abc", teams: 3 }).teams === 3);
+  check("three teams over six stations start spread out", [0, 1, 2].map((i) => startStation(i, 3, 6)).join() === "0,2,4");
   check("four teams over six stations start spread out", [0, 1, 2, 3].map((i) => startStation(i, 4, 6)).join() === "0,1,3,4");
 
   // --- A full rally over sockets ---
