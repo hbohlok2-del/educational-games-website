@@ -138,13 +138,46 @@ async function main() {
   const boardFull = await call("GET", `${api}/${savedBoard.json.set.id}`, { headers: GOOD });
   check("board settings and category survive the round trip",
     boardFull.json.set.settings.penalty === true && boardFull.json.set.settings.timeLimit === 90 && boardFull.json.set.questions[0].category === "Science");
-  check("the team count survives the round trip", boardFull.json.set.settings.teams === 3);
-  const launchBoard = await call("POST", `${api}/${savedBoard.json.set.id}/launch`);
+  check("a saved quiz no longer stores a team count", !("teams" in boardFull.json.set.settings));
+  const boardId = savedBoard.json.set.id;
+  const launchBoard = await call("POST", `${api}/${boardId}/launch`);
   check("launching a board quiz routes to the board game", launchBoard.json.ok && launchBoard.json.gameType === "team-board" && !launchBoard.text.includes("Secret"));
-  const boardPeek = io(`${base}/team-board`);
-  const peeked = await emit(boardPeek, "peek-room", { code: launchBoard.json.code });
-  check("a launched 3-team board quiz offers 3 seats", peeked.ok && peeked.room.teamSlots.join("") === "ABC");
-  boardPeek.close();
+
+  // --- Team count chosen at launch ---
+  async function seats(ns, body, id = boardId) {
+    const launched = await call("POST", `${api}/${id}/launch`, body ? { body } : {});
+    if (!launched.json.ok) return launched;
+    const peek = io(`${base}/${ns}`);
+    const peeked = await emit(peek, "peek-room", { code: launched.json.code });
+    peek.close();
+    return peeked.room.teamSlots.join("");
+  }
+  check("a board launched with no choice keeps its default of 4 seats", (await seats("team-board")) === "ABCD");
+  check("a board launched for 3 teams offers 3 seats", (await seats("team-board", { teams: 3 })) === "ABC");
+  check("a board launched for 2 teams offers 2 seats", (await seats("team-board", { teams: 2 })) === "AB");
+  const tooMany = await call("POST", `${api}/${boardId}/launch`, { body: { teams: 5 } });
+  const notNumber = await call("POST", `${api}/${boardId}/launch`, { body: { teams: "lots" } });
+  check("a team count outside 2 to 4 is refused (400)", tooMany.status === 400 && tooMany.json.error === "invalid-teams" && notNumber.status === 400);
+  check("a rocket race launched for 4 teams opens 4 lanes", (await seats("team-race", { teams: 4 }, raceId)) === "ABCD");
+  check("a rocket race launched with no choice opens 2 lanes", (await seats("team-race", null, raceId)) === "AB");
+  const ropeSaved = await call("POST", api, { headers: GOOD, body: { ...raceQuiz, title: "Rope", theme: "rope" } });
+  check("the rope stays at 2 teams whatever is sent", (await seats("team-race", { teams: 4 }, ropeSaved.json.set.id)) === "AB");
+  const rallySaved = await call("POST", api, { headers: GOOD, body: {
+    title: "Rally", mechanic: "rally", theme: "island", settings: { word: "CAT", minutes: 10, teams: 4 },
+    questions: [0, 1, 2].map((station) => ({ prompt: "Q" + station, type: "short-answer", answer: "x", station })),
+  } });
+  check("a saved rally drops its team count too", rallySaved.json.ok && !("teams" in rallySaved.json.set.settings));
+  check("a rally launched for 3 teams offers 3 seats", (await seats("team-rally", { teams: 3 }, rallySaved.json.set.id)) === "ABC");
+
+  // A quiz saved before the change still has a count: the list shows it (to
+  // pre-select the choice) and a launch with no choice uses it.
+  const { client } = require(path.join(__dirname, "..", "server", "db.js"));
+  await client.execute({ sql: "UPDATE question_sets SET settings = ? WHERE id = ?", args: [JSON.stringify({ penalty: false, timeLimit: 30, teams: 3 }), boardId] });
+  const oldList = await call("GET", api);
+  check("the list shows an older quiz's saved team count", oldList.json.sets.find((s) => s.id === boardId).teams === 3);
+  check("the list leaves teams out for new quizzes", !("teams" in oldList.json.sets.find((s) => s.id === raceId)));
+  check("an older quiz launched with no choice uses its saved count", (await seats("team-board")) === "ABC");
+  check("a choice at launch overrides an older quiz's saved count", (await seats("team-board", { teams: 2 })) === "AB");
   const raceWithOpen = await call("POST", api, { headers: GOOD, body: { ...boardQuiz, mechanic: "race" } });
   check("open questions are refused outside board quizzes", raceWithOpen.status === 400);
 

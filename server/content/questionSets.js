@@ -14,9 +14,17 @@ function cleanMechanic(mechanic) {
 }
 
 // A rally keeps its word, clues and minutes; the other games their board
-// settings (time per question, penalty, teams).
+// settings (time per question, penalty). Quizzes saved before the team count
+// moved to launch time may still carry teams; it pre-selects the launch choice.
 function cleanSettings(mechanic, settings) {
   return mechanic === "rally" ? cleanRallySettings(settings) : cleanBoardSettings(settings);
+}
+
+// New saves leave the team count out: it is chosen each time the quiz is played.
+function settingsToStore(mechanic, settings) {
+  const cleaned = cleanSettings(mechanic, settings);
+  delete cleaned.teams;
+  return cleaned;
 }
 
 function parseSettings(text, mechanic) {
@@ -29,16 +37,21 @@ function questionOpts(mech) {
 
 async function listQuestionSets() {
   const result = await requireClient().execute(
-    "SELECT id, title, mechanic, theme, questions, created_at FROM question_sets ORDER BY created_at DESC"
+    "SELECT id, title, mechanic, theme, questions, settings, created_at FROM question_sets ORDER BY created_at DESC"
   );
-  return result.rows.map((row) => ({
-    id: row.id,
-    title: row.title,
-    mechanic: row.mechanic,
-    theme: row.theme,
-    questionCount: JSON.parse(row.questions).length,
-    createdAt: row.created_at,
-  }));
+  return result.rows.map((row) => {
+    const set = {
+      id: row.id,
+      title: row.title,
+      mechanic: row.mechanic,
+      theme: row.theme,
+      questionCount: JSON.parse(row.questions).length,
+      createdAt: row.created_at,
+    };
+    const teams = parseSettings(row.settings, row.mechanic).teams;
+    if (teams) set.teams = teams;
+    return set;
+  });
 }
 
 async function getQuestionSet(id) {
@@ -65,7 +78,7 @@ async function saveQuestionSet({ title, mechanic, theme, questions, settings }) 
   const cleanTheme = String(theme || "").trim() || "rope";
   const validated = buildQuestions(questions, questionOpts(mech));
   if (validated.length < 1) return null;
-  const cleaned = cleanSettings(mech, settings);
+  const cleaned = settingsToStore(mech, settings);
 
   const id = crypto.randomUUID();
   const createdAt = new Date().toISOString();
@@ -82,7 +95,7 @@ async function updateQuestionSet(id, { title, mechanic, theme, questions, settin
   const cleanTheme = String(theme || "").trim() || "rope";
   const validated = buildQuestions(questions, questionOpts(mech));
   if (validated.length < 1) return null;
-  const cleaned = cleanSettings(mech, settings);
+  const cleaned = settingsToStore(mech, settings);
 
   const result = await requireClient().execute({
     sql: "UPDATE question_sets SET title = ?, mechanic = ?, theme = ?, questions = ?, settings = ? WHERE id = ?",

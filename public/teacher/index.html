@@ -73,15 +73,6 @@
           <span class="field-label" data-i18n="teacher.field.theme">Theme</span>
           <div class="tile-pick" id="themePick"></div>
 
-          <div class="board-settings hidden" id="teamCountSetting">
-            <label class="field-label" for="teamCountInput" data-i18n="teacher.board.teams">Number of teams</label>
-            <select id="teamCountInput" class="text-input">
-              <option value="2" selected>2 teams</option>
-              <option value="3">3 teams</option>
-              <option value="4">4 teams</option>
-            </select>
-          </div>
-
           <div class="board-settings hidden" id="rallySettings">
             <label class="field-label" for="rallyWord" data-i18n="teacher.rally.word">Secret word</label>
             <input id="rallyWord" class="text-input rally-word" maxlength="24" autocomplete="off" dir="auto">
@@ -115,6 +106,15 @@
         </div>
 
         <div class="card action-card">
+          <div class="team-count hidden" id="teamCountSetting">
+            <label class="field-label" for="teamCountInput" data-i18n="teacher.board.teams">Teams for this room</label>
+            <select id="teamCountInput" class="text-input">
+              <option value="2" selected>2 teams</option>
+              <option value="3">3 teams</option>
+              <option value="4">4 teams</option>
+            </select>
+            <p class="hint" data-i18n="teacher.board.teamsHint">Saved quizzes ask for the number of teams each time you press Play.</p>
+          </div>
           <button type="button" class="btn-primary" id="createGo"><span data-i18n="teacher.createRoom">Create Room</span></button>
           <button type="button" class="btn-secondary" id="saveQuiz" data-i18n="teacher.library.saveButton">Save for later</button>
           <div class="err" id="createErr" role="alert"></div>

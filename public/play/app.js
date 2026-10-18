@@ -203,12 +203,63 @@
       playBtn.type = "button";
       playBtn.className = "btn-primary";
       playBtn.textContent = t("play.library.play");
-      playBtn.addEventListener("click", function () { launchSet(set.id, playBtn); });
 
       row.appendChild(info);
       row.appendChild(playBtn);
       list.appendChild(row);
+
+      if (!choosesTeams(set)) {
+        playBtn.addEventListener("click", function () { launchSet(set.id, playBtn); });
+        return;
+      }
+      var chooser = buildTeamChooser(set, playBtn);
+      row.appendChild(chooser);
+      playBtn.addEventListener("click", function () {
+        playBtn.classList.add("hidden");
+        chooser.classList.remove("hidden");
+        (chooser.querySelector(".btn-primary") || chooser.querySelector("button")).focus();
+      });
     });
+  }
+
+  // Quiz Board, Rally and Rocket Race take 2 to 4 teams, picked here each time
+  // the quiz is played. The rope and the buzzer are always two teams.
+  function choosesTeams(set) {
+    return set.mechanic === "board" || set.mechanic === "rally" || (set.mechanic === "race" && set.theme === "rocket");
+  }
+
+  function buildTeamChooser(set, playBtn) {
+    var box = document.createElement("div");
+    box.className = "team-chooser hidden";
+    box.setAttribute("role", "group");
+    var label = document.createElement("span");
+    label.className = "team-chooser-label";
+    label.textContent = t("play.library.chooseTeams");
+    box.setAttribute("aria-label", label.textContent);
+    box.appendChild(label);
+    var buttons = document.createElement("div");
+    buttons.className = "team-chooser-buttons";
+    [2, 3, 4].forEach(function (n) {
+      var b = document.createElement("button");
+      b.type = "button";
+      // A quiz saved before the choice moved here pre-selects its old count.
+      b.className = n === set.teams ? "btn-primary" : "btn-secondary";
+      b.textContent = t("play.library.teamOption", { n: n });
+      b.addEventListener("click", function () { launchSet(set.id, b, n); });
+      buttons.appendChild(b);
+    });
+    var cancel = document.createElement("button");
+    cancel.type = "button";
+    cancel.className = "team-chooser-cancel";
+    cancel.textContent = t("play.library.cancel");
+    cancel.addEventListener("click", function () {
+      box.classList.add("hidden");
+      playBtn.classList.remove("hidden");
+      playBtn.focus();
+    });
+    buttons.appendChild(cancel);
+    box.appendChild(buttons);
+    return box;
   }
 
   function refreshLibrary() {
@@ -218,11 +269,13 @@
       .catch(function () { librarySets = null; libraryLoaded = true; renderLibrary(); });
   }
 
-  function launchSet(id, btn) {
+  function launchSet(id, btn, teams) {
     var errEl = $("libraryErr");
     errEl.textContent = "";
     btn.disabled = true;
-    fetch("/api/question-sets/" + encodeURIComponent(id) + "/launch", { method: "POST" })
+    var opts = { method: "POST" };
+    if (teams) opts = { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ teams: teams }) };
+    fetch("/api/question-sets/" + encodeURIComponent(id) + "/launch", opts)
       .then(function (res) { return res.json(); })
       .then(function (data) {
         btn.disabled = false;

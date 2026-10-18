@@ -57,6 +57,8 @@ select.text-input{padding:0 14px;}
 
 .action-card{display:flex; flex-direction:column; gap:12px;}
 .action-card .btn-primary, .action-card .btn-secondary{width:100%;}
+.team-count{display:flex; flex-direction:column; gap:8px; margin-bottom:8px;}
+.team-count .field-label{margin:0;}
 
 .library-card{display:flex; flex-direction:column; gap:12px;}
 .library-card h2{margin-bottom:6px !important;}

@@ -1,6 +1,7 @@
 const express = require("express");
 const { listQuestionSets, getQuestionSet, saveQuestionSet, updateQuestionSet, deleteQuestionSet } = require("../content/questionSets");
 const { requireTeacher } = require("../teacherAuth");
+const { TEAM_COUNTS } = require("../content/questions");
 
 function handleDbError(res, err) {
   console.error("question-sets db error:", err.message);
@@ -31,13 +32,19 @@ function createQuestionSetsRouter({ launchers }) {
   });
 
   // Public: start a fresh room from a saved quiz. Only the room code and
-  // game type come back.
+  // game type come back. The team count is chosen at launch (body.teams);
+  // games with a fixed two teams ignore it.
   router.post("/:id/launch", async (req, res) => {
     try {
+      const body = req.body || {};
+      if (body.teams != null && !TEAM_COUNTS.includes(Number(body.teams))) {
+        return res.status(400).json({ ok: false, error: "invalid-teams" });
+      }
       const set = await getQuestionSet(req.params.id);
       if (!set) return res.status(404).json({ ok: false, error: "not-found" });
       const mechanic = launchers[set.mechanic] ? set.mechanic : "race";
-      const room = launchers[mechanic]({ title: set.title, theme: set.theme, questions: set.questions, settings: set.settings });
+      const settings = body.teams != null ? Object.assign({}, set.settings, { teams: Number(body.teams) }) : set.settings;
+      const room = launchers[mechanic]({ title: set.title, theme: set.theme, questions: set.questions, settings });
       if (!room) return res.status(400).json({ ok: false, error: mechanic === "rally" ? "rally-incomplete" : "no-questions" });
       res.json({ ok: true, gameType: GAME_TYPES[mechanic], code: room.code });
     } catch (err) {

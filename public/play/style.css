@@ -52,6 +52,13 @@
 .lobby-actions{display:flex; gap:10px;}
 .lobby-row .btn-primary, .lobby-row .btn-secondary{min-height:46px; font-size:16px;}
 .lobby-row > .btn-primary{grid-column:3;}
+.team-chooser{grid-column:2 / -1; display:flex; flex-direction:column; align-items:flex-end; gap:8px;}
+.team-chooser-label{font-size:14px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; color:var(--chalk-dim);}
+.team-chooser-buttons{display:flex; flex-wrap:wrap; justify-content:flex-end; gap:10px;}
+.team-chooser-cancel{
+  background:none; border:0; min-height:46px; padding:0 8px;
+  color:var(--chalk-dim); font-weight:800; font-size:16px; text-decoration:underline;
+}
 
 /* ---------- Code lookup ---------- */
 .back-link{
@@ -75,6 +82,10 @@
   .lobby-actions{grid-column:1 / -1;}
   .lobby-actions > *{flex:1;}
   .lobby-row > .btn-primary{grid-column:1 / -1;}
+  .team-chooser{grid-column:1 / -1; align-items:stretch;}
+  .team-chooser-buttons{display:grid; grid-template-columns:repeat(3, 1fr);}
+  .team-chooser-buttons > .btn-primary, .team-chooser-buttons > .btn-secondary{padding-left:8px; padding-right:8px;}
+  .team-chooser-cancel{grid-column:1 / -1;}
 }
 @media (max-width:720px){
   .play-head{padding-top:32px;}

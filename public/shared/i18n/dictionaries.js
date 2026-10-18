@@ -108,7 +108,8 @@ window.I18N_DICTIONARIES = {
         play: "Play",
         launchFailed: "Couldn't start that game. Try again.",
         questionSingular: "{{n}} question",
-        questionPlural: "{{n}} questions"
+        questionPlural: "{{n}} questions",
+        chooseTeams: "How many teams?", teamOption: "{{n}} teams", cancel: "Cancel"
       },
       notice: {
         connectError: "Can't reach the game server right now. Check your connection and reload."
@@ -168,7 +169,7 @@ window.I18N_DICTIONARIES = {
         stationFull: "Station {{n}} ({{letter}}) has more than 5 questions.",
         createFailed: "Couldn't create the room."
       },
-      board: { penalty: "Wrong answers lose points", timeLimit: "Time per question", seconds: "{{n}} s", teams: "Number of teams", teamCount: "{{n}} teams" },
+      board: { penalty: "Wrong answers lose points", timeLimit: "Time per question", seconds: "{{n}} s", teams: "Teams for this room", teamsHint: "Saved quizzes ask for the number of teams each time you press Play.", teamCount: "{{n}} teams" },
       choose: {
         heading: "What would you like to create?",
         custom: { title: "Write your own questions", desc: "Any subject, race or buzzer format, with math and science notation." },
@@ -570,7 +571,8 @@ window.I18N_DICTIONARIES = {
         play: "Jouer",
         launchFailed: "Impossible de lancer ce jeu. Réessayez.",
         questionSingular: "{{n}} question",
-        questionPlural: "{{n}} questions"
+        questionPlural: "{{n}} questions",
+        chooseTeams: "Combien d'équipes ?", teamOption: "{{n}} équipes", cancel: "Annuler"
       },
       notice: {
         connectError: "Impossible de joindre le serveur de jeu pour le moment. Vérifiez votre connexion et rechargez la page."
@@ -630,7 +632,7 @@ window.I18N_DICTIONARIES = {
         stationFull: "La station {{n}} ({{letter}}) a plus de 5 questions.",
         createFailed: "Impossible de créer la salle."
       },
-      board: { penalty: "Les mauvaises réponses font perdre des points", timeLimit: "Temps par question", seconds: "{{n}} s", teams: "Nombre d'équipes", teamCount: "{{n}} équipes" },
+      board: { penalty: "Les mauvaises réponses font perdre des points", timeLimit: "Temps par question", seconds: "{{n}} s", teams: "Équipes pour cette salle", teamsHint: "Les quiz enregistrés demandent le nombre d'équipes chaque fois que vous appuyez sur Jouer.", teamCount: "{{n}} équipes" },
       choose: {
         heading: "Que voulez-vous créer ?",
         custom: { title: "Rédiger vos propres questions", desc: "Toutes matières, format course ou buzzer, avec notation mathématique et scientifique." },
@@ -1032,7 +1034,8 @@ window.I18N_DICTIONARIES = {
         play: "العب",
         launchFailed: "تعذّر بدء هذه اللعبة. حاول مرة أخرى.",
         questionSingular: "{{n}} سؤال",
-        questionPlural: "{{n}} أسئلة"
+        questionPlural: "{{n}} أسئلة",
+        chooseTeams: "كم عدد الفرق؟", teamOption: "{{n}} فرق", cancel: "إلغاء"
       },
       notice: {
         connectError: "تعذّر الوصول إلى خادم اللعبة الآن. تحقق من اتصالك وأعد تحميل الصفحة."
@@ -1092,7 +1095,7 @@ window.I18N_DICTIONARIES = {
         stationFull: "المحطة {{n}} ({{letter}}) فيها أكثر من 5 أسئلة.",
         createFailed: "تعذّر إنشاء الغرفة."
       },
-      board: { penalty: "الإجابات الخاطئة تخسر النقاط", timeLimit: "الوقت لكل سؤال", seconds: "{{n}} ث", teams: "عدد الفرق", teamCount: "{{n}} فرق" },
+      board: { penalty: "الإجابات الخاطئة تخسر النقاط", timeLimit: "الوقت لكل سؤال", seconds: "{{n}} ث", teams: "الفرق في هذه الغرفة", teamsHint: "تسأل الاختبارات المحفوظة عن عدد الفرق في كل مرة تضغط فيها على العب.", teamCount: "{{n}} فرق" },
       choose: {
         heading: "ماذا تريد أن تنشئ؟",
         custom: { title: "اكتب أسئلتك الخاصة", desc: "لأي مادة، بنمط السباق أو الجرس، مع دعم الرموز الرياضية والعلمية." },
@@ -1494,7 +1497,8 @@ window.I18N_DICTIONARIES = {
         play: "Graj",
         launchFailed: "Nie udało się uruchomić gry. Spróbuj ponownie.",
         questionSingular: "{{n}} pytanie",
-        questionPlural: "{{n}} pytań"
+        questionPlural: "{{n}} pytań",
+        chooseTeams: "Ile drużyn?", teamOption: "Drużyny: {{n}}", cancel: "Anuluj"
       },
       notice: {
         connectError: "Nie można teraz połączyć się z serwerem gry. Sprawdź połączenie i odśwież stronę."
@@ -1554,7 +1558,7 @@ window.I18N_DICTIONARIES = {
         stationFull: "Stacja {{n}} ({{letter}}) ma więcej niż 5 pytań.",
         createFailed: "Nie udało się utworzyć pokoju."
       },
-      board: { penalty: "Błędne odpowiedzi odejmują punkty", timeLimit: "Czas na pytanie", seconds: "{{n}} s", teams: "Liczba drużyn", teamCount: "Drużyny: {{n}}" },
+      board: { penalty: "Błędne odpowiedzi odejmują punkty", timeLimit: "Czas na pytanie", seconds: "{{n}} s", teams: "Drużyny w tym pokoju", teamsHint: "Zapisane quizy pytają o liczbę drużyn za każdym razem, gdy naciśniesz Graj.", teamCount: "Drużyny: {{n}}" },
       choose: {
         heading: "Co chcesz stworzyć?",
         custom: { title: "Napisz własne pytania", desc: "Dowolny temat, tryb wyścigu lub brzęczyka, z notacją matematyczną i naukową." },

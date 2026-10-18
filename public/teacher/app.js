@@ -420,7 +420,15 @@
   }
   renderMinuteOptions();
 
-  function currentSettings() {
+  // The team count goes with Create Room only; saved quizzes leave it out and
+  // ask for it on the Play page each time they are played.
+  function currentSettings(forSave) {
+    var settings = roomSettings();
+    if (forSave) delete settings.teams;
+    return settings;
+  }
+
+  function roomSettings() {
     if (selectedMechanic === "rally") {
       var rally = { word: rallyWord(), minutes: Number($("rallyMinutes").value), teams: Number($("teamCountInput").value) };
       rally.clues = Array.prototype.map.call($("rallyClues").querySelectorAll(".clue-input"), function (el) { return el.value.trim(); });
@@ -618,7 +626,7 @@
     fetch(url, {
       method: isUpdate ? "PUT" : "POST",
       headers: teacherHeaders({ "Content-Type": "application/json" }),
-      body: JSON.stringify({ title: $("titleInput").value.trim(), mechanic: selectedMechanic, theme: selectedTheme, questions: res.out, settings: currentSettings() }),
+      body: JSON.stringify({ title: $("titleInput").value.trim(), mechanic: selectedMechanic, theme: selectedTheme, questions: res.out, settings: currentSettings(true) }),
     })
       .then(function (r) { return r.json(); })
       .then(function (data) {
