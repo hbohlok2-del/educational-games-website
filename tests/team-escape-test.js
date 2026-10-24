@@ -83,7 +83,7 @@ async function main() {
 
   let st = (await emit(red, "my-state")).state;
   const bst = (await emit(blue, "my-state")).state;
-  check("teams start in different rooms", st.room === 0 && bst.room === 1);
+  check("every team starts in room 1", st.room === 0 && bst.room === 0);
   check("the device gets the room's story and its puzzle, never the answer", st.story === "The door hums." && st.question.lock.digits === 1 && !JSON.stringify(st).includes("\"answer"));
   const peek0 = await emit(host, "peek-room", { code });
   check("the projector never sees a digit", !JSON.stringify(peek0.room).includes("372") && peek0.room.roomNames[0] === "Product Lab");
@@ -112,7 +112,7 @@ async function main() {
   // The teacher opens Blue's door.
   const skip = await emit(host, "skip", { team: "B" });
   const peek2 = await emit(host, "peek-room", { code });
-  check("a teacher skip costs 2 minutes and still opens the door", skip.ok && peek2.room.progress.B.penalty === 120 && peek2.room.progress.B.clearedRooms.join() === "1");
+  check("a teacher skip costs 2 minutes and still opens the door", skip.ok && peek2.room.progress.B.penalty === 120 && peek2.room.progress.B.clearedRooms.join() === "0");
   check("only the Big Screen can skip", !(await emit(red, "skip", { team: "B" })).ok);
 
   const r5 = await emit(red, "answer", { input: "1.02" });

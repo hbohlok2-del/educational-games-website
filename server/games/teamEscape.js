@@ -1,11 +1,11 @@
 const { buildQuestions, cleanEscapeSettings, ESCAPE_MIN_ROOMS, ESCAPE_MAX_PER_ROOM } = require("../content/questions");
 const { sweepUnclaimedRooms } = require("./roomSweep");
-const { startStation } = require("./teamRally");
 
 // Escape Room: teams are locked in a building of puzzle rooms. The vault code
 // sets the rooms, one digit each; every room holds 1 to 5 puzzles (padlock
 // numbers, typed expressions, multiple choice, step ordering, matching pairs,
-// graph points). Each team works through the rooms in its own rotated order.
+// graph points). Every team starts in room 1 and works through the rooms in
+// order (the game is online, so teams never crowd a room).
 // Clearing a room opens its door and reveals that room's digit; after the
 // last room the team enters the full code (in room order) at the vault. The
 // first team out wins; at the time limit the team with the most rooms (then
@@ -43,10 +43,9 @@ function buildRooms(questions, settings) {
   return rooms.every((r) => r.questions.length > 0) ? rooms : null;
 }
 
-function freshProgress(start, roomCount) {
+function freshProgress() {
   return {
-    route: Array.from({ length: roomCount }, (_, i) => (start + i) % roomCount),
-    step: 0, // position along the route
+    step: 0, // the room the team is in, from 0
     q: 0, // puzzle within the current room
     found: [], // { room, digit } in the order opened
     penalty: 0, // seconds
@@ -59,7 +58,7 @@ function freshProgress(start, roomCount) {
   };
 }
 
-function currentRoom(p) { return p.route[p.step]; }
+function currentRoom(p) { return p.step; }
 
 function teamTime(game, team, now = Date.now()) {
   const p = game.progress[team];
@@ -186,9 +185,7 @@ function attach(io) {
     game.status = "active";
     game.playing = joinedTeams(game);
     game.progress = {};
-    game.playing.forEach((team, i) => {
-      game.progress[team] = freshProgress(startStation(i, game.playing.length, game.rooms.length), game.rooms.length);
-    });
+    game.playing.forEach((team) => { game.progress[team] = freshProgress(); });
     game.winner = null;
     game.endedAt = null;
     game.matchStartAt = Date.now() + START_COUNTDOWN_MS;

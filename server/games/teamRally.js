@@ -2,8 +2,9 @@ const { buildQuestions, cleanRallySettings, RALLY_MIN_STATIONS, RALLY_MAX_PER_ST
 const { sweepUnclaimedRooms } = require("./roomSweep");
 
 // Rally: an online rally paper. The secret word sets the stations, one letter
-// each; every station holds 1 to 5 questions. Each team works through the
-// stations in its own rotated order, answering on its device. Clearing a
+// each; every station holds 1 to 5 questions. Every team starts at station 1
+// and works through the stations in order, answering on its device (the game
+// is online, so teams never crowd a station). Clearing a
 // station gives that station's letter; after the last one the team unscrambles
 // the word. The first team to solve it wins; at the time limit the team with
 // the most stations (then the lowest time) wins.
@@ -47,15 +48,9 @@ function buildStations(questions, settings) {
   return stations.every((st) => st.questions.length > 0) ? stations : null;
 }
 
-// Starting stations spread as evenly as the count allows.
-function startStation(index, playingCount, stationCount) {
-  return Math.floor((index * stationCount) / playingCount) % stationCount;
-}
-
-function freshProgress(start, stationCount) {
+function freshProgress() {
   return {
-    route: Array.from({ length: stationCount }, (_, i) => (start + i) % stationCount),
-    step: 0, // position along the route
+    step: 0, // the station the team is on, from 0
     q: 0, // question within the current station
     letters: [], // { station, letter } in the order collected
     penalty: 0, // seconds
@@ -67,7 +62,7 @@ function freshProgress(start, stationCount) {
   };
 }
 
-function currentStation(p) { return p.route[p.step]; }
+function currentStation(p) { return p.step; }
 
 // Elapsed seconds plus penalties; a finished team's clock stops when it solves.
 function teamTime(room, team, now = Date.now()) {
@@ -188,9 +183,7 @@ function attach(io) {
     room.status = "active";
     room.playing = joinedTeams(room);
     room.progress = {};
-    room.playing.forEach((team, i) => {
-      room.progress[team] = freshProgress(startStation(i, room.playing.length, room.stations.length), room.stations.length);
-    });
+    room.playing.forEach((team) => { room.progress[team] = freshProgress(); });
     room.winner = null;
     room.endedAt = null;
     room.matchStartAt = Date.now() + START_COUNTDOWN_MS;
@@ -406,4 +399,4 @@ function attach(io) {
   return { rooms, createRoom };
 }
 
-module.exports = { attach, TEAMS, buildStations, startStation, ranking, timeWinner, teamTime, WRONG_LOCK_MS, HINT_PENALTY_S, SKIP_PENALTY_S };
+module.exports = { attach, TEAMS, buildStations, ranking, timeWinner, teamTime, WRONG_LOCK_MS, HINT_PENALTY_S, SKIP_PENALTY_S };

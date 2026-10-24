@@ -1,7 +1,7 @@
 const path = require("path");
 process.env.PORT = process.env.PORT || 4007;
 const server = require(path.join(__dirname, "..", "server.js"));
-const { buildStations, startStation } = require(path.join(__dirname, "..", "server", "games", "teamRally.js"));
+const { buildStations } = require(path.join(__dirname, "..", "server", "games", "teamRally.js"));
 const { buildQuestions, cleanRallySettings } = require(path.join(__dirname, "..", "server", "content", "questions.js"));
 const { io } = require("socket.io-client");
 
@@ -39,8 +39,6 @@ async function main() {
     .concat([1, 2].map((st) => ({ station: st, prompt: "y", answer: "1" })));
   check("a station keeps at most 5 questions", buildStations(buildQuestions(six, { rally: true }), cleanRallySettings({ word: "abc" }))[0].questions.length === 5);
   check("three teams are kept", cleanRallySettings({ word: "abc", teams: 3 }).teams === 3);
-  check("three teams over six stations start spread out", [0, 1, 2].map((i) => startStation(i, 3, 6)).join() === "0,2,4");
-  check("four teams over six stations start spread out", [0, 1, 2, 3].map((i) => startStation(i, 4, 6)).join() === "0,1,3,4");
 
   // --- A full rally over sockets ---
   const host = io(url), red = io(url), blue = io(url);
@@ -59,7 +57,7 @@ async function main() {
 
   let st = (await emit(red, "my-state")).state;
   const bst = (await emit(blue, "my-state")).state;
-  check("teams start at different stations", st.station === 0 && bst.station === 1);
+  check("every team starts at station 1", st.station === 0 && bst.station === 0);
   check("the device gets the question but never the answer", st.question.prompt === "2+2" && !JSON.stringify(st).includes("SECRET"));
   check("the hint stays hidden until asked for", st.question.hasHint && st.hint === undefined);
 
@@ -83,7 +81,7 @@ async function main() {
   // The teacher skips Blue past its station.
   const skip = await emit(host, "skip", { team: "B" });
   const peek2 = await emit(host, "peek-room", { code });
-  check("a teacher skip costs 120 seconds and still gives the letter", skip.ok && peek2.room.progress.B.penalty === 120 && peek2.room.progress.B.letters.join("") === "A");
+  check("a teacher skip costs 120 seconds and still gives the letter", skip.ok && peek2.room.progress.B.penalty === 120 && peek2.room.progress.B.letters.join("") === "C");
   const teamSkip = await emit(red, "skip", { team: "B" });
   check("only the Big Screen can skip", !teamSkip.ok);
 
