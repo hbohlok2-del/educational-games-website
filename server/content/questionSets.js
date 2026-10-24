@@ -1,23 +1,26 @@
 const crypto = require("crypto");
 const { client } = require("../db");
-const { buildQuestions, cleanBoardSettings, cleanRallySettings } = require("./questions");
+const { buildQuestions, cleanBoardSettings, cleanRallySettings, cleanEscapeSettings } = require("./questions");
 
 function requireClient() {
   if (!client) throw new Error("database unavailable");
   return client;
 }
 
-const MECHANICS = ["race", "buzzer", "board", "rally"];
+const MECHANICS = ["race", "buzzer", "board", "rally", "escape"];
 
 function cleanMechanic(mechanic) {
   return MECHANICS.includes(mechanic) ? mechanic : "race";
 }
 
-// A rally keeps its word, clues and minutes; the other games their board
+// A rally keeps its word, clues and minutes; an escape room its vault code,
+// rooms and minutes; the other games their board
 // settings (time per question, penalty). Quizzes saved before the team count
 // moved to launch time may still carry teams; it pre-selects the launch choice.
 function cleanSettings(mechanic, settings) {
-  return mechanic === "rally" ? cleanRallySettings(settings) : cleanBoardSettings(settings);
+  if (mechanic === "rally") return cleanRallySettings(settings);
+  if (mechanic === "escape") return cleanEscapeSettings(settings);
+  return cleanBoardSettings(settings);
 }
 
 // New saves leave the team count out: it is chosen each time the quiz is played.
@@ -32,7 +35,7 @@ function parseSettings(text, mechanic) {
 }
 
 function questionOpts(mech) {
-  return { board: mech === "board", rally: mech === "rally" };
+  return { board: mech === "board", rally: mech === "rally", escape: mech === "escape" };
 }
 
 async function listQuestionSets() {

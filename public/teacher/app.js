@@ -5,9 +5,13 @@
   var socketBuzzer = io("/team-buzzer");
   var socketBoard = io("/team-board");
   var socketRally = io("/team-rally");
-  var SOCKETS = { race: socketRace, buzzer: socketBuzzer, board: socketBoard, rally: socketRally };
-  var GAME_PATHS = { race: "team-race", buzzer: "team-buzzer", board: "team-board", rally: "team-rally" };
+  var socketEscape = io("/team-escape");
+  var SOCKETS = { race: socketRace, buzzer: socketBuzzer, board: socketBoard, rally: socketRally, escape: socketEscape };
+  var GAME_PATHS = { race: "team-race", buzzer: "team-buzzer", board: "team-board", rally: "team-rally", escape: "team-escape" };
   var RALLY_MAX_PER_STATION = 5;
+  var ESCAPE_MAX_PER_ROOM = 5;
+  // Escape-only puzzle types, with the fields block each one shows.
+  var PUZZLE_FIELDS = { order: ".order-fields", match: ".match-fields", graph: ".graph-fields" };
   var qId = 0;
   var selectedMechanic = "race";
   var selectedTheme = "rope";
@@ -23,6 +27,7 @@
     spotlight: svgIcon('<path d="M11 4h10l-2 8h-6Z"/><path d="M13 12l-7 15h20l-7-15"/>'),
     classic: svgIcon('<rect x="4" y="5" width="24" height="22" rx="2"/><path d="M12 5v22M20 5v22M4 12.3h24M4 19.6h24" stroke-width="2"/>'),
     island: svgIcon('<path d="M3 24c4-2 8-2 13 0s9 2 13 0"/><path d="M8 21c1-5 4-8 8-8s7 3 8 8"/><path d="M16 13V5l6 3-6 3"/>'),
+    lab: svgIcon('<path d="M12 4h8M13 4v8L6 25a2 2 0 0 0 2 3h16a2 2 0 0 0 2-3l-7-13V4"/><path d="M9 20h14"/>'),
   };
 
   var THEME_IDS_BY_MECHANIC = {
@@ -38,6 +43,9 @@
     ],
     rally: [
       { id: "island", icon: ICONS.island, key: "teacher.themes.island" },
+    ],
+    escape: [
+      { id: "lab", icon: ICONS.lab, key: "teacher.themes.lab" },
     ],
   };
 
@@ -155,7 +163,7 @@
   // 2 to 4 teams: Quiz Board, Rally and Rocket Race. The rope has two ends and the
   // buzzer is head-to-head, so those stay at 2.
   function teamCountApplies() {
-    return selectedMechanic === "board" || selectedMechanic === "rally" || (selectedMechanic === "race" && selectedTheme === "rocket");
+    return selectedMechanic === "board" || selectedMechanic === "rally" || selectedMechanic === "escape" || (selectedMechanic === "race" && selectedTheme === "rocket");
   }
   function applyTeamCount() {
     $("teamCountSetting").classList.toggle("hidden", !teamCountApplies());
@@ -177,11 +185,16 @@
   function applyMechanicToRow(rowEl) {
     var board = selectedMechanic === "board";
     rowEl.querySelector(".board-fields").classList.toggle("hidden", !board);
+    var escape = selectedMechanic === "escape";
     rowEl.querySelector(".rally-fields").classList.toggle("hidden", selectedMechanic !== "rally");
+    rowEl.querySelector(".escape-fields").classList.toggle("hidden", !escape);
     fillStationOptions(rowEl);
+    fillRoomOptions(rowEl);
     rowEl.querySelector(".open-type").classList.toggle("hidden", !board);
+    Array.prototype.forEach.call(rowEl.querySelectorAll(".escape-type"), function (label) { label.classList.toggle("hidden", !escape); });
     var openRadio = rowEl.querySelector('.type-row input[value="open"]');
-    if (!board && openRadio.checked) {
+    var escapeChecked = rowEl.querySelector(".escape-type input:checked");
+    if ((!board && openRadio.checked) || (!escape && escapeChecked)) {
       var shortRadio = rowEl.querySelector('.type-row input[value="short-answer"]');
       shortRadio.checked = true;
       shortRadio.dispatchEvent(new Event("change", { bubbles: true }));
@@ -191,6 +204,7 @@
   function applyMechanic() {
     $("boardSettings").classList.toggle("hidden", selectedMechanic !== "board");
     $("rallySettings").classList.toggle("hidden", selectedMechanic !== "rally");
+    $("escapeSettings").classList.toggle("hidden", selectedMechanic !== "escape");
     applyTeamCount();
     Array.prototype.forEach.call(questionList.querySelectorAll(".q-row"), applyMechanicToRow);
   }
@@ -270,18 +284,37 @@
       wrap.querySelector(".remove-choice").addEventListener("click", function () { wrap.remove(); });
       choicesWrap.appendChild(wrap);
     }
-    rowEl.querySelector(".add-choice").addEventListener("click", addChoice);
+    rowEl.querySelector(".mc-fields .add-choice").addEventListener("click", addChoice);
     addChoice();
     addChoice();
+
+    // Match pairs (escape rooms): a left and a right item per row.
+    var pairsWrap = rowEl.querySelector(".pairs");
+    function addPair() {
+      var wrap = document.createElement("div");
+      wrap.className = "pair-row";
+      wrap.innerHTML =
+        '<input class="pair-left text-input" dir="auto" placeholder="' + t("teacher.q.pairLeft") + '">' +
+        '<span class="eq">=</span>' +
+        '<input class="pair-right text-input" dir="auto" placeholder="' + t("teacher.q.pairRight") + '">' +
+        '<button type="button" class="remove-choice">&times;</button>';
+      wrap.querySelector(".remove-choice").addEventListener("click", function () { wrap.remove(); });
+      pairsWrap.appendChild(wrap);
+      return wrap;
+    }
+    rowEl.querySelector(".add-pair").addEventListener("click", addPair);
+    addPair(); addPair(); addPair();
+    rowEl.addPair = addPair;
 
     var answerLabel = rowEl.querySelector(".answer-label");
     Array.prototype.forEach.call(typeRadios, function (r) {
       r.addEventListener("change", function () {
         var type = rowEl.querySelector('.type-row input[type="radio"]:checked').value;
         var isMc = type === "multiple-choice";
-        shortFields.classList.toggle("hidden", isMc);
+        shortFields.classList.toggle("hidden", isMc || !!PUZZLE_FIELDS[type]);
         mcFields.classList.toggle("hidden", !isMc);
-        var key = type === "open" ? "teacher.q.expectedAnswer" : "teacher.q.correctAnswer";
+        Object.keys(PUZZLE_FIELDS).forEach(function (k) { rowEl.querySelector(PUZZLE_FIELDS[k]).classList.toggle("hidden", type !== k); });
+        var key = type === "open" ? "teacher.q.expectedAnswer" : type === "expression" ? "teacher.q.correctExpression" : "teacher.q.correctAnswer";
         answerLabel.setAttribute("data-i18n", key);
         answerLabel.textContent = t(key);
       });
@@ -317,6 +350,15 @@
       if (selectedMechanic === "rally") {
         extra = { station: Number(row.querySelector(".station-input").value), hint: row.querySelector(".hint-input").value.trim() };
       }
+      if (selectedMechanic === "escape") {
+        extra = { room: Number(row.querySelector(".room-input").value), hint: row.querySelector(".escape-hint-input").value.trim() };
+        if (PUZZLE_FIELDS[type]) {
+          var puzzle = collectPuzzle(row, type, n);
+          if (puzzle.error) { errors.push(puzzle.error); return; }
+          out.push(Object.assign({ prompt: prompt, type: type }, puzzle.fields, extra));
+          return;
+        }
+      }
       if (type === "multiple-choice") {
         var choices = [];
         var correctIdx = -1;
@@ -332,12 +374,105 @@
       } else {
         var answer = row.querySelector(".answer-input").value.trim();
         if (!answer) { errors.push(t("teacher.err.questionNeedsAnswer", { n: n })); return; }
-        out.push(Object.assign({ prompt: prompt, type: type === "open" ? "open" : "short-answer", answer: answer }, extra));
+        if (type === "expression" && !window.MathExpr.parse(answer).ok) { errors.push(t("teacher.err.expressionInvalid", { n: n })); return; }
+        out.push(Object.assign({ prompt: prompt, type: type === "open" || type === "expression" ? type : "short-answer", answer: answer }, extra));
       }
     });
     if (selectedMechanic === "rally") errors = errors.concat(rallyErrors(out));
+    if (selectedMechanic === "escape") errors = errors.concat(escapeErrors(out));
     return { out: out, errors: errors };
   }
+
+  // The fields of an order, match or graph puzzle, or the first problem found.
+  function collectPuzzle(row, type, n) {
+    if (type === "order") {
+      var items = row.querySelector(".order-input").value.split("\n").map(function (s) { return s.trim(); }).filter(Boolean);
+      if (items.length < 3 || items.length > 6) return { error: t("teacher.err.orderNeedsSteps", { n: n }) };
+      return { fields: { items: items } };
+    }
+    if (type === "match") {
+      var pairs = [], incomplete = false;
+      Array.prototype.forEach.call(row.querySelectorAll(".pair-row"), function (pr) {
+        var left = pr.querySelector(".pair-left").value.trim(), right = pr.querySelector(".pair-right").value.trim();
+        if (!left && !right) return;
+        if (!left || !right) incomplete = true;
+        pairs.push({ left: left, right: right });
+      });
+      if (incomplete || pairs.length < 2 || pairs.length > 5) return { error: t("teacher.err.matchNeedsPairs", { n: n }) };
+      return { fields: { pairs: pairs } };
+    }
+    var fn = row.querySelector(".graph-fn").value.trim();
+    if (!window.MathExpr.parse(fn).ok) return { error: t("teacher.err.graphNeedsFunction", { n: n }) };
+    var xmin = Number(row.querySelector(".graph-xmin").value), xmax = Number(row.querySelector(".graph-xmax").value);
+    var answers = row.querySelector(".graph-answer").value.split(/[,;]/).map(function (s) { return s.trim(); }).filter(Boolean).map(Number);
+    if (!(xmax > xmin) || !answers.length || answers.some(function (v) { return !isFinite(v) || v < xmin || v > xmax; })) {
+      return { error: t("teacher.err.graphAnswer", { n: n }) };
+    }
+    return { fields: { fn: fn, answer: answers.join(", "), xmin: xmin, xmax: xmax, slope: row.querySelector(".graph-slope").checked } };
+  }
+
+  // ---------------- Escape Room: vault code and rooms ----------------
+  function escapeCode() {
+    return $("escapeCode").value.replace(/\D/g, "").slice(0, 8);
+  }
+
+  function escapeErrors(questions) {
+    var code = escapeCode();
+    if (code.length < 2) return [t("teacher.err.escapeCode")];
+    var counts = Array.from(code).map(function () { return 0; });
+    questions.forEach(function (q) { if (q.room < counts.length) counts[q.room] += 1; });
+    for (var i = 0; i < counts.length; i++) {
+      if (counts[i] === 0) return [t("teacher.err.roomEmpty", { n: i + 1 })];
+      if (counts[i] > ESCAPE_MAX_PER_ROOM) return [t("teacher.err.roomFull", { n: i + 1 })];
+    }
+    return [];
+  }
+
+  // One room per digit: the room pickers and the name/story rows follow the code.
+  function fillRoomOptions(rowEl) {
+    var select = rowEl.querySelector(".room-input");
+    var count = escapeCode().length;
+    var keep = select.value;
+    select.innerHTML = "";
+    for (var i = 0; i < count; i++) {
+      var opt = document.createElement("option");
+      opt.value = String(i);
+      opt.textContent = t("teacher.q.roomOption", { n: i + 1 });
+      select.appendChild(opt);
+    }
+    if (keep && Number(keep) < count) select.value = keep;
+  }
+
+  function escapeRoomsValue() {
+    return Array.prototype.map.call($("escapeRooms").querySelectorAll(".escape-room-row"), function (row) {
+      return { name: row.querySelector(".name-input").value.trim(), story: row.querySelector(".story-input").value.trim() };
+    });
+  }
+
+  function renderEscapeRooms(values) {
+    var code = Array.from(escapeCode());
+    $("escapeInfo").textContent = code.length >= 2 ? t("teacher.escape.roomsInfo", { n: code.length }) : t("teacher.escape.codeHelp");
+    var old = values || escapeRoomsValue();
+    var wrap = $("escapeRooms");
+    wrap.innerHTML = "";
+    code.forEach(function (digit, i) {
+      var row = document.createElement("div");
+      row.className = "escape-room-row";
+      var tile = document.createElement("b"); tile.textContent = i + 1;
+      var name = document.createElement("input");
+      name.className = "name-input text-input"; name.maxLength = 40; name.dir = "auto";
+      name.placeholder = t("teacher.escape.namePlaceholder", { n: i + 1 });
+      name.value = (old[i] && old[i].name) || "";
+      var story = document.createElement("input");
+      story.className = "story-input text-input"; story.maxLength = 240; story.dir = "auto";
+      story.placeholder = t("teacher.escape.storyPlaceholder");
+      story.value = (old[i] && old[i].story) || "";
+      row.appendChild(tile); row.appendChild(name); row.appendChild(story);
+      wrap.appendChild(row);
+    });
+    Array.prototype.forEach.call(questionList.querySelectorAll(".q-row"), fillRoomOptions);
+  }
+  $("escapeCode").addEventListener("input", function () { renderEscapeRooms(); });
 
   // ---------------- Rally: secret word and stations ----------------
   // Letters only (any alphabet), upper-cased, as the server keeps them.
@@ -396,6 +531,7 @@
   function updateBuzzerHint() {
     $("buzzerHint").classList.toggle("hidden", selectedMechanic !== "buzzer");
     $("rallyHint").classList.toggle("hidden", selectedMechanic !== "rally");
+    $("escapeHint").classList.toggle("hidden", selectedMechanic !== "escape");
     $("boardHint").classList.toggle("hidden", selectedMechanic !== "board");
   }
 
@@ -414,8 +550,10 @@
   renderTeamCountOptions();
 
   function renderMinuteOptions() {
-    Array.prototype.forEach.call($("rallyMinutes").options, function (opt) {
-      opt.textContent = t("teacher.rally.minutesOption", { n: opt.value });
+    [$("rallyMinutes"), $("escapeMinutes")].forEach(function (select) {
+      Array.prototype.forEach.call(select.options, function (opt) {
+        opt.textContent = t("teacher.rally.minutesOption", { n: opt.value });
+      });
     });
   }
   renderMinuteOptions();
@@ -433,6 +571,9 @@
       var rally = { word: rallyWord(), minutes: Number($("rallyMinutes").value), teams: Number($("teamCountInput").value) };
       rally.clues = Array.prototype.map.call($("rallyClues").querySelectorAll(".clue-input"), function (el) { return el.value.trim(); });
       return rally;
+    }
+    if (selectedMechanic === "escape") {
+      return { code: escapeCode(), minutes: Number($("escapeMinutes").value), teams: Number($("teamCountInput").value), rooms: escapeRoomsValue() };
     }
     var settings = { penalty: $("penaltyInput").checked, timeLimit: Number($("timeLimitInput").value) };
     if (teamCountApplies()) settings.teams = Number($("teamCountInput").value);
@@ -494,6 +635,11 @@
       renderRallyStations();
       Array.prototype.forEach.call($("rallyClues").querySelectorAll(".clue-input"), function (el, i) { el.value = (set.settings.clues || [])[i] || ""; });
     }
+    if (set.mechanic === "escape") {
+      $("escapeCode").value = (set.settings && set.settings.code) || "";
+      $("escapeMinutes").value = String((set.settings && set.settings.minutes) || 20);
+      renderEscapeRooms((set.settings && set.settings.rooms) || []);
+    }
 
     questionList.innerHTML = "";
     (set.questions || []).forEach(function (q) {
@@ -512,12 +658,32 @@
         rowEl.querySelector(".station-input").value = String(q.station || 0);
         rowEl.querySelector(".hint-input").value = q.hint || "";
       }
+      if (set.mechanic === "escape") {
+        rowEl.querySelector(".room-input").value = String(q.room || 0);
+        rowEl.querySelector(".escape-hint-input").value = q.hint || "";
+        if (q.type === "order") rowEl.querySelector(".order-input").value = (q.items || []).join("\n");
+        if (q.type === "match") {
+          rowEl.querySelector(".pairs").innerHTML = "";
+          (q.pairs || []).forEach(function (pair) {
+            var pr = rowEl.addPair();
+            pr.querySelector(".pair-left").value = pair.left || "";
+            pr.querySelector(".pair-right").value = pair.right || "";
+          });
+        }
+        if (q.type === "graph") {
+          rowEl.querySelector(".graph-fn").value = q.fn || "";
+          rowEl.querySelector(".graph-answer").value = q.answer || "";
+          rowEl.querySelector(".graph-xmin").value = q.xmin != null ? q.xmin : -5;
+          rowEl.querySelector(".graph-xmax").value = q.xmax != null ? q.xmax : 5;
+          rowEl.querySelector(".graph-slope").checked = q.slope !== false;
+        }
+      }
       if (q.points) rowEl.querySelector(".points-input").value = String(q.points);
 
       if (q.type === "multiple-choice") {
         var choicesWrap = rowEl.querySelector(".choices");
         choicesWrap.innerHTML = "";
-        var addBtn = rowEl.querySelector(".add-choice");
+        var addBtn = rowEl.querySelector(".mc-fields .add-choice");
         (q.choices || []).forEach(function () { addBtn.click(); });
         var choiceRows = choicesWrap.querySelectorAll(".choice-row");
         (q.choices || []).forEach(function (choiceText, idx) {
@@ -526,7 +692,7 @@
           cr.querySelector(".choice-text").value = choiceText;
           if (idx === q.answer) cr.querySelector(".choice-correct").checked = true;
         });
-      } else {
+      } else if (!PUZZLE_FIELDS[q.type]) {
         rowEl.querySelector(".answer-input").value = q.answer || "";
       }
     });
@@ -652,5 +818,6 @@
     renderMinuteOptions();
     applyTeamCount();
     renderRallyStations();
+    renderEscapeRooms();
   });
 })();

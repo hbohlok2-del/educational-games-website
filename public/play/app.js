@@ -35,13 +35,14 @@
     if (gameType === "team-race") return "/games/team-race/";
     if (gameType === "team-board") return "/games/team-board/";
     if (gameType === "team-rally") return "/games/team-rally/";
+    if (gameType === "team-escape") return "/games/team-escape/";
     return "/games/team-buzzer/";
   }
 
   // gameType -> its key under games.* in the dictionaries
-  var GAME_KEYS = { "tug-of-war": "tugOfWar", "team-race": "teamRace", "team-buzzer": "teamBuzzer", "team-board": "teamBoard", "team-rally": "teamRally" };
+  var GAME_KEYS = { "tug-of-war": "tugOfWar", "team-race": "teamRace", "team-buzzer": "teamBuzzer", "team-board": "teamBoard", "team-rally": "teamRally", "team-escape": "teamEscape" };
   // a saved quiz's mechanic -> the same game names
-  var MECHANIC_KEYS = { race: "teamRace", buzzer: "teamBuzzer", board: "teamBoard", rally: "teamRally" };
+  var MECHANIC_KEYS = { race: "teamRace", buzzer: "teamBuzzer", board: "teamBoard", rally: "teamRally", escape: "teamEscape" };
 
   function goToRoom(gameType, code, display) {
     location.href = basePathFor(gameType) + "?code=" + code + (display ? "&role=display" : "");
@@ -222,10 +223,10 @@
     });
   }
 
-  // Quiz Board, Rally and Rocket Race take 2 to 4 teams, picked here each time
+  // Quiz Board, Rally, Escape Room and Rocket Race take 2 to 4 teams, picked here each time
   // the quiz is played. The rope and the buzzer are always two teams.
   function choosesTeams(set) {
-    return set.mechanic === "board" || set.mechanic === "rally" || (set.mechanic === "race" && set.theme === "rocket");
+    return set.mechanic === "board" || set.mechanic === "rally" || set.mechanic === "escape" || (set.mechanic === "race" && set.theme === "rocket");
   }
 
   function buildTeamChooser(set, playBtn) {

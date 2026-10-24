@@ -68,6 +68,7 @@
             <button type="button" class="theme-btn" data-mechanic="buzzer"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M7 23h18l-2-3v-6a7 7 0 0 0-14 0v6l-2 3Z" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/><path d="M13 27a3 3 0 0 0 6 0" fill="none" stroke="currentColor" stroke-width="2.5"/></svg><span data-i18n="teacher.mechanic.buzzer">Buzzer</span></button>
             <button type="button" class="theme-btn" data-mechanic="board"><svg viewBox="0 0 32 32" aria-hidden="true"><rect x="4" y="5" width="24" height="22" rx="2" fill="none" stroke="currentColor" stroke-width="2.5"/><path d="M12 5v22M20 5v22M4 12.3h24M4 19.6h24" stroke="currentColor" stroke-width="2"/></svg><span data-i18n="teacher.mechanic.board">Board</span></button>
             <button type="button" class="theme-btn" data-mechanic="rally"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M4 8l7-3 10 3 7-3v19l-7 3-10-3-7 3Z" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/><path d="M11 5v19M21 8v19" stroke="currentColor" stroke-width="2"/><path d="M14 13l3 3M17 13l-3 3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span data-i18n="teacher.mechanic.rally">Rally</span></button>
+            <button type="button" class="theme-btn" data-mechanic="escape"><svg viewBox="0 0 32 32" aria-hidden="true"><rect x="7" y="14" width="18" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="2.5"/><path d="M11 14V9a5 5 0 0 1 10 0v5" fill="none" stroke="currentColor" stroke-width="2.5"/><path d="M16 19v4" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg><span data-i18n="teacher.mechanic.escape">Escape Room</span></button>
           </div>
 
           <span class="field-label" data-i18n="teacher.field.theme">Theme</span>
@@ -86,6 +87,21 @@
             </select>
             <span class="field-label rally-clues-label" data-i18n="teacher.rally.clues">Clue shown when a station is cleared (optional)</span>
             <div class="rally-clues" id="rallyClues"></div>
+          </div>
+
+          <div class="board-settings hidden" id="escapeSettings">
+            <label class="field-label" for="escapeCode" data-i18n="teacher.escape.code">Vault code</label>
+            <input id="escapeCode" class="text-input rally-word" maxlength="8" inputmode="numeric" autocomplete="off" dir="ltr">
+            <p class="hint" id="escapeInfo" data-i18n="teacher.escape.codeHelp">2 to 8 digits. Each digit is one room.</p>
+            <label class="field-label" for="escapeMinutes" data-i18n="teacher.rally.minutes">Time limit</label>
+            <select id="escapeMinutes" class="text-input">
+              <option value="10">10</option>
+              <option value="15">15</option>
+              <option value="20" selected>20</option>
+              <option value="30">30</option>
+            </select>
+            <span class="field-label rally-clues-label" data-i18n="teacher.escape.rooms">Room names and story lines (optional)</span>
+            <div class="rally-clues" id="escapeRooms"></div>
           </div>
 
           <div class="board-settings hidden" id="boardSettings">
@@ -157,6 +173,7 @@
       <p class="lede" id="doneLede"></p>
       <p class="lede done-hint hidden" id="boardHint" data-i18n="teacher.done.boardHint">This is a board game. Open the Big Screen link and project it: the host picks squares and judges open answers there, while teams answer from their own devices.</p>
       <p class="lede done-hint hidden" id="rallyHint" data-i18n="teacher.done.rallyHint">This is a rally. Open the Big Screen link and project the map; teams play on their own devices, and you can skip a stuck team from the Big Screen.</p>
+      <p class="lede done-hint hidden" id="escapeHint" data-i18n="teacher.done.escapeHint">This is an escape room. Open the Big Screen link and project the building; teams solve puzzles on their own devices, and you can open a door for a stuck team from the Big Screen.</p>
       <p class="lede done-hint hidden" id="buzzerHint" data-i18n="teacher.done.buzzerHint">This is a buzzer game. Open the Big Screen link and project it for the whole class; teams buzz in from their own devices.</p>
       <div class="done-actions">
         <a class="btn-primary" id="openStudentView" target="_blank" rel="noopener"><span data-i18n="teacher.done.openStudentView">Open student join page</span> <span class="arrow" aria-hidden="true">&rarr;</span></a>
@@ -205,6 +222,16 @@
         <input class="hint-input text-input" maxlength="200" dir="auto" placeholder="e.g. Divide both by 2" data-i18n-placeholder="teacher.q.hintPlaceholder">
       </div>
     </div>
+    <div class="escape-fields hidden">
+      <div>
+        <label class="field-label" data-i18n="teacher.q.room">Room</label>
+        <select class="room-input text-input"></select>
+      </div>
+      <div>
+        <label class="field-label" data-i18n="teacher.q.hint">Hint (optional, costs 30 s)</label>
+        <input class="escape-hint-input text-input" maxlength="200" dir="auto" placeholder="e.g. Divide both by 2" data-i18n-placeholder="teacher.q.hintPlaceholder">
+      </div>
+    </div>
     <div class="toolbar"></div>
     <textarea class="prompt-input text-input" dir="auto" rows="3" placeholder="Question text -- use a toolbar button to insert math, or type $...$ yourself" data-i18n-placeholder="teacher.q.promptPlaceholder"></textarea>
     <div class="preview" dir="auto" data-i18n="teacher.q.previewPlaceholder">Preview will appear here</div>
@@ -212,10 +239,34 @@
       <label><input type="radio" name="type" value="short-answer" checked> <span data-i18n="teacher.q.shortAnswer">Short answer</span></label>
       <label><input type="radio" name="type" value="multiple-choice"> <span data-i18n="teacher.q.multipleChoice">Multiple choice</span></label>
       <label class="open-type hidden"><input type="radio" name="type" value="open"> <span data-i18n="teacher.q.openAnswer">Open answer (teacher judges)</span></label>
+      <label class="escape-type hidden"><input type="radio" name="type" value="expression"> <span data-i18n="teacher.q.expression">Type an expression</span></label>
+      <label class="escape-type hidden"><input type="radio" name="type" value="order"> <span data-i18n="teacher.q.order">Order the steps</span></label>
+      <label class="escape-type hidden"><input type="radio" name="type" value="match"> <span data-i18n="teacher.q.match">Match pairs</span></label>
+      <label class="escape-type hidden"><input type="radio" name="type" value="graph"> <span data-i18n="teacher.q.graph">Point on a graph</span></label>
     </div>
     <div class="short-answer-fields">
       <label class="field-label answer-label" data-i18n="teacher.q.correctAnswer">Correct answer</label>
       <input class="answer-input text-input" dir="auto" placeholder="e.g. Paris, or 42" data-i18n-placeholder="teacher.q.correctAnswerPlaceholder">
+    </div>
+    <div class="order-fields hidden">
+      <label class="field-label" data-i18n="teacher.q.orderSteps">Steps in the correct order, one per line (3 to 6)</label>
+      <textarea class="order-input text-input" dir="auto" rows="4"></textarea>
+      <p class="hint" data-i18n="teacher.q.orderHelp">Students see the steps shuffled and drag them into order.</p>
+    </div>
+    <div class="match-fields hidden">
+      <span class="field-label" data-i18n="teacher.q.matchPairs">Pairs that belong together (2 to 5)</span>
+      <div class="pairs"></div>
+      <button type="button" class="add-choice add-pair" data-i18n="teacher.q.addPair">+ Add pair</button>
+    </div>
+    <div class="graph-fields hidden">
+      <label class="field-label" data-i18n="teacher.q.graphFn">Function to draw, in x</label>
+      <input class="graph-fn text-input" dir="ltr" autocomplete="off" placeholder="e.g. x^3 - 3x" data-i18n-placeholder="teacher.q.graphFnPlaceholder">
+      <div class="graph-row">
+        <div><label class="field-label" data-i18n="teacher.q.graphAnswer">Correct x (comma-separate several)</label><input class="graph-answer text-input" dir="ltr" autocomplete="off" placeholder="-1, 1"></div>
+        <div><label class="field-label" data-i18n="teacher.q.graphFrom">x from</label><input class="graph-xmin text-input" dir="ltr" type="number" step="any" value="-5"></div>
+        <div><label class="field-label" data-i18n="teacher.q.graphTo">x to</label><input class="graph-xmax text-input" dir="ltr" type="number" step="any" value="5"></div>
+      </div>
+      <label class="check-row"><input type="checkbox" class="graph-slope" checked> <span data-i18n="teacher.q.graphSlope">Show the tangent line and its slope</span></label>
     </div>
     <div class="mc-fields hidden">
       <span class="field-label" data-i18n="teacher.q.choicesLabel">Choices (mark the correct one)</span>
@@ -232,6 +283,7 @@
 <script src="/vendor/katex/contrib/auto-render.min.js"></script>
 <script src="/vendor/katex/contrib/mhchem.min.js"></script>
 <script src="/shared/mathRender.js"></script>
+<script src="/shared/mathExpr.js"></script>
 <script src="/socket.io/socket.io.js"></script>
 <script src="app.js"></script>
 </body>

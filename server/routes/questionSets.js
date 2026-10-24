@@ -11,7 +11,9 @@ function handleDbError(res, err) {
 // launchers: { race, buzzer, board } createRoom functions from the game modules,
 // so a saved quiz can become a live room without its answers ever leaving
 // the server.
-const GAME_TYPES = { race: "team-race", buzzer: "team-buzzer", board: "team-board", rally: "team-rally" };
+const GAME_TYPES = { race: "team-race", buzzer: "team-buzzer", board: "team-board", rally: "team-rally", escape: "team-escape" };
+// Games that refuse a room missing a station or room, with the error to show.
+const INCOMPLETE = { rally: "rally-incomplete", escape: "escape-incomplete" };
 
 function createQuestionSetsRouter({ launchers }) {
   const router = express.Router();
@@ -45,7 +47,7 @@ function createQuestionSetsRouter({ launchers }) {
       const mechanic = launchers[set.mechanic] ? set.mechanic : "race";
       const settings = body.teams != null ? Object.assign({}, set.settings, { teams: Number(body.teams) }) : set.settings;
       const room = launchers[mechanic]({ title: set.title, theme: set.theme, questions: set.questions, settings });
-      if (!room) return res.status(400).json({ ok: false, error: mechanic === "rally" ? "rally-incomplete" : "no-questions" });
+      if (!room) return res.status(400).json({ ok: false, error: INCOMPLETE[mechanic] || "no-questions" });
       res.json({ ok: true, gameType: GAME_TYPES[mechanic], code: room.code });
     } catch (err) {
       handleDbError(res, err);

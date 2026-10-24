@@ -9,6 +9,7 @@ window.I18N_DICTIONARIES = {
     },
     errors: {
       rallyIncomplete: "Every station needs at least one question.",
+      escapeIncomplete: "Every room needs at least one puzzle.",
       roomNotFound: "No match found with that code.",
       invalidTeam: "Invalid team.",
       teamTaken: "That team is already taken.",
@@ -120,8 +121,9 @@ window.I18N_DICTIONARIES = {
       eyebrow: "Teacher workspace",
       setup: { heading: "Game setup" },
       rally: { word: "Secret word", wordHelp: "3 to 12 letters. Each letter is one station.", stationsInfo: "{{n}} stations, up to 5 questions each.", minutes: "Time limit", minutesOption: "{{n}} min", clues: "Clue shown when a station is cleared (optional)", cluePlaceholder: "Station {{n}} clue" },
+      escape: { code: "Vault code", codeHelp: "2 to 8 digits. Each digit is one room.", roomsInfo: "{{n}} rooms, up to 5 puzzles each.", rooms: "Room names and story lines (optional)", namePlaceholder: "Room {{n}} name", storyPlaceholder: "Story line shown when teams enter" },
       field: { title: "Game title", titlePlaceholder: "e.g. Chapter 6 Vocabulary", gameType: "Game type", theme: "Theme" },
-      mechanic: { race: "Race", buzzer: "Buzzer", board: "Board", rally: "Rally" },
+      mechanic: { race: "Race", buzzer: "Buzzer", board: "Board", rally: "Rally", escape: "Escape Room" },
       addQuestion: "+ Add question",
       createRoom: "Create Room",
       done: {
@@ -131,6 +133,7 @@ window.I18N_DICTIONARIES = {
         createAnother: "Create another game",
         buzzerHint: "This is a buzzer game. Open the Big Screen link and project it for the whole class; teams buzz in from their own devices.",
         rallyHint: "This is a rally. Open the Big Screen link and project the map; teams play on their own devices, and you can skip a stuck team from the Big Screen.",
+        escapeHint: "This is an escape room. Open the Big Screen link and project the building; teams solve puzzles on their own devices, and you can open a door for a stuck team from the Big Screen.",
         boardHint: "This is a board game. Open the Big Screen link and project it: the host picks squares and judges open answers there, while teams answer from their own devices."
       },
       q: {
@@ -153,9 +156,28 @@ window.I18N_DICTIONARIES = {
         stationOption: "Station {{n}} ({{letter}})",
         hint: "Hint (optional, costs 30 s)",
         hintPlaceholder: "e.g. Divide both by 2",
-        expectedAnswer: "Expected answer"
+        expectedAnswer: "Expected answer",
+        room: "Room",
+        roomOption: "Room {{n}}",
+        expression: "Type an expression",
+        order: "Order the steps",
+        match: "Match pairs",
+        graph: "Point on a graph",
+        correctExpression: "Correct expression (any equivalent form is accepted)",
+        orderSteps: "Steps in the correct order, one per line (3 to 6)",
+        orderHelp: "Students see the steps shuffled and drag them into order.",
+        matchPairs: "Pairs that belong together (2 to 5)",
+        addPair: "+ Add pair",
+        pairLeft: "e.g. x^2 sin x",
+        pairRight: "its partner",
+        graphFn: "Function to draw, in x",
+        graphFnPlaceholder: "e.g. x^3 - 3x",
+        graphAnswer: "Correct x (comma-separate several)",
+        graphFrom: "x from",
+        graphTo: "x to",
+        graphSlope: "Show the tangent line and its slope"
       },
-      themes: { rope: "Tug of War", rocket: "Rocket Race", spotlight: "Spotlight Showdown", classic: "Quiz Board", island: "Treasure Island" },
+      themes: { rope: "Tug of War", rocket: "Rocket Race", spotlight: "Spotlight Showdown", classic: "Quiz Board", island: "Treasure Island", lab: "Locked Lab" },
       templates: { fraction: "Fraction", exponent: "Exponent", squareRoot: "Square root", chemistry: "Chemistry" },
       err: {
         questionNeedsText: "Question {{n}} needs text.",
@@ -167,7 +189,15 @@ window.I18N_DICTIONARIES = {
         rallyWord: "The secret word needs 3 to 12 letters.",
         stationEmpty: "Station {{n}} ({{letter}}) has no questions yet.",
         stationFull: "Station {{n}} ({{letter}}) has more than 5 questions.",
-        createFailed: "Couldn't create the room."
+        createFailed: "Couldn't create the room.",
+        escapeCode: "The vault code needs 2 to 8 digits.",
+        roomEmpty: "Room {{n}} has no puzzles yet.",
+        roomFull: "Room {{n}} has more than 5 puzzles.",
+        orderNeedsSteps: "Question {{n}} needs 3 to 6 steps, one per line.",
+        matchNeedsPairs: "Question {{n}} needs 2 to 5 complete pairs.",
+        graphNeedsFunction: "Question {{n}}: the function can't be read. Use x, numbers, + - * / ^ and sin, cos, tan, sqrt, ln.",
+        graphAnswer: "Question {{n}}: give the correct x (inside the x range).",
+        expressionInvalid: "Question {{n}}: the expression can't be read. Check the brackets and operations."
       },
       board: { penalty: "Wrong answers lose points", timeLimit: "Time per question", seconds: "{{n}} s", teams: "Teams for this room", teamsHint: "Saved quizzes ask for the number of teams each time you press Play.", teamCount: "{{n}} teams" },
       choose: {
@@ -436,6 +466,114 @@ window.I18N_DICTIONARIES = {
           labels: ["Camp", "Library", "Observatory", "Cave", "Waterfall Ruins", "Lighthouse", "Windmill", "Volcano", "Shipwreck", "Giant Tree", "Market", "Treasure"]
         }
       },
+      teamEscape: {
+        title: "Escape Room",
+        eyebrow: "a team escape room",
+        heroTitle: "Escape Room",
+        defaultTitle: "Escape Room",
+        lede: "Your team is locked in. Solve each room's puzzles to open its door and find one digit of the vault code, then crack the vault before time runs out.",
+        role: {
+          join: {
+            title: "Join the Escape",
+            desc: "Got a room code from your teacher? Enter it here and pick your team.",
+            button: "Join the Escape"
+          },
+          bigScreen: {
+            title: "Big Screen",
+            desc: "Project the building for the class. The teacher can open a door for a stuck team from here.",
+            button: "Big Screen"
+          }
+        },
+        howto: "<b>How it works:</b> each room has up to 5 puzzles: padlocks, typed answers, step puzzles, matching pairs and graphs. Solve them all to open the door and reveal one digit of the vault code. A wrong answer sets off a 5-second alarm. A hint costs 30 seconds; a teacher opening a door costs 2 minutes. Enter the full code at the vault to escape. The first team out wins.",
+        join: {
+          label: "Enter the 4-letter room code",
+          findRoom: "Find Room",
+          roomLabel: "Room",
+          joinTeam: "Join {{team}}",
+          watchBigScreen: "Watch on the Big Screen"
+        },
+        lobby: {
+          needTwoTeams: "Waiting for at least 2 teams…",
+          startGame: "Start the escape ({{n}} teams)",
+          matchStarting: "Escape starting…",
+          leaveRoom: "Leave Room",
+          ready: "Ready",
+          open: "Open seat",
+          rules: "{{rooms}} rooms · {{puzzles}} puzzles · {{minutes}} minutes"
+        },
+        teams: {
+          A: "Red Team",
+          B: "Blue Team",
+          C: "Green Team",
+          D: "Purple Team"
+        },
+        match: {
+          timeLeft: "Time left",
+          sound: "Sound on or off",
+          typeYourAnswer: "Type your answer",
+          typeExpression: "Type your answer, e.g. 3x^2 cos x",
+          submit: "Submit",
+          useHint: "Use hint (+30 s)",
+          openLock: "Open the lock",
+          sign: "Plus or minus",
+          previewEmpty: "Your answer will appear here",
+          previewIncomplete: "Not finished yet: check the brackets and operations",
+          checkOrder: "Check the order",
+          moveUp: "Move up",
+          moveDown: "Move down",
+          checkPairs: "Check the pairs",
+          slope: "slope",
+          lockPoint: "Lock in this point",
+          doorOpen: "Door open!",
+          digitFound: "You found a digit of the vault code:",
+          continue: "Next room",
+          finalChallenge: "Final challenge",
+          vault: "Crack the vault",
+          vaultHelp: "Enter your digits in room order: the digit from Room 1 first.",
+          openVault: "Open the vault",
+          escaped: "Escaped!",
+          vaultCode: "Vault code",
+          roomShort: "R{{n}}",
+          streak: "{{n}} in a row",
+          time: "Time {{t}}",
+          penalty: "Penalty +{{t}}",
+          skip: "Open the door (+2 min)",
+          atVault: "At the vault…",
+          getReady: "Get ready…"
+        },
+        feed: {
+          opened: "{{team}} opened {{room}}",
+          skip: "Teacher opened a door for {{team}} (+2 min)",
+          vault: "{{team}} reached the vault!",
+          escaped: "{{team}} escaped!",
+          hint: "{{team}} used a hint (+30 s)",
+          streak: "{{team}}: {{n}} in a row!",
+          lastMinute: "One minute left!"
+        },
+        end: {
+          teamEscaped: "{{team}} escaped first!",
+          teamWins: "{{team}} wins the escape!",
+          draw: "It's a draw!",
+          champions: "First team out",
+          leaderboard: "Final leaderboard",
+          noWinner: "No winner this time.",
+          time: "Time",
+          rooms: "Rooms",
+          bestStreak: "Best streak",
+          rematch: "Play again",
+          newGame: "New escape room"
+        },
+        notice: {
+          connectError: "Can't reach the game server. Check your connection."
+        },
+        err: {
+          enterCode: "Enter the 4-letter code."
+        },
+        map: {
+          room: "Room {{n}}",
+          vault: "VAULT"
+        }
+      },
       teamBuzzer: {
         title: "Spotlight Showdown",
         eyebrow: "a classroom buzzer quiz",
@@ -472,6 +610,7 @@ window.I18N_DICTIONARIES = {
     },
     errors: {
       rallyIncomplete: "Chaque station doit avoir au moins une question.",
+      escapeIncomplete: "Chaque salle doit avoir au moins une énigme.",
       roomNotFound: "Aucune partie trouvée avec ce code.",
       invalidTeam: "Équipe invalide.",
       teamTaken: "Cette équipe est déjà prise.",
@@ -583,8 +722,9 @@ window.I18N_DICTIONARIES = {
       eyebrow: "Espace enseignant",
       setup: { heading: "Réglages du jeu" },
       rally: { word: "Mot secret", wordHelp: "3 à 12 lettres. Chaque lettre est une station.", stationsInfo: "{{n}} stations, jusqu'à 5 questions chacune.", minutes: "Durée", minutesOption: "{{n}} min", clues: "Indice affiché quand une station est validée (facultatif)", cluePlaceholder: "Indice de la station {{n}}" },
+      escape: { code: "Code du coffre", codeHelp: "2 à 8 chiffres. Chaque chiffre correspond à une salle.", roomsInfo: "{{n}} salles, jusqu'à 5 énigmes chacune.", rooms: "Noms des salles et phrases d'histoire (facultatif)", namePlaceholder: "Nom de la salle {{n}}", storyPlaceholder: "Phrase affichée quand les équipes entrent" },
       field: { title: "Titre du jeu", titlePlaceholder: "ex. Chapitre 6 Vocabulaire", gameType: "Type de jeu", theme: "Thème" },
-      mechanic: { race: "Course", buzzer: "Buzzer", board: "Tableau", rally: "Rallye" },
+      mechanic: { race: "Course", buzzer: "Buzzer", board: "Tableau", rally: "Rallye", escape: "Escape game" },
       addQuestion: "+ Ajouter une question",
       createRoom: "Créer la salle",
       done: {
@@ -594,6 +734,7 @@ window.I18N_DICTIONARIES = {
         createAnother: "Créer un autre jeu",
         buzzerHint: "Ceci est un jeu de buzzer. Ouvrez le lien du grand écran et projetez-le pour toute la classe ; les équipes buzzent depuis leurs propres appareils.",
         rallyHint: "Ceci est un rallye. Ouvrez le lien du grand écran et projetez la carte ; les équipes jouent sur leurs propres appareils, et vous pouvez faire avancer une équipe bloquée depuis le grand écran.",
+        escapeHint: "Ceci est un escape game. Ouvrez le lien du grand écran et projetez le bâtiment ; les équipes résolvent les énigmes sur leurs propres appareils, et vous pouvez ouvrir une porte pour une équipe bloquée depuis le grand écran.",
         boardHint: "Ceci est un jeu de tableau. Ouvrez le lien du grand écran et projetez-le : l'animateur y choisit les cases et juge les réponses libres, tandis que les équipes répondent depuis leurs propres appareils."
       },
       q: {
@@ -616,9 +757,28 @@ window.I18N_DICTIONARIES = {
         stationOption: "Station {{n}} ({{letter}})",
         hint: "Indice (facultatif, coûte 30 s)",
         hintPlaceholder: "ex. Divisez les deux par 2",
-        expectedAnswer: "Réponse attendue"
+        expectedAnswer: "Réponse attendue",
+        room: "Salle",
+        roomOption: "Salle {{n}}",
+        expression: "Écrire une expression",
+        order: "Remettre les étapes dans l'ordre",
+        match: "Associer des paires",
+        graph: "Point sur un graphique",
+        correctExpression: "Expression correcte (toute forme équivalente est acceptée)",
+        orderSteps: "Étapes dans le bon ordre, une par ligne (3 à 6)",
+        orderHelp: "Les élèves voient les étapes mélangées et les remettent dans l'ordre.",
+        matchPairs: "Paires qui vont ensemble (2 à 5)",
+        addPair: "+ Ajouter une paire",
+        pairLeft: "ex. x^2 sin x",
+        pairRight: "son partenaire",
+        graphFn: "Fonction à tracer, en x",
+        graphFnPlaceholder: "ex. x^3 - 3x",
+        graphAnswer: "x correct (séparez-en plusieurs par des virgules)",
+        graphFrom: "x de",
+        graphTo: "x à",
+        graphSlope: "Afficher la tangente et sa pente"
       },
-      themes: { rope: "Tir à la corde", rocket: "Course de fusées", spotlight: "Duel sous les projecteurs", classic: "Tableau de quiz", island: "Île au trésor" },
+      themes: { rope: "Tir à la corde", rocket: "Course de fusées", spotlight: "Duel sous les projecteurs", classic: "Tableau de quiz", island: "Île au trésor", lab: "Labo verrouillé" },
       templates: { fraction: "Fraction", exponent: "Exposant", squareRoot: "Racine carrée", chemistry: "Chimie" },
       err: {
         questionNeedsText: "La question {{n}} a besoin d'un texte.",
@@ -630,7 +790,15 @@ window.I18N_DICTIONARIES = {
         rallyWord: "Le mot secret doit compter de 3 à 12 lettres.",
         stationEmpty: "La station {{n}} ({{letter}}) n'a pas encore de question.",
         stationFull: "La station {{n}} ({{letter}}) a plus de 5 questions.",
-        createFailed: "Impossible de créer la salle."
+        createFailed: "Impossible de créer la salle.",
+        escapeCode: "Le code du coffre doit avoir 2 à 8 chiffres.",
+        roomEmpty: "La salle {{n}} n'a pas encore d'énigme.",
+        roomFull: "La salle {{n}} a plus de 5 énigmes.",
+        orderNeedsSteps: "La question {{n}} doit avoir 3 à 6 étapes, une par ligne.",
+        matchNeedsPairs: "La question {{n}} doit avoir 2 à 5 paires complètes.",
+        graphNeedsFunction: "Question {{n}} : la fonction est illisible. Utilisez x, des nombres, + - * / ^ et sin, cos, tan, sqrt, ln.",
+        graphAnswer: "Question {{n}} : indiquez le x correct (dans l'intervalle de x).",
+        expressionInvalid: "Question {{n}} : l'expression est illisible. Vérifiez les parenthèses et les opérations."
       },
       board: { penalty: "Les mauvaises réponses font perdre des points", timeLimit: "Temps par question", seconds: "{{n}} s", teams: "Équipes pour cette salle", teamsHint: "Les quiz enregistrés demandent le nombre d'équipes chaque fois que vous appuyez sur Jouer.", teamCount: "{{n}} équipes" },
       choose: {
@@ -899,6 +1067,114 @@ window.I18N_DICTIONARIES = {
           labels: ["Camp", "Bibliothèque", "Observatoire", "Grotte", "Ruines", "Phare", "Moulin", "Volcan", "Épave", "Arbre géant", "Marché", "Trésor"]
         }
       },
+      teamEscape: {
+        title: "Escape game",
+        eyebrow: "un escape game en équipe",
+        heroTitle: "Escape game",
+        defaultTitle: "Escape game",
+        lede: "Votre équipe est enfermée. Résolvez les énigmes de chaque salle pour ouvrir sa porte et trouver un chiffre du code du coffre, puis ouvrez le coffre avant la fin du temps.",
+        role: {
+          join: {
+            title: "Rejoindre l'évasion",
+            desc: "Vous avez un code de salle de votre enseignant ? Saisissez-le ici et choisissez votre équipe.",
+            button: "Rejoindre l'évasion"
+          },
+          bigScreen: {
+            title: "Grand écran",
+            desc: "Projetez le bâtiment pour la classe. L'enseignant peut ouvrir une porte pour une équipe bloquée d'ici.",
+            button: "Grand écran"
+          }
+        },
+        howto: "<b>Comment ça marche :</b> chaque salle contient jusqu'à 5 énigmes : cadenas, réponses à écrire, étapes à ordonner, paires à associer et graphiques. Résolvez-les toutes pour ouvrir la porte et découvrir un chiffre du code du coffre. Une mauvaise réponse déclenche une alarme de 5 secondes. Un indice coûte 30 secondes ; une porte ouverte par l'enseignant coûte 2 minutes. Saisissez le code complet au coffre pour vous évader. La première équipe sortie gagne.",
+        join: {
+          label: "Saisissez le code de salle à 4 lettres",
+          findRoom: "Trouver la salle",
+          roomLabel: "Salle",
+          joinTeam: "Rejoindre {{team}}",
+          watchBigScreen: "Regarder sur le grand écran"
+        },
+        lobby: {
+          needTwoTeams: "En attente d'au moins 2 équipes…",
+          startGame: "Lancer l'évasion ({{n}} équipes)",
+          matchStarting: "L'évasion commence…",
+          leaveRoom: "Quitter la salle",
+          ready: "Prête",
+          open: "Place libre",
+          rules: "{{rooms}} salles · {{puzzles}} énigmes · {{minutes}} minutes"
+        },
+        teams: {
+          A: "Équipe Rouge",
+          B: "Équipe Bleue",
+          C: "Équipe Verte",
+          D: "Équipe Violette"
+        },
+        match: {
+          timeLeft: "Temps restant",
+          sound: "Son activé ou coupé",
+          typeYourAnswer: "Écrivez votre réponse",
+          typeExpression: "Écrivez votre réponse, ex. 3x^2 cos x",
+          submit: "Valider",
+          useHint: "Utiliser un indice (+30 s)",
+          openLock: "Ouvrir le cadenas",
+          sign: "Plus ou moins",
+          previewEmpty: "Votre réponse s'affichera ici",
+          previewIncomplete: "Pas encore complète : vérifiez les parenthèses et les opérations",
+          checkOrder: "Vérifier l'ordre",
+          moveUp: "Monter",
+          moveDown: "Descendre",
+          checkPairs: "Vérifier les paires",
+          slope: "pente",
+          lockPoint: "Valider ce point",
+          doorOpen: "Porte ouverte !",
+          digitFound: "Vous avez trouvé un chiffre du code du coffre :",
+          continue: "Salle suivante",
+          finalChallenge: "Défi final",
+          vault: "Ouvrez le coffre",
+          vaultHelp: "Saisissez vos chiffres dans l'ordre des salles : le chiffre de la salle 1 d'abord.",
+          openVault: "Ouvrir le coffre",
+          escaped: "Évadés !",
+          vaultCode: "Code du coffre",
+          roomShort: "S{{n}}",
+          streak: "{{n}} d'affilée",
+          time: "Temps {{t}}",
+          penalty: "Pénalité +{{t}}",
+          skip: "Ouvrir la porte (+2 min)",
+          atVault: "Au coffre…",
+          getReady: "Préparez-vous…"
+        },
+        feed: {
+          opened: "{{team}} a ouvert {{room}}",
+          skip: "L'enseignant a ouvert une porte pour {{team}} (+2 min)",
+          vault: "{{team}} a atteint le coffre !",
+          escaped: "{{team}} s'est évadée !",
+          hint: "{{team}} a utilisé un indice (+30 s)",
+          streak: "{{team}} : {{n}} d'affilée !",
+          lastMinute: "Plus qu'une minute !"
+        },
+        end: {
+          teamEscaped: "{{team}} s'évade en premier !",
+          teamWins: "{{team}} remporte l'évasion !",
+          draw: "Égalité !",
+          champions: "Première équipe sortie",
+          leaderboard: "Classement final",
+          noWinner: "Pas de gagnant cette fois.",
+          time: "Temps",
+          rooms: "Salles",
+          bestStreak: "Meilleure série",
+          rematch: "Rejouer",
+          newGame: "Nouvel escape game"
+        },
+        notice: {
+          connectError: "Impossible de joindre le serveur de jeu. Vérifiez votre connexion."
+        },
+        err: {
+          enterCode: "Saisissez le code à 4 lettres."
+        },
+        map: {
+          room: "Salle {{n}}",
+          vault: "COFFRE"
+        }
+      },
       teamBuzzer: {
         title: "Duel sous les projecteurs",
         eyebrow: "un quiz à buzzer pour la classe",
@@ -935,6 +1211,7 @@ window.I18N_DICTIONARIES = {
     },
     errors: {
       rallyIncomplete: "يجب أن تحتوي كل محطة على سؤال واحد على الأقل.",
+      escapeIncomplete: "يجب أن تحتوي كل غرفة على لغز واحد على الأقل.",
       roomNotFound: "لم يتم العثور على مباراة بهذا الرمز.",
       invalidTeam: "فريق غير صالح.",
       teamTaken: "هذا الفريق مأخوذ بالفعل.",
@@ -1046,8 +1323,9 @@ window.I18N_DICTIONARIES = {
       eyebrow: "مساحة المعلّم",
       setup: { heading: "إعدادات اللعبة" },
       rally: { word: "الكلمة السرية", wordHelp: "من 3 إلى 12 حرفًا. كل حرف محطة.", stationsInfo: "{{n}} محطات، حتى 5 أسئلة لكل محطة.", minutes: "المدة", minutesOption: "{{n}} د", clues: "تلميح يظهر عند اجتياز المحطة (اختياري)", cluePlaceholder: "تلميح المحطة {{n}}" },
+      escape: { code: "رمز الخزنة", codeHelp: "من رقمين إلى 8 أرقام. كل رقم غرفة واحدة.", roomsInfo: "{{n}} غرف، حتى 5 ألغاز في كل غرفة.", rooms: "أسماء الغرف وجمل القصة (اختياري)", namePlaceholder: "اسم الغرفة {{n}}", storyPlaceholder: "جملة تظهر عند دخول الفرق" },
       field: { title: "عنوان اللعبة", titlePlaceholder: "مثال: مفردات الفصل 6", gameType: "نوع اللعبة", theme: "السمة" },
-      mechanic: { race: "سباق", buzzer: "جرس", board: "لوحة", rally: "رالي" },
+      mechanic: { race: "سباق", buzzer: "جرس", board: "لوحة", rally: "رالي", escape: "غرفة الهروب" },
       addQuestion: "+ إضافة سؤال",
       createRoom: "إنشاء الغرفة",
       done: {
@@ -1057,6 +1335,7 @@ window.I18N_DICTIONARIES = {
         createAnother: "إنشاء لعبة أخرى",
         buzzerHint: "هذه لعبة جرس. افتح رابط الشاشة الكبيرة واعرضه لكامل الصف؛ تضغط الفرق الجرس من أجهزتها الخاصة.",
         rallyHint: "هذه لعبة رالي. افتح رابط الشاشة الكبيرة واعرض الخريطة؛ تلعب الفرق من أجهزتها الخاصة، ويمكنك من الشاشة الكبيرة تجاوز محطة لفريق متعثر.",
+        escapeHint: "هذه لعبة غرفة هروب. افتح رابط الشاشة الكبيرة واعرض المبنى؛ تحل الفرق الألغاز من أجهزتها الخاصة، ويمكنك من الشاشة الكبيرة فتح باب لفريق متعثر.",
         boardHint: "هذه لعبة لوحة. افتح رابط الشاشة الكبيرة واعرضه: يختار المقدّم المربعات ويحكم على الإجابات المفتوحة من هناك، بينما تجيب الفرق من أجهزتها الخاصة."
       },
       q: {
@@ -1079,9 +1358,28 @@ window.I18N_DICTIONARIES = {
         stationOption: "المحطة {{n}} ({{letter}})",
         hint: "تلميح (اختياري، يكلّف 30 ث)",
         hintPlaceholder: "مثال: اقسم الاثنين على 2",
-        expectedAnswer: "الإجابة المتوقعة"
+        expectedAnswer: "الإجابة المتوقعة",
+        room: "الغرفة",
+        roomOption: "الغرفة {{n}}",
+        expression: "اكتب تعبيرًا",
+        order: "رتّب الخطوات",
+        match: "صِل الأزواج",
+        graph: "نقطة على رسم بياني",
+        correctExpression: "التعبير الصحيح (يُقبل أي شكل مكافئ)",
+        orderSteps: "الخطوات بالترتيب الصحيح، خطوة في كل سطر (من 3 إلى 6)",
+        orderHelp: "يرى الطلاب الخطوات مخلوطة ويسحبونها إلى ترتيبها.",
+        matchPairs: "أزواج متطابقة (من 2 إلى 5)",
+        addPair: "+ أضف زوجًا",
+        pairLeft: "مثال: x^2 sin x",
+        pairRight: "ما يقابله",
+        graphFn: "الدالة المرسومة بدلالة x",
+        graphFnPlaceholder: "مثال: x^3 - 3x",
+        graphAnswer: "قيمة x الصحيحة (افصل بين عدة قيم بفواصل)",
+        graphFrom: "x من",
+        graphTo: "x إلى",
+        graphSlope: "أظهر المماس وميله"
       },
-      themes: { rope: "شد الحبل", rocket: "سباق الصواريخ", spotlight: "مواجهة الأضواء", classic: "لوحة الأسئلة", island: "جزيرة الكنز" },
+      themes: { rope: "شد الحبل", rocket: "سباق الصواريخ", spotlight: "مواجهة الأضواء", classic: "لوحة الأسئلة", island: "جزيرة الكنز", lab: "المختبر المغلق" },
       templates: { fraction: "كسر", exponent: "أس", squareRoot: "جذر تربيعي", chemistry: "كيمياء" },
       err: {
         questionNeedsText: "السؤال {{n}} يحتاج إلى نص.",
@@ -1093,7 +1391,15 @@ window.I18N_DICTIONARIES = {
         rallyWord: "يجب أن تتكوّن الكلمة السرية من 3 إلى 12 حرفًا.",
         stationEmpty: "المحطة {{n}} ({{letter}}) ليس فيها أسئلة بعد.",
         stationFull: "المحطة {{n}} ({{letter}}) فيها أكثر من 5 أسئلة.",
-        createFailed: "تعذّر إنشاء الغرفة."
+        createFailed: "تعذّر إنشاء الغرفة.",
+        escapeCode: "يحتاج رمز الخزنة إلى رقمين حتى 8 أرقام.",
+        roomEmpty: "لا تحتوي الغرفة {{n}} على أي لغز بعد.",
+        roomFull: "تحتوي الغرفة {{n}} على أكثر من 5 ألغاز.",
+        orderNeedsSteps: "يحتاج السؤال {{n}} إلى 3 حتى 6 خطوات، خطوة في كل سطر.",
+        matchNeedsPairs: "يحتاج السؤال {{n}} إلى 2 حتى 5 أزواج مكتملة.",
+        graphNeedsFunction: "السؤال {{n}}: تعذّرت قراءة الدالة. استخدم x والأعداد و + - * / ^ و sin و cos و tan و sqrt و ln.",
+        graphAnswer: "السؤال {{n}}: أدخل قيمة x الصحيحة (ضمن مجال x).",
+        expressionInvalid: "السؤال {{n}}: تعذّرت قراءة التعبير. تحقق من الأقواس والعمليات."
       },
       board: { penalty: "الإجابات الخاطئة تخسر النقاط", timeLimit: "الوقت لكل سؤال", seconds: "{{n}} ث", teams: "الفرق في هذه الغرفة", teamsHint: "تسأل الاختبارات المحفوظة عن عدد الفرق في كل مرة تضغط فيها على العب.", teamCount: "{{n}} فرق" },
       choose: {
@@ -1362,6 +1668,114 @@ window.I18N_DICTIONARIES = {
           labels: ["المخيم", "المكتبة", "المرصد", "الكهف", "الأطلال", "المنارة", "الطاحونة", "البركان", "الحطام", "الشجرة العملاقة", "السوق", "الكنز"]
         }
       },
+      teamEscape: {
+        title: "غرفة الهروب",
+        eyebrow: "لعبة هروب جماعية",
+        heroTitle: "غرفة الهروب",
+        defaultTitle: "غرفة الهروب",
+        lede: "فريقك محبوس. حلّوا ألغاز كل غرفة لفتح بابها والعثور على رقم من رمز الخزنة، ثم افتحوا الخزنة قبل انتهاء الوقت.",
+        role: {
+          join: {
+            title: "انضم إلى الهروب",
+            desc: "هل لديك رمز غرفة من معلمك؟ أدخله هنا واختر فريقك.",
+            button: "انضم إلى الهروب"
+          },
+          bigScreen: {
+            title: "الشاشة الكبيرة",
+            desc: "اعرض المبنى للصف. يمكن للمعلم من هنا فتح باب لفريق متعثر.",
+            button: "الشاشة الكبيرة"
+          }
+        },
+        howto: "<b>طريقة اللعب:</b> في كل غرفة حتى 5 ألغاز: أقفال، وإجابات مكتوبة، وترتيب خطوات، وتوصيل أزواج، ورسوم بيانية. حلّوها كلها لفتح الباب ومعرفة رقم من رمز الخزنة. الإجابة الخاطئة تطلق إنذارًا لمدة 5 ثوانٍ. التلميح يكلّف 30 ثانية، وفتح المعلم لباب يكلّف دقيقتين. أدخلوا الرمز كاملًا عند الخزنة للهروب. أول فريق يخرج يفوز.",
+        join: {
+          label: "أدخل رمز الغرفة المكوّن من 4 أحرف",
+          findRoom: "ابحث عن الغرفة",
+          roomLabel: "الغرفة",
+          joinTeam: "انضم إلى {{team}}",
+          watchBigScreen: "شاهد على الشاشة الكبيرة"
+        },
+        lobby: {
+          needTwoTeams: "بانتظار فريقين على الأقل…",
+          startGame: "ابدأ الهروب ({{n}} فرق)",
+          matchStarting: "يبدأ الهروب…",
+          leaveRoom: "غادر الغرفة",
+          ready: "جاهز",
+          open: "مقعد شاغر",
+          rules: "{{rooms}} غرف · {{puzzles}} ألغاز · {{minutes}} دقيقة"
+        },
+        teams: {
+          A: "الفريق الأحمر",
+          B: "الفريق الأزرق",
+          C: "الفريق الأخضر",
+          D: "الفريق البنفسجي"
+        },
+        match: {
+          timeLeft: "الوقت المتبقي",
+          sound: "تشغيل الصوت أو إيقافه",
+          typeYourAnswer: "اكتب إجابتك",
+          typeExpression: "اكتب إجابتك، مثل 3x^2 cos x",
+          submit: "إرسال",
+          useHint: "استخدم تلميحًا (+30 ث)",
+          openLock: "افتح القفل",
+          sign: "موجب أو سالب",
+          previewEmpty: "ستظهر إجابتك هنا",
+          previewIncomplete: "لم تكتمل بعد: تحقق من الأقواس والعمليات",
+          checkOrder: "تحقق من الترتيب",
+          moveUp: "إلى الأعلى",
+          moveDown: "إلى الأسفل",
+          checkPairs: "تحقق من الأزواج",
+          slope: "الميل",
+          lockPoint: "ثبّت هذه النقطة",
+          doorOpen: "انفتح الباب!",
+          digitFound: "وجدتم رقمًا من رمز الخزنة:",
+          continue: "الغرفة التالية",
+          finalChallenge: "التحدي الأخير",
+          vault: "افتحوا الخزنة",
+          vaultHelp: "أدخلوا أرقامكم بترتيب الغرف: رقم الغرفة 1 أولًا.",
+          openVault: "افتح الخزنة",
+          escaped: "هربتم!",
+          vaultCode: "رمز الخزنة",
+          roomShort: "غ{{n}}",
+          streak: "{{n}} على التوالي",
+          time: "الوقت {{t}}",
+          penalty: "جزاء +{{t}}",
+          skip: "افتح الباب (+2 د)",
+          atVault: "عند الخزنة…",
+          getReady: "استعدوا…"
+        },
+        feed: {
+          opened: "{{team}} فتح {{room}}",
+          skip: "فتح المعلم بابًا لـ{{team}} (+2 د)",
+          vault: "{{team}} وصل إلى الخزنة!",
+          escaped: "{{team}} هرب!",
+          hint: "{{team}} استخدم تلميحًا (+30 ث)",
+          streak: "{{team}}: {{n}} على التوالي!",
+          lastMinute: "بقيت دقيقة واحدة!"
+        },
+        end: {
+          teamEscaped: "{{team}} هرب أولًا!",
+          teamWins: "{{team}} يفوز بالهروب!",
+          draw: "تعادل!",
+          champions: "أول فريق يخرج",
+          leaderboard: "الترتيب النهائي",
+          noWinner: "لا فائز هذه المرة.",
+          time: "الوقت",
+          rooms: "الغرف",
+          bestStreak: "أفضل سلسلة",
+          rematch: "العب مجددًا",
+          newGame: "غرفة هروب جديدة"
+        },
+        notice: {
+          connectError: "تعذّر الوصول إلى خادم اللعبة. تحقق من اتصالك."
+        },
+        err: {
+          enterCode: "أدخل الرمز المكوّن من 4 أحرف."
+        },
+        map: {
+          room: "الغرفة {{n}}",
+          vault: "الخزنة"
+        }
+      },
       teamBuzzer: {
         title: "مواجهة الأضواء",
         eyebrow: "مسابقة جرس للصف",
@@ -1398,6 +1812,7 @@ window.I18N_DICTIONARIES = {
     },
     errors: {
       rallyIncomplete: "Każda stacja musi mieć co najmniej jedno pytanie.",
+      escapeIncomplete: "Każdy pokój musi mieć co najmniej jedną zagadkę.",
       roomNotFound: "Nie znaleziono gry z tym kodem.",
       invalidTeam: "Nieprawidłowa drużyna.",
       teamTaken: "Ta drużyna jest już zajęta.",
@@ -1509,8 +1924,9 @@ window.I18N_DICTIONARIES = {
       eyebrow: "Przestrzeń nauczyciela",
       setup: { heading: "Ustawienia gry" },
       rally: { word: "Tajne słowo", wordHelp: "Od 3 do 12 liter. Każda litera to jedna stacja.", stationsInfo: "Stacje: {{n}}, do 5 pytań na każdej.", minutes: "Limit czasu", minutesOption: "{{n}} min", clues: "Wskazówka po zaliczeniu stacji (opcjonalnie)", cluePlaceholder: "Wskazówka stacji {{n}}" },
+      escape: { code: "Kod sejfu", codeHelp: "Od 2 do 8 cyfr. Każda cyfra to jeden pokój.", roomsInfo: "Pokoje: {{n}}, do 5 zagadek w każdym.", rooms: "Nazwy pokoi i zdania fabuły (opcjonalnie)", namePlaceholder: "Nazwa pokoju {{n}}", storyPlaceholder: "Zdanie wyświetlane po wejściu drużyny" },
       field: { title: "Tytuł gry", titlePlaceholder: "np. Rozdział 6 - słownictwo", gameType: "Typ gry", theme: "Motyw" },
-      mechanic: { race: "Wyścig", buzzer: "Brzęczyk", board: "Plansza", rally: "Rajd" },
+      mechanic: { race: "Wyścig", buzzer: "Brzęczyk", board: "Plansza", rally: "Rajd", escape: "Escape room" },
       addQuestion: "+ Dodaj pytanie",
       createRoom: "Utwórz pokój",
       done: {
@@ -1520,6 +1936,7 @@ window.I18N_DICTIONARIES = {
         createAnother: "Stwórz kolejną grę",
         buzzerHint: "To gra z brzęczykiem. Otwórz link do dużego ekranu i wyświetl go dla całej klasy; drużyny naciskają brzęczyk na własnych urządzeniach.",
         rallyHint: "To rajd. Otwórz link do dużego ekranu i wyświetl mapę; drużyny grają na własnych urządzeniach, a z dużego ekranu możesz przepuścić drużynę, która utknęła.",
+        escapeHint: "To escape room. Otwórz link do dużego ekranu i wyświetl budynek; drużyny rozwiązują zagadki na własnych urządzeniach, a z dużego ekranu możesz otworzyć drzwi drużynie, która utknęła.",
         boardHint: "To gra planszowa. Otwórz link do dużego ekranu i wyświetl go: prowadzący wybiera tam pola i ocenia odpowiedzi otwarte, a drużyny odpowiadają na własnych urządzeniach."
       },
       q: {
@@ -1542,9 +1959,28 @@ window.I18N_DICTIONARIES = {
         stationOption: "Stacja {{n}} ({{letter}})",
         hint: "Podpowiedź (opcjonalnie, kosztuje 30 s)",
         hintPlaceholder: "np. Podziel obie przez 2",
-        expectedAnswer: "Oczekiwana odpowiedź"
+        expectedAnswer: "Oczekiwana odpowiedź",
+        room: "Pokój",
+        roomOption: "Pokój {{n}}",
+        expression: "Wpisz wyrażenie",
+        order: "Ułóż kroki",
+        match: "Połącz pary",
+        graph: "Punkt na wykresie",
+        correctExpression: "Poprawne wyrażenie (akceptowana jest każda równoważna postać)",
+        orderSteps: "Kroki w poprawnej kolejności, jeden w wierszu (od 3 do 6)",
+        orderHelp: "Uczniowie widzą kroki pomieszane i przeciągają je na miejsce.",
+        matchPairs: "Pary, które do siebie pasują (od 2 do 5)",
+        addPair: "+ Dodaj parę",
+        pairLeft: "np. x^2 sin x",
+        pairRight: "jego para",
+        graphFn: "Funkcja do narysowania, zmiennej x",
+        graphFnPlaceholder: "np. x^3 - 3x",
+        graphAnswer: "Poprawne x (kilka oddziel przecinkami)",
+        graphFrom: "x od",
+        graphTo: "x do",
+        graphSlope: "Pokaż styczną i jej nachylenie"
       },
-      themes: { rope: "Przeciąganie liny", rocket: "Wyścig rakiet", spotlight: "Pojedynek na scenie", classic: "Plansza quizowa", island: "Wyspa skarbów" },
+      themes: { rope: "Przeciąganie liny", rocket: "Wyścig rakiet", spotlight: "Pojedynek na scenie", classic: "Plansza quizowa", island: "Wyspa skarbów", lab: "Zamknięte laboratorium" },
       templates: { fraction: "Ułamek", exponent: "Wykładnik", squareRoot: "Pierwiastek kwadratowy", chemistry: "Chemia" },
       err: {
         questionNeedsText: "Pytanie {{n}} wymaga treści.",
@@ -1556,7 +1992,15 @@ window.I18N_DICTIONARIES = {
         rallyWord: "Tajne słowo musi mieć od 3 do 12 liter.",
         stationEmpty: "Stacja {{n}} ({{letter}}) nie ma jeszcze pytań.",
         stationFull: "Stacja {{n}} ({{letter}}) ma więcej niż 5 pytań.",
-        createFailed: "Nie udało się utworzyć pokoju."
+        createFailed: "Nie udało się utworzyć pokoju.",
+        escapeCode: "Kod sejfu musi mieć od 2 do 8 cyfr.",
+        roomEmpty: "Pokój {{n}} nie ma jeszcze zagadek.",
+        roomFull: "Pokój {{n}} ma więcej niż 5 zagadek.",
+        orderNeedsSteps: "Pytanie {{n}} musi mieć od 3 do 6 kroków, jeden w wierszu.",
+        matchNeedsPairs: "Pytanie {{n}} musi mieć od 2 do 5 pełnych par.",
+        graphNeedsFunction: "Pytanie {{n}}: nie można odczytać funkcji. Użyj x, liczb, + - * / ^ oraz sin, cos, tan, sqrt, ln.",
+        graphAnswer: "Pytanie {{n}}: podaj poprawne x (w zakresie x).",
+        expressionInvalid: "Pytanie {{n}}: nie można odczytać wyrażenia. Sprawdź nawiasy i działania."
       },
       board: { penalty: "Błędne odpowiedzi odejmują punkty", timeLimit: "Czas na pytanie", seconds: "{{n}} s", teams: "Drużyny w tym pokoju", teamsHint: "Zapisane quizy pytają o liczbę drużyn za każdym razem, gdy naciśniesz Graj.", teamCount: "Drużyny: {{n}}" },
       choose: {
@@ -1823,6 +2267,114 @@ window.I18N_DICTIONARIES = {
         },
         map: {
           labels: ["Obóz", "Biblioteka", "Obserwatorium", "Jaskinia", "Ruiny", "Latarnia", "Wiatrak", "Wulkan", "Wrak", "Wielkie drzewo", "Targ", "Skarb"]
+        }
+      },
+      teamEscape: {
+        title: "Escape room",
+        eyebrow: "drużynowy escape room",
+        heroTitle: "Escape room",
+        defaultTitle: "Escape room",
+        lede: "Twoja drużyna jest zamknięta. Rozwiąż zagadki w każdym pokoju, aby otworzyć drzwi i zdobyć jedną cyfrę kodu sejfu, a potem otwórz sejf, zanim skończy się czas.",
+        role: {
+          join: {
+            title: "Dołącz do ucieczki",
+            desc: "Masz kod pokoju od nauczyciela? Wpisz go tutaj i wybierz drużynę.",
+            button: "Dołącz do ucieczki"
+          },
+          bigScreen: {
+            title: "Duży ekran",
+            desc: "Wyświetl budynek dla klasy. Nauczyciel może stąd otworzyć drzwi drużynie, która utknęła.",
+            button: "Duży ekran"
+          }
+        },
+        howto: "<b>Jak to działa:</b> w każdym pokoju jest do 5 zagadek: kłódki, odpowiedzi do wpisania, kroki do ułożenia, pary do połączenia i wykresy. Rozwiąż wszystkie, aby otworzyć drzwi i odkryć jedną cyfrę kodu sejfu. Zła odpowiedź uruchamia 5-sekundowy alarm. Podpowiedź kosztuje 30 sekund, a drzwi otwarte przez nauczyciela 2 minuty. Wpisz cały kod przy sejfie, aby uciec. Wygrywa pierwsza drużyna, która się wydostanie.",
+        join: {
+          label: "Wpisz 4-literowy kod pokoju",
+          findRoom: "Znajdź pokój",
+          roomLabel: "Pokój",
+          joinTeam: "Dołącz: {{team}}",
+          watchBigScreen: "Oglądaj na dużym ekranie"
+        },
+        lobby: {
+          needTwoTeams: "Czekamy na co najmniej 2 drużyny…",
+          startGame: "Rozpocznij ucieczkę (drużyny: {{n}})",
+          matchStarting: "Ucieczka się zaczyna…",
+          leaveRoom: "Opuść pokój",
+          ready: "Gotowa",
+          open: "Wolne miejsce",
+          rules: "Pokoje: {{rooms}} · zagadki: {{puzzles}} · minuty: {{minutes}}"
+        },
+        teams: {
+          A: "Czerwona drużyna",
+          B: "Niebieska drużyna",
+          C: "Zielona drużyna",
+          D: "Fioletowa drużyna"
+        },
+        match: {
+          timeLeft: "Pozostały czas",
+          sound: "Włącz lub wyłącz dźwięk",
+          typeYourAnswer: "Wpisz odpowiedź",
+          typeExpression: "Wpisz odpowiedź, np. 3x^2 cos x",
+          submit: "Wyślij",
+          useHint: "Użyj podpowiedzi (+30 s)",
+          openLock: "Otwórz kłódkę",
+          sign: "Plus lub minus",
+          previewEmpty: "Tu pojawi się twoja odpowiedź",
+          previewIncomplete: "Jeszcze niegotowe: sprawdź nawiasy i działania",
+          checkOrder: "Sprawdź kolejność",
+          moveUp: "W górę",
+          moveDown: "W dół",
+          checkPairs: "Sprawdź pary",
+          slope: "nachylenie",
+          lockPoint: "Zatwierdź ten punkt",
+          doorOpen: "Drzwi otwarte!",
+          digitFound: "Znaleźliście cyfrę kodu sejfu:",
+          continue: "Następny pokój",
+          finalChallenge: "Ostatnie wyzwanie",
+          vault: "Otwórzcie sejf",
+          vaultHelp: "Wpiszcie cyfry w kolejności pokoi: najpierw cyfrę z pokoju 1.",
+          openVault: "Otwórz sejf",
+          escaped: "Uciekliście!",
+          vaultCode: "Kod sejfu",
+          roomShort: "P{{n}}",
+          streak: "{{n}} z rzędu",
+          time: "Czas {{t}}",
+          penalty: "Kara +{{t}}",
+          skip: "Otwórz drzwi (+2 min)",
+          atVault: "Przy sejfie…",
+          getReady: "Przygotujcie się…"
+        },
+        feed: {
+          opened: "{{team}}: otwarto {{room}}",
+          skip: "Nauczyciel otworzył drzwi: {{team}} (+2 min)",
+          vault: "{{team}}: dotarli do sejfu!",
+          escaped: "{{team}}: ucieczka udana!",
+          hint: "{{team}}: użyto podpowiedzi (+30 s)",
+          streak: "{{team}}: {{n}} z rzędu!",
+          lastMinute: "Została minuta!"
+        },
+        end: {
+          teamEscaped: "{{team}} ucieka pierwsza!",
+          teamWins: "{{team}} wygrywa ucieczkę!",
+          draw: "Remis!",
+          champions: "Pierwsza drużyna na zewnątrz",
+          leaderboard: "Tabela końcowa",
+          noWinner: "Tym razem bez zwycięzcy.",
+          time: "Czas",
+          rooms: "Pokoje",
+          bestStreak: "Najlepsza seria",
+          rematch: "Zagraj ponownie",
+          newGame: "Nowy escape room"
+        },
+        notice: {
+          connectError: "Nie można połączyć się z serwerem gry. Sprawdź połączenie."
+        },
+        err: {
+          enterCode: "Wpisz 4-literowy kod."
+        },
+        map: {
+          room: "Pokój {{n}}",
+          vault: "SEJF"
         }
       },
       teamBuzzer: {

@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title data-i18n="games.teamEscape.title">Escape Room</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Cairo:wght@400;600;700;800&family=Nunito:wght@400;600;700;800;900&family=JetBrains+Mono:wght@600;700&display=swap">
+<link rel="stylesheet" href="/vendor/katex/katex.min.css">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="/shared/site.css">
+<link rel="stylesheet" href="/shared/game-shell.css">
+<link rel="stylesheet" href="/shared/match-shell.css">
+<link rel="stylesheet" href="escape.css">
+</head>
+<body data-screen="landing">
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="/"><span class="brand-mark" aria-hidden="true" dir="ltr">eg.</span><span class="brand-name" data-i18n="hub.title">Educational Games</span></a>
+    <div class="lang-links" role="group" aria-label="Language">
+      <button type="button" data-lang="en" lang="en">EN</button>
+      <button type="button" data-lang="fr" lang="fr">FR</button>
+      <button type="button" data-lang="pl" lang="pl">PL</button>
+      <button type="button" data-lang="ar" lang="ar">العربية</button>
+    </div>
+  </div>
+</header>
+<nav class="site-nav">
+  <div class="wrap">
+    <a href="/" data-i18n="hub.nav.home">Home</a>
+    <a href="/play/" aria-current="page" data-i18n="hub.nav.play">Play</a>
+    <a href="/teacher/" data-i18n="hub.nav.create">Create</a>
+    <a href="/lessons/" data-i18n="hub.nav.notes">Course Notes</a>
+  </div>
+</nav>
+
+<div id="app">
+  <div id="notice"></div>
+
+  <!-- LANDING -->
+  <section data-view="landing">
+    <div class="hero">
+      <div class="eyebrow" data-i18n="games.teamEscape.eyebrow">a team escape room</div>
+      <h1 data-i18n="games.teamEscape.heroTitle">Escape Room</h1>
+      <p class="lede" data-i18n="games.teamEscape.lede">Your team is locked in. Solve each room's puzzles to open its door and find one digit of the vault code, then crack the vault before time runs out.</p>
+    </div>
+    <div class="role-grid">
+      <div class="role-card">
+        <div class="icon"><svg viewBox="0 0 32 32" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="14" width="18" height="14" rx="2"/><path d="M11 14V9a5 5 0 0 1 10 0v5"/><path d="M16 20v3"/></svg></div>
+        <h3 data-i18n="games.teamEscape.role.join.title">Join the Escape</h3>
+        <p data-i18n="games.teamEscape.role.join.desc">Got a room code from your teacher? Enter it here and pick your team.</p>
+        <button class="go" data-action="go-join" data-i18n="games.teamEscape.role.join.button">Join the Escape</button>
+      </div>
+      <div class="role-card">
+        <div class="icon"><svg viewBox="0 0 32 32" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="24" height="16" rx="2"/><path d="M16 21v4M10 28l6-3 6 3"/></svg></div>
+        <h3 data-i18n="games.teamEscape.role.bigScreen.title">Big Screen</h3>
+        <p data-i18n="games.teamEscape.role.bigScreen.desc">Project the building for the class. The teacher can open a door for a stuck team from here.</p>
+        <button class="go" data-action="go-display" data-i18n="games.teamEscape.role.bigScreen.button">Big Screen</button>
+      </div>
+    </div>
+    <div class="howto" data-i18n-html="games.teamEscape.howto">
+      <b>How it works:</b> each room has up to 5 puzzles: padlocks, typed answers, step puzzles, matching pairs and graphs. Solve them all to open the door and reveal one digit of the vault code. A wrong answer sets off a 5-second alarm. A hint costs 30 seconds; a teacher opening a door costs 2 minutes. Enter the full code at the vault to escape. The first team out wins.
+    </div>
+  </section>
+
+  <!-- JOIN: enter code -->
+  <section data-view="joinEntry" class="hidden">
+    <button class="back-link" data-action="go-landing" data-i18n="common.back">&larr; Back</button>
+    <div class="panel">
+      <div class="field-label" data-i18n="games.teamEscape.join.label">Enter the 4-letter room code</div>
+      <input class="code-input" id="joinCodeInput" maxlength="4" placeholder="----" autocomplete="off">
+      <button class="btn block" id="joinCodeGo" data-i18n="games.teamEscape.join.findRoom">Find Room</button>
+      <div class="err" id="joinErr"></div>
+    </div>
+  </section>
+
+  <!-- JOIN: choose role in room -->
+  <section data-view="joinRoleSelect" class="hidden">
+    <button class="back-link" data-action="go-landing" data-i18n="common.back">&larr; Back</button>
+    <div class="panel">
+      <div class="field-label"><span data-i18n="games.teamEscape.join.roomLabel">Room</span> <span class="mono" id="joinRoleCode"></span> &middot; <span id="joinRoleTitle"></span></div>
+      <div class="team-pick" id="teamPick"></div>
+      <button class="btn secondary block" id="joinAsDisplay" data-i18n="games.teamEscape.join.watchBigScreen">Watch on the Big Screen</button>
+      <div class="err" id="joinRoleErr"></div>
+    </div>
+  </section>
+
+  <!-- LOBBY -->
+  <section data-view="lobby" class="hidden">
+    <div class="panel">
+      <div class="field-label" id="lobbyTitle"></div>
+      <div class="code-row">
+        <div class="code-display" id="lobbyCode"></div>
+        <button type="button" class="btn secondary" id="copyLobbyCode" data-i18n="common.copy">Copy code</button>
+      </div>
+      <p class="lede" id="lobbyRules"></p>
+      <div class="roster" id="lobbyRoster"></div>
+      <button class="btn block" id="lobbyStart" disabled data-i18n="games.teamEscape.lobby.needTwoTeams">Waiting for at least 2 teams&hellip;</button>
+      <button class="btn secondary block" data-action="go-landing" data-i18n="games.teamEscape.lobby.leaveRoom">Leave Room</button>
+    </div>
+  </section>
+
+  <!-- MATCH -->
+  <section data-view="match" class="hidden">
+    <div class="match-meta">
+      <span class="match-brand"><span class="brand-mark" aria-hidden="true" dir="ltr">eg.</span><span class="match-brand-name" data-i18n="hub.title">Educational Games</span></span>
+      <span class="team-pill" id="teamPill"></span>
+      <span class="match-title" id="matchTitleLabel"></span>
+      <span class="meta-end">
+        <button type="button" class="sound-btn" id="soundBtn" aria-pressed="true" data-i18n-title="games.teamEscape.match.sound" title="Sound"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4Z" fill="currentColor"/><path class="waves" d="M16 9a4 4 0 0 1 0 6M18.5 6.5a7.5 7.5 0 0 1 0 11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path class="mute" d="M16 9l5 6M21 9l-5 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+        <span class="clock" id="clockRing"><span class="mono" id="matchClock" dir="ltr">20:00</span><span class="clock-label" data-i18n="games.teamEscape.match.timeLeft">Time left</span></span>
+      </span>
+    </div>
+
+    <!-- Big Screen: the building, the team cards and the event feed. -->
+    <div class="escape-stage" id="displayPlay">
+      <div class="lab-wrap" id="labWrap">
+        <svg class="lab" id="lab" role="img" aria-label="Escape building"></svg>
+        <div class="lab-alarm" id="labAlarm"></div>
+        <div class="map-overlay"><div class="map-count" id="mapCountdown"></div></div>
+      </div>
+      <div class="escape-side">
+        <div class="escape-cards" id="teamCards"></div>
+        <ol class="feed" id="feed" aria-live="polite"></ol>
+      </div>
+    </div>
+
+    <!-- Phone: the team's current room and puzzle. -->
+    <div class="escape-phone hidden" id="teamPlay">
+      <div class="room-head" id="roomHead">
+        <div class="room-line"><span class="room-num" id="roomNum"></span><span class="room-name" id="roomName" dir="auto"></span><span class="streak hidden" id="streakTag"></span></div>
+        <p class="room-story hidden" id="roomStory" dir="auto"></p>
+        <div class="phone-pips" id="phonePips"></div>
+      </div>
+
+      <div class="team-card" id="puzzleCard">
+        <div class="equation" id="questionText" dir="auto"></div>
+        <div class="puzzle" id="puzzleArea"></div>
+        <div class="lock-ring hidden" id="lockRing"><span class="alarm-light"></span><span id="lockNum">5</span></div>
+        <button class="hint-btn" id="hintBtn" data-i18n="games.teamEscape.match.useHint">Use hint (+30 s)</button>
+        <div class="hint-card hidden" id="hintCard" dir="auto"></div>
+      </div>
+
+      <div class="team-card hidden" id="openedCard">
+        <svg class="door-anim" id="doorAnim" viewBox="0 0 200 220" aria-hidden="true">
+          <rect x="30" y="10" width="140" height="200" rx="6" fill="#0E1730" stroke="#FFC145" stroke-width="5"/>
+          <g class="light"><rect x="38" y="18" width="124" height="186" fill="#FFC145" opacity=".9"/></g>
+          <g class="door"><rect x="38" y="18" width="124" height="186" rx="3" fill="#2B3A63" stroke="#46598F" stroke-width="3"/><circle cx="145" cy="112" r="7" fill="#FFC145"/><rect x="58" y="40" width="84" height="56" rx="4" fill="none" stroke="#46598F" stroke-width="3"/><rect x="58" y="120" width="84" height="64" rx="4" fill="none" stroke="#46598F" stroke-width="3"/></g>
+        </svg>
+        <p class="eyebrow" id="openedEyebrow"></p>
+        <h2 data-i18n="games.teamEscape.match.doorOpen">Door open!</h2>
+        <p class="digit-label" data-i18n="games.teamEscape.match.digitFound">You found a digit of the vault code:</p>
+        <div class="digit-big" id="openedDigit" dir="ltr"></div>
+        <button class="submit-btn" id="continueBtn" data-i18n="games.teamEscape.match.continue">Next room</button>
+      </div>
+
+      <div class="team-card hidden" id="vaultCard">
+        <svg class="vault-anim" id="vaultAnim" viewBox="0 0 200 200" aria-hidden="true">
+          <circle cx="100" cy="100" r="92" fill="#1E2A4A" stroke="#8C96B4" stroke-width="6"/>
+          <circle cx="100" cy="100" r="74" fill="#2B3A63" stroke="#46598F" stroke-width="4"/>
+          <g class="wheel"><circle cx="100" cy="100" r="30" fill="none" stroke="#FFC145" stroke-width="7"/><path d="M100 38V162M38 100H162M56 56l88 88M144 56l-88 88" stroke="#FFC145" stroke-width="7" stroke-linecap="round"/><circle cx="100" cy="100" r="12" fill="#FFC145"/></g>
+        </svg>
+        <p class="eyebrow" data-i18n="games.teamEscape.match.finalChallenge">Final challenge</p>
+        <h2 data-i18n="games.teamEscape.match.vault">Crack the vault</h2>
+        <p data-i18n="games.teamEscape.match.vaultHelp">Enter your digits in room order: the digit from Room 1 first.</p>
+        <div class="found-list" id="vaultFound" dir="ltr"></div>
+        <div class="vault-dial" id="vaultDial"></div>
+        <button class="submit-btn" id="vaultBtn" data-i18n="games.teamEscape.match.openVault">Open the vault</button>
+        <div class="lock-ring hidden" id="vaultLock"><span class="alarm-light"></span><span id="vaultLockNum">5</span></div>
+      </div>
+
+      <div class="team-card hidden" id="doneCard">
+        <div class="finish-stamp" data-i18n="games.teamEscape.match.escaped">Escaped!</div>
+      </div>
+
+      <div class="collected">
+        <p class="eyebrow" data-i18n="games.teamEscape.match.vaultCode">Vault code</p>
+        <div class="code-slots" id="mySlots" dir="ltr"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- END -->
+  <section data-view="end" class="hidden">
+    <h2 class="end-headline" id="endHeadline"></h2>
+    <div class="end-grid">
+      <div class="champion" id="champion">
+        <p class="eyebrow" data-i18n="games.teamEscape.end.champions">First team out</p>
+        <svg class="champion-star" viewBox="0 0 48 48" aria-hidden="true"><path d="M24 4l5.9 12.6 13.6 1.6-10 9.4 2.6 13.6L24 34.4l-12.1 6.8 2.6-13.6-10-9.4 13.6-1.6Z" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/></svg>
+        <div class="champion-team" id="championTeam"></div>
+        <div class="champion-score" id="championScore"><span class="num" id="championTime" dir="ltr"></span> <span class="unit" data-i18n="games.teamEscape.end.time">Time</span></div>
+      </div>
+      <div class="leaderboard">
+        <h3 data-i18n="games.teamEscape.end.leaderboard">Final leaderboard</h3>
+        <div class="leaderboard-rows" id="recap"></div>
+      </div>
+    </div>
+    <div class="end-actions">
+      <button class="btn" id="endRematch" data-i18n="games.teamEscape.end.rematch">Play again</button>
+      <button class="btn secondary" data-action="go-landing" data-i18n="games.teamEscape.end.newGame">New escape room</button>
+    </div>
+  </section>
+</div>
+
+<canvas id="confetti" class="hidden"></canvas>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <span data-i18n="hub.footer.left">Educational Games · Made for classroom curiosity.</span>
+    <span data-i18n="hub.footer.right">Learn together. Play kindly.</span>
+  </div>
+</footer>
+<script src="/shared/i18n/dictionaries.js"></script>
+<script src="/shared/i18n.js"></script>
+<script src="/shared/clipboard.js"></script>
+<script src="/vendor/katex/katex.min.js"></script>
+<script src="/vendor/katex/contrib/auto-render.min.js"></script>
+<script src="/vendor/katex/contrib/mhchem.min.js"></script>
+<script src="/shared/mathRender.js"></script>
+<script src="/shared/mathExpr.js"></script>
+<script src="/socket.io/socket.io.js"></script>
+<script src="/vendor/gsap/gsap.min.js"></script>
+<script src="sfx.js"></script>
+<script src="lab.js"></script>
+<script src="puzzles.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

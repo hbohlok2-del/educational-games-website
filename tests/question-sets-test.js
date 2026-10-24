@@ -168,6 +168,18 @@ async function main() {
   } });
   check("a saved rally drops its team count too", rallySaved.json.ok && !("teams" in rallySaved.json.set.settings));
   check("a rally launched for 3 teams offers 3 seats", (await seats("team-rally", { teams: 3 }, rallySaved.json.set.id)) === "ABC");
+  const escapeSaved = await call("POST", api, { headers: GOOD, body: {
+    title: "Escape", mechanic: "escape", theme: "lab", settings: { code: "48", minutes: 15, teams: 3, rooms: [{ name: "Lab" }, {}] },
+    questions: [
+      { prompt: "d/dx x^2", type: "expression", answer: "2x", room: 0 },
+      { prompt: "Order", type: "order", items: ["a", "b", "c"], room: 1 },
+    ],
+  } });
+  check("an escape room saves with its code and rooms, without a team count", escapeSaved.json.ok && escapeSaved.json.set.settings.code === "48" &&
+    escapeSaved.json.set.settings.rooms[0].name === "Lab" && !("teams" in escapeSaved.json.set.settings));
+  const escapeLaunch = await call("POST", `${api}/${escapeSaved.json.set.id}/launch`, { body: { teams: 4 } });
+  check("an escape room launches to the escape game with the chosen seats", escapeLaunch.json.ok && escapeLaunch.json.gameType === "team-escape" &&
+    (await seats("team-escape", { teams: 4 }, escapeSaved.json.set.id)) === "ABCD");
 
   // A quiz saved before the change still has a count: the list shows it (to
   // pre-select the choice) and a launch with no choice uses it.

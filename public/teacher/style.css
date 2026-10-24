@@ -102,6 +102,20 @@ select.text-input{padding:0 14px;}
 .rally-clue b{flex:none; display:grid; place-items:center; width:36px; height:40px; border-radius:var(--radius-sm); background:var(--paper); color:var(--ink); font-family:'Anton',system-ui,sans-serif; font-size:20px;}
 .rally-clue .text-input{min-height:44px; font-size:15px;}
 #rallyInfo{margin:8px 0 16px;}
+/* Escape Room: room picker per question, the extra puzzle types' fields. */
+.escape-fields{display:grid; grid-template-columns:1fr 2fr; gap:12px;}
+.escape-fields.hidden{display:none;}
+#escapeInfo{margin:8px 0 16px;}
+/* The settings sidebar is narrow: the story line goes under the room name. */
+.escape-room-row{display:grid; grid-template-columns:auto minmax(0, 1fr); align-items:center; gap:6px 8px; padding-bottom:6px; border-bottom:1px dashed var(--line);}
+.escape-room-row .story-input{grid-column:2;}
+.escape-room-row b{display:grid; place-items:center; width:36px; height:40px; border-radius:var(--radius-sm); background:var(--paper); color:var(--ink); font-family:'Anton',system-ui,sans-serif; font-size:20px;}
+.escape-room-row .text-input{min-height:44px; font-size:15px;}
+.pairs{display:flex; flex-direction:column; gap:10px;}
+.pair-row{display:grid; grid-template-columns:minmax(0, 1fr) auto minmax(0, 1fr) auto; align-items:center; gap:8px;}
+.pair-row .eq{color:var(--gold); font-weight:800;}
+.graph-row{display:grid; grid-template-columns:2fr 1fr 1fr; gap:12px;}
+.order-input{font-size:16px; line-height:1.6;}
 
 .toolbar{display:flex; flex-wrap:wrap; gap:8px;}
 .tb-btn{
@@ -171,5 +185,6 @@ select.text-input{padding:0 14px;}
   .passcode-row{flex-direction:column;}
   .board-fields{grid-template-columns:1fr;}
   .rally-fields{grid-template-columns:1fr;}
+  .escape-fields, .graph-row{grid-template-columns:1fr;}
   .done-actions > *{width:100%;}
 }
