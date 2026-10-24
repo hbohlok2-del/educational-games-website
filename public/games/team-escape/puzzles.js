@@ -382,6 +382,11 @@
     if (ylo > 0) ylo = Math.min(ylo, -pad * 0.5);
     if (yhi < 0) yhi = Math.max(yhi, pad * 0.5);
 
+    // A grid step of 1, 2 or 5 times a power of ten, at most about 8 lines across.
+    function niceStep(range) {
+      var base = Math.pow(10, Math.floor(Math.log10(range / 8)));
+      return [1, 2, 5, 10].map(function (m) { return base * m; }).filter(function (st) { return range / st <= 8; })[0];
+    }
     function slopeAt(x0) { var h = span * 1e-5; return (f(x0 + h) - f(x0 - h)) / (2 * h); }
     function round2(v) { return Math.round(v * 100) / 100; }
 
@@ -394,11 +399,11 @@
       var px = function (xv) { return ((xv - q.xmin) / span) * w; };
       var py = function (yv) { return h - ((yv - ylo) / (yhi - ylo)) * h; };
       c.fillStyle = "#0E1730"; c.fillRect(0, 0, w, h);
-      // grid every whole unit when that is not too dense
+      // the grid
       c.strokeStyle = "rgba(244,241,232,0.08)"; c.lineWidth = 1;
-      var gx = span <= 24 ? 1 : Math.pow(10, Math.floor(Math.log10(span / 4)));
+      var gx = span <= 12 ? 1 : niceStep(span); // whole numbers help read x off the grid
       for (var gv = Math.ceil(q.xmin / gx) * gx; gv <= q.xmax; gv += gx) { c.beginPath(); c.moveTo(px(gv), 0); c.lineTo(px(gv), h); c.stroke(); }
-      var gy = Math.pow(10, Math.floor(Math.log10((yhi - ylo) / 4)));
+      var gy = niceStep(yhi - ylo);
       for (var hv = Math.ceil(ylo / gy) * gy; hv <= yhi; hv += gy) { c.beginPath(); c.moveTo(0, py(hv)); c.lineTo(w, py(hv)); c.stroke(); }
       c.strokeStyle = "rgba(244,241,232,0.45)"; c.lineWidth = 1.5;
       if (q.xmin < 0 && q.xmax > 0) { c.beginPath(); c.moveTo(px(0), 0); c.lineTo(px(0), h); c.stroke(); }
