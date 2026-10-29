@@ -33,7 +33,13 @@ async function main() {
   const qs = buildQuestions(QUESTIONS, { rally: true });
   check("rally questions keep their station and hint", qs[0].station === 0 && qs[0].hint === "Count on." && qs[3].station === 2);
   const stations = buildStations(qs, cleanRallySettings(SETTINGS));
-  check("stations follow the word, one letter each", stations.map((st) => st.letter).join("") === "CAT" && stations[0].questions.length === 2);
+  const sorted = (letters) => letters.slice().sort().join("");
+  check("one station per letter of the word, two questions at station 1", sorted(stations.map((st) => st.letter)) === "ACT" && stations[0].questions.length === 2);
+  const deals = Array.from({ length: 200 }, () => buildStations(qs, cleanRallySettings(SETTINGS)).map((st) => st.letter).join(""));
+  check("letters are dealt scrambled: never in word order, in more than one order", deals.every((d) => d !== "CAT" && sorted(Array.from(d)) === "ACT") && new Set(deals).size > 1);
+  const winner = buildQuestions([0, 1, 2, 3, 4, 5].map((st) => ({ station: st, prompt: "x", answer: "1" })), { rally: true });
+  check("a word with a repeated letter is never dealt in order either", Array.from({ length: 300 }, () => buildStations(winner, cleanRallySettings({ word: "winner" })).map((st) => st.letter).join("")).every((d) => d !== "WINNER"));
+  check("a word of one repeated letter still builds", buildStations(winner.slice(0, 3), cleanRallySettings({ word: "aaa" })).map((st) => st.letter).join("") === "AAA");
   check("a station with no questions makes the rally unplayable", buildStations(qs.slice(0, 3), cleanRallySettings(SETTINGS)) === null);
   const six = Array.from({ length: 7 }, () => ({ station: 0, prompt: "x", answer: "1" }))
     .concat([1, 2].map((st) => ({ station: st, prompt: "y", answer: "1" })));
@@ -75,19 +81,19 @@ async function main() {
   const right1 = await emit(red, "answer", { input: "secret4" });
   check("a right answer moves to the next question of the station", right1.correct && !right1.cleared && right1.state.q === 1);
   const right2 = await emit(red, "answer", { input: "1" });
-  check("the last question clears the station and gives its letter and clue", right2.cleared && right2.cleared.letter === "C" && right2.cleared.clue === "Look under the mat.");
+  check("the last question clears the station and gives its letter and clue", right2.cleared && "CAT".includes(right2.cleared.letter) && right2.cleared.clue === "Look under the mat.");
   check("the team moves on to its next station", right2.state.station === 1);
 
   // The teacher skips Blue past its station.
   const skip = await emit(host, "skip", { team: "B" });
   const peek2 = await emit(host, "peek-room", { code });
-  check("a teacher skip costs 120 seconds and still gives the letter", skip.ok && peek2.room.progress.B.penalty === 120 && peek2.room.progress.B.letters.join("") === "C");
+  check("a teacher skip costs 120 seconds and still gives the letter", skip.ok && peek2.room.progress.B.penalty === 120 && peek2.room.progress.B.letters.join("") === right2.cleared.letter);
   const teamSkip = await emit(red, "skip", { team: "B" });
   check("only the Big Screen can skip", !teamSkip.ok);
 
   await emit(red, "answer", { input: "SECRET6" });
   const last = await emit(red, "answer", { input: "SECRET10" });
-  check("after the last station the team reaches the finale", last.cleared && last.state.phase === "finale" && last.state.letters.join("") === "CAT");
+  check("after the last station the team reaches the finale", last.cleared && last.state.phase === "finale" && sorted(last.state.letters) === "ACT" && last.state.letters.join("") !== "CAT");
 
   const badWord = await emit(red, "solve", { word: "ACT" });
   check("a wrong word locks like a wrong answer", badWord.ok && !badWord.correct);

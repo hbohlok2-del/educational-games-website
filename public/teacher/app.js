@@ -493,6 +493,7 @@
   }
 
   // One station per letter: the station pickers and clue boxes follow the word.
+  // They show station numbers only, since each room deals the letters scrambled.
   function fillStationOptions(rowEl) {
     var select = rowEl.querySelector(".station-input");
     var word = Array.from(rallyWord());
@@ -516,7 +517,7 @@
     word.forEach(function (letter, i) {
       var row = document.createElement("div");
       row.className = "rally-clue";
-      var tile = document.createElement("b"); tile.textContent = letter;
+      var tile = document.createElement("b"); tile.textContent = String(i + 1);
       var input = document.createElement("input");
       input.className = "clue-input text-input"; input.maxLength = 140; input.dir = "auto";
       input.placeholder = t("teacher.rally.cluePlaceholder", { n: i + 1 });

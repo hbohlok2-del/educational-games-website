@@ -5,8 +5,8 @@ const { sweepUnclaimedRooms } = require("./roomSweep");
 // each; every station holds 1 to 5 questions. Every team starts at station 1
 // and works through the stations in order, answering on its device (the game
 // is online, so teams never crowd a station). Clearing a
-// station gives that station's letter; after the last one the team unscrambles
-// the word. The first team to solve it wins; at the time limit the team with
+// station gives that station's letter (dealt in a scrambled order); after the
+// last one the team unscrambles the word. The first team to solve it wins; at the time limit the team with
 // the most stations (then the lowest time) wins.
 const CODE_CHARS = "ABCDEFGHJKMNPQRSTUVWXYZ";
 const TEAMS = ["A", "B", "C", "D"]; // red, blue, green, purple
@@ -34,13 +34,29 @@ function joinedTeams(room) {
   return room.slots.filter((team) => room.teams[team]);
 }
 
+// The word's letters in a random order that never spells the word, so teams
+// collecting them station by station still have to unscramble it. A word of
+// one repeated letter cannot be scrambled and is returned as is.
+function scrambleLetters(letters) {
+  const word = letters.join("");
+  const out = letters.slice();
+  if (new Set(letters).size < 2) return out;
+  do {
+    for (let i = out.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [out[i], out[j]] = [out[j], out[i]];
+    }
+  } while (out.join("") === word);
+  return out;
+}
+
 // Stations from the word and the questions: station i keeps the first five
 // questions marked for it. Every station needs at least one, or the rally
-// cannot be played.
+// cannot be played. Each room deals the letters to the stations scrambled.
 function buildStations(questions, settings) {
   const letters = Array.from(settings.word);
   if (letters.length < RALLY_MIN_STATIONS) return null;
-  const stations = letters.map((letter, i) => ({ letter, clue: settings.clues[i] || "", questions: [] }));
+  const stations = scrambleLetters(letters).map((letter, i) => ({ letter, clue: settings.clues[i] || "", questions: [] }));
   questions.forEach((q) => {
     const st = stations[q.station];
     if (st && st.questions.length < RALLY_MAX_PER_STATION) st.questions.push(q);
