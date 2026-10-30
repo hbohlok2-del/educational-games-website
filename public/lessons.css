@@ -45,6 +45,10 @@
 [dir="rtl"] .arrow.back{transform:scaleX(-1);}
 
 .note-paper{background:var(--paper); color:var(--ink); padding:44px 0 64px;}
+.lesson-video{max-width:1000px; margin-bottom:40px;}
+.lesson-video video{display:block; width:100%; aspect-ratio:16/9; background:#000; border-radius:12px;}
+.lesson-video-bar{display:flex; flex-wrap:wrap; align-items:center; gap:12px 20px; margin-top:16px;}
+.lesson-video-bar p{margin:0; flex:1 1 260px; line-height:1.5; opacity:.75;}
 .note-grid{display:grid; grid-template-columns:190px minmax(0, 70ch) 260px; justify-content:space-between; gap:48px; align-items:start;}
 
 .note-toc{position:sticky; top:24px; font-size:15px;}

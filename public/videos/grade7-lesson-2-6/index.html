@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Area and Surface Area</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Lexend:wght@400;500;600&display=swap">
+<style>
+/* Layout: one study column, video on top, the active question card directly under it, checkpoint track below. */
+:root {
+  --bg: #eef1f6;
+  --surface: #ffffff;
+  --ink: #18202e;
+  --muted: #5b6577;
+  --line: #d6dce6;
+  --accent: #2f6fdb;      /* matches the blue figures in the video */
+  --accent-ink: #ffffff;
+  --gold: #b8860b;        /* the video's yellow answers, darkened for light paper */
+  --ok: #1f8a4c;
+  --bad: #c2412f;
+  --stage: #14171f;       /* the video's own background */
+  --display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --body: "Lexend", "Segoe UI", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1218; --surface: #1a1f2a; --ink: #e8ecf3; --muted: #9aa4b5; --line: #2b3242;
+    --accent: #6ea2ff; --accent-ink: #0f1218; --gold: #f2c94c; --ok: #4cc27f; --bad: #ff7a66;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1218; --surface: #1a1f2a; --ink: #e8ecf3; --muted: #9aa4b5; --line: #2b3242;
+  --accent: #6ea2ff; --accent-ink: #0f1218; --gold: #f2c94c; --ok: #4cc27f; --bad: #ff7a66;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 16px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 20px 40px;
+}
+.wrap { max-width: 960px; margin: 0 auto; display: grid; gap: 18px; }
+header { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 8px 20px; }
+.eyebrow a { color: inherit; }
+.eyebrow { font-size: 13px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 0; }
+h1 { font-family: var(--display); font-weight: 800; font-size: clamp(28px, 5vw, 42px); line-height: 1.05; margin: 2px 0 0; text-wrap: balance; }
+.score { font-family: var(--display); font-weight: 600; font-size: 15px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.score b { color: var(--ink); font-size: 22px; }
+
+.stage { background: var(--stage); border-radius: 14px; overflow: hidden; position: relative; aspect-ratio: 16 / 9; max-width: 100%; }
+.stage video { width: 100%; height: 100%; display: block; }
+.stage.locked video { filter: brightness(.45); }
+.flag {
+  position: absolute; left: 14px; top: 14px; background: var(--gold); color: #14171f; font-weight: 600;
+  font-size: 13px; padding: 4px 10px; border-radius: 99px; letter-spacing: .03em;
+}
+
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 20px 22px; display: grid; gap: 14px; }
+.card h2 { font-family: var(--display); font-weight: 600; font-size: 22px; margin: 0; text-wrap: balance; }
+.card .tag { font-size: 13px; font-weight: 600; color: var(--gold); letter-spacing: .06em; text-transform: uppercase; }
+.card p { margin: 0; max-width: 65ch; }
+.answer-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.num { display: flex; align-items: center; border: 2px solid var(--line); border-radius: 10px; background: var(--bg); overflow: hidden; }
+.num:focus-within { border-color: var(--accent); }
+.num input { font: 600 20px var(--body); width: 9ch; padding: 8px 12px; border: 0; background: transparent; color: var(--ink); font-variant-numeric: tabular-nums; outline: none; }
+.num span { padding: 0 12px 0 0; color: var(--muted); }
+.choices { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; }
+.choice {
+  font: 500 15px var(--body); text-align: left; padding: 12px 14px; border-radius: 10px; cursor: pointer;
+  border: 2px solid var(--line); background: var(--bg); color: var(--ink);
+}
+.choice:hover { border-color: var(--accent); }
+.choice.wrong { border-color: var(--bad); color: var(--bad); }
+.choice.right { border-color: var(--ok); color: var(--ok); }
+.btn {
+  font: 600 15px var(--body); padding: 11px 18px; border-radius: 10px; border: 0; cursor: pointer;
+  background: var(--accent); color: var(--accent-ink);
+}
+.btn.ghost { background: transparent; color: var(--accent); border: 2px solid var(--accent); }
+button:focus-visible, input:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+.feedback { font-weight: 500; min-height: 1.5em; }
+.feedback.ok { color: var(--ok); }
+.feedback.bad { color: var(--bad); }
+
+.track { display: grid; gap: 8px; }
+.track h3 { font-family: var(--display); font-weight: 600; font-size: 16px; margin: 0; color: var(--muted); }
+.track ol { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 8px; }
+.track li button {
+  width: 100%; display: flex; gap: 12px; align-items: center; text-align: left; cursor: pointer;
+  font: 500 14px var(--body); color: var(--ink); background: var(--surface);
+  border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px;
+}
+.track li button:hover { border-color: var(--accent); }
+.dot { width: 26px; height: 26px; border-radius: 50%; flex: none; display: grid; place-items: center; font-size: 13px; font-weight: 600;
+  border: 2px solid var(--line); color: var(--muted); }
+.st-correct .dot { background: var(--ok); border-color: var(--ok); color: var(--surface); }
+.st-shown .dot { background: var(--gold); border-color: var(--gold); color: var(--surface); }
+.st-skipped .dot { border-style: dashed; }
+.time { margin-left: auto; color: var(--muted); font-variant-numeric: tabular-nums; font-size: 13px; }
+.note { font-size: 13px; color: var(--muted); margin: 0; }
+@media (prefers-reduced-motion: no-preference) { .card { animation: rise .25s ease-out; } }
+@keyframes rise { from { transform: translateY(6px); opacity: .6; } to { transform: none; opacity: 1; } }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <div>
+      <p class="eyebrow"><a href="/lessons/math/area-and-surface-area">&larr; Lesson notes</a> · Grade 7 · Lesson 2-6</p>
+      <h1>Area and Surface Area</h1>
+    </div>
+    <div class="score" aria-live="polite"><b id="score">0</b> / 6 correct</div>
+  </header>
+
+  <div class="stage" id="stage">
+    <video id="vid" controls playsinline preload="metadata" poster="poster.jpg" src="video.mp4"></video>
+    <div class="flag" id="flag" hidden>Your turn</div>
+  </div>
+
+  <section class="card" id="card" aria-live="polite"></section>
+
+  <section class="track">
+    <h3>Checkpoints</h3>
+    <ol id="list"></ol>
+    <p class="note">The video stops at each checkpoint. Answer to keep going, or tap a checkpoint to jump to it.</p>
+  </section>
+</div>
+
+<script>
+// Checkpoint times come from the render (checkpoints/g7_2_6_area.json).
+const CPS = [
+  { id: "triangle", t: 77.95, title: "Area of one roof triangle", kind: "num", unit: "in²", answer: 540, tol: 0.5,
+    prompt: "Each triangle in the top tier has a base of 30 in. and a height of 36 in. What is the area of one triangle?",
+    hint: "Use A = ½ × base × height: ½ × 30 × 36." },
+  { id: "base", t: 125.7, title: "Base of each triangle", kind: "num", unit: "in.", answer: 17, tol: 0.01,
+    prompt: "The trapezoid is 60 in. along the bottom and 26 in. across the top. The rectangle in the middle uses 26 in. of the bottom. What is the base of each right triangle?",
+    hint: "Subtract 26 from 60, then share what is left equally between the two triangles." },
+  { id: "javier", t: 238.43, title: "Javier's prism", kind: "mc",
+    prompt: "Javier says the surface area of the prism is (15×12) + (12×16¼) + ½(15×6¼) + ½(15×6¼). Do you agree?",
+    choices: ["Yes. He included every face.", "No. One rectangular face is missing.", "No. The triangles should not be halved.", "No. He counted 15 × 12 twice."],
+    answer: 1, hint: "Count the faces of a triangular prism: how many triangles, and how many rectangles?" },
+  { id: "pyramid", t: 282.95, title: "Describe the solid", kind: "mc",
+    prompt: "A solid's surface area is ½(3×5) + ½(3×5) + ½(3×5) + ½(3×5) + (3×3) = 39 in². What solid is it?",
+    choices: ["A triangular prism", "A square pyramid", "A rectangular prism", "A triangular pyramid"],
+    answer: 1, hint: "The expression has four equal triangles and one 3 × 3 square." },
+  { id: "back", t: 381.17, title: "Back of the planter", kind: "num", unit: "ft²", answer: 8.25, tol: 0.01,
+    prompt: "The back of the planter is a rectangle 3 ft wide and 2.75 ft tall. What is its area?",
+    hint: "Rectangle: A = length × width, so 3 × 2.75." },
+  { id: "facade", t: 440.1, title: "Wasted glass", kind: "num", unit: "ft²", answer: 55.46875, tol: 0.1,
+    prompt: "A window is a trapezoid 7.5 ft across the top, 13 ft along the bottom, and 10.25 ft tall. Its left half is cut from a 9 ft by 12 ft sheet of glass. How much glass is wasted? Round to the nearest hundredth.",
+    hint: "Window area = ½ × 10.25 × (13 + 7.5). Take half of it, then subtract from 9 × 12." },
+];
+
+const vid = document.getElementById("vid");
+const stage = document.getElementById("stage");
+const card = document.getElementById("card");
+const list = document.getElementById("list");
+const flag = document.getElementById("flag");
+const state = Object.fromEntries(CPS.map(c => [c.id, "open"])); // open | correct | shown | skipped
+let active = null, tries = 0, lastT = 0;
+
+const fmt = s => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
+
+function renderList() {
+  list.innerHTML = "";
+  CPS.forEach((c, i) => {
+    const li = document.createElement("li");
+    li.className = "st-" + state[c.id];
+    const mark = { correct: "✓", shown: "!", skipped: i + 1, open: i + 1 }[state[c.id]];
+    li.innerHTML = `<button type="button"><span class="dot">${mark}</span><span>${c.title}</span><span class="time">${fmt(c.t)}</span></button>`;
+    li.querySelector("button").onclick = () => { vid.currentTime = Math.max(c.t - 8, 0); vid.play(); };
+    list.appendChild(li);
+  });
+  document.getElementById("score").textContent = Object.values(state).filter(s => s === "correct").length;
+}
+
+function idleCard() {
+  const done = Object.values(state).filter(s => s !== "open").length;
+  if (done === CPS.length) {
+    const n = Object.values(state).filter(s => s === "correct").length;
+    card.innerHTML = `<span class="tag">Finished</span><h2>You answered ${n} of 6 on your own.</h2>
+      <p>Composite area: decompose, find each area, add. Surface area: add the areas of every face. Check your units.</p>`;
+  } else {
+    card.innerHTML = `<span class="tag">How it works</span><h2>Press play. The video will stop and ask you ${CPS.length} questions.</h2>
+      <p>Work each one out on paper first. Type your answer, check it, and the video continues with the full solution.</p>`;
+  }
+}
+
+function open(c) {
+  active = c; tries = 0;
+  vid.pause();
+  stage.classList.add("locked"); flag.hidden = false;
+  const idx = CPS.indexOf(c) + 1;
+  let body = `<span class="tag">Checkpoint ${idx} of ${CPS.length}</span><h2>${c.title}</h2><p>${c.prompt}</p>`;
+  if (c.kind === "num") {
+    body += `<form class="answer-row" id="f"><label class="num"><input id="ans-${c.id}" inputmode="decimal" autocomplete="off" aria-label="Your answer"><span>${c.unit}</span></label>
+      <button class="btn" type="submit">Check</button><button class="btn ghost" type="button" id="show" hidden>Show me</button></form>`;
+  } else {
+    body += `<div class="choices">${c.choices.map((t, i) => `<button type="button" class="choice" data-i="${i}">${t}</button>`).join("")}</div>
+      <div class="answer-row"><button class="btn ghost" type="button" id="show" hidden>Show me</button></div>`;
+  }
+  body += `<div class="feedback" id="fb"></div>`;
+  card.innerHTML = body;
+  card.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  document.getElementById("show").onclick = () => finish("shown");
+  if (c.kind === "num") {
+    const inp = card.querySelector("input");
+    inp.focus({ preventScroll: true });
+    document.getElementById("f").onsubmit = e => {
+      e.preventDefault();
+      const v = parseFloat(inp.value.replace(/,/g, "").trim());
+      if (isNaN(v)) return say("Type a number first.", "bad");
+      check(Math.abs(v - c.answer) <= c.tol);
+    };
+  } else {
+    card.querySelectorAll(".choice").forEach(b => b.onclick = () => {
+      const ok = +b.dataset.i === c.answer;
+      b.classList.add(ok ? "right" : "wrong");
+      check(ok);
+    });
+  }
+}
+
+function say(msg, cls) { const fb = document.getElementById("fb"); fb.textContent = msg; fb.className = "feedback " + cls; }
+
+function check(ok) {
+  if (ok) {
+    say("Correct. Watch the solution to confirm your steps.", "ok");
+    setTimeout(() => finish("correct"), 900);
+    return;
+  }
+  tries++;
+  say(tries === 1 ? "Not yet. Hint: " + active.hint : "Not quite. Try once more, or watch the solution.", "bad");
+  if (tries >= 2) document.getElementById("show").hidden = false;
+}
+
+function finish(result) {
+  state[active.id] = result;
+  active = null;
+  stage.classList.remove("locked"); flag.hidden = true;
+  renderList(); idleCard();
+  vid.play();
+}
+
+vid.addEventListener("timeupdate", () => {
+  const t = vid.currentTime;
+  if (!active && !vid.seeking) {
+    // Stop only when playback runs into a checkpoint, not when someone seeks far past it.
+    const hit = CPS.find(c => state[c.id] === "open" && lastT < c.t && t >= c.t && t - lastT < 2);
+    if (hit) { vid.currentTime = hit.t; open(hit); }
+  }
+  lastT = t;
+});
+vid.addEventListener("seeked", () => {
+  const t = vid.currentTime;
+  CPS.forEach(c => { if (state[c.id] === "open" && t > c.t + 2) state[c.id] = "skipped"; });
+  CPS.forEach(c => { if (state[c.id] === "skipped" && t < c.t) state[c.id] = "open"; });
+  lastT = t; renderList();
+});
+vid.addEventListener("play", () => { if (active) vid.pause(); });
+vid.addEventListener("ended", () => { CPS.forEach(c => { if (state[c.id] === "open") state[c.id] = "skipped"; }); renderList(); idleCard(); });
+
+renderList(); idleCard();
+</script>
+</body>
+</html>

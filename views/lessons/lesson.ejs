@@ -10,6 +10,15 @@
     </div>
   </header>
   <div class="note-paper">
+    <% if (lesson.video) { %>
+    <div class="wrap lesson-video">
+      <video controls playsinline preload="metadata" poster="/videos/<%= lesson.video %>/poster.jpg" src="/videos/<%= lesson.video %>/video.mp4"></video>
+      <div class="lesson-video-bar">
+        <a class="btn-primary" href="/videos/<%= lesson.video %>/"><span data-i18n="lessons.video.interactive">Open the interactive version</span> <span class="arrow" aria-hidden="true">&rarr;</span></a>
+        <p data-i18n="lessons.video.desc">The interactive version pauses at each question so you can try it before the answer.</p>
+      </div>
+    </div>
+    <% } %>
     <div class="wrap note-grid">
       <nav class="note-toc hidden" id="noteTocNav" aria-labelledby="noteTocTitle">
         <p class="note-toc-title" id="noteTocTitle" data-i18n="lessons.inThisNote">In this note</p>

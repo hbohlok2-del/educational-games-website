@@ -242,6 +242,10 @@ window.I18N_DICTIONARIES = {
         title: "Put the idea into play.",
         desc: "Turn this note into a team game for your class.",
         button: "Open the editor"
+      },
+      video: {
+        interactive: "Open the interactive version",
+        desc: "The interactive version pauses at each question so you can try it before the answer."
       }
     },
     games: {
@@ -843,6 +847,10 @@ window.I18N_DICTIONARIES = {
         title: "Mettez l'idée en jeu.",
         desc: "Transformez cette note en jeu d'équipe pour votre classe.",
         button: "Ouvrir l'éditeur"
+      },
+      video: {
+        interactive: "Ouvrir la version interactive",
+        desc: "La version interactive s’arrête à chaque question pour que tu puisses essayer avant la réponse."
       }
     },
     games: {
@@ -1444,6 +1452,10 @@ window.I18N_DICTIONARIES = {
         title: "حوّل الفكرة إلى لعبة.",
         desc: "حوّل هذه الملاحظة إلى لعبة فرق لصفك.",
         button: "افتح المحرّر"
+      },
+      video: {
+        interactive: "افتح النسخة التفاعلية",
+        desc: "تتوقف النسخة التفاعلية عند كل سؤال لتحاول حله قبل عرض الإجابة."
       }
     },
     games: {
@@ -2045,6 +2057,10 @@ window.I18N_DICTIONARIES = {
         title: "Wprowadź pomysł do gry.",
         desc: "Zamień tę notatkę w grę drużynową dla swojej klasy.",
         button: "Otwórz edytor"
+      },
+      video: {
+        interactive: "Otwórz wersję interaktywną",
+        desc: "Wersja interaktywna zatrzymuje się przy każdym pytaniu, aby można było spróbować przed poznaniem odpowiedzi."
       }
     },
     games: {

@@ -68,6 +68,8 @@ function getLesson(subject, slug) {
     title: meta.title || slug,
     summary: meta.summary || "",
     order: Number(meta.order) || 0,
+    // A video lesson names its folder under public/videos/ (video.mp4 + the interactive player).
+    video: SAFE_SEGMENT.test(meta.video || "") ? meta.video : "",
     html: md.render(body),
   };
 }
